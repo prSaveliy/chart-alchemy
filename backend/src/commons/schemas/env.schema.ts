@@ -1,13 +1,16 @@
 export const envSchema = {
-  type: "object",
-  required: ["PORT", "JWT_SECRET"],
+  type: 'object',
+  required: ['PORT', 'JWT_SECRET'],
   properties: {
     PORT: {
-      type: "number",
+      type: 'number',
       default: 3000,
     },
     JWT_SECRET: {
-      type: "string",
+      type: 'string',
+    },
+    DATABASE_URL: {
+      type: 'string',
     },
   },
 };
