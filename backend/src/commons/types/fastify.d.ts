@@ -1,5 +1,7 @@
 import 'fastify';
 
+import { FastifyRequest, FastifyReply } from 'fastify';
+
 import { PrismaClient } from '../../generated/prisma/client.ts';
 
 declare module 'fastify' {
@@ -8,8 +10,10 @@ declare module 'fastify' {
       PORT: number;
       JWT_SECRET: string;
       DATABASE_URL: string;
+      API_URL: string;
+      CLIENT_API_URL: string;
     };
     prisma: PrismaClient;
-    auth: any;
+    auth: (request: FastifyRequest, reply: FastifyReply) => void;
   }
 }
