@@ -9,7 +9,7 @@ const authRoutes = async (fastify: FastifyInstance) => {
   fastify.get('/activate/:link', authController.activate);
   fastify.post('/refresh', authController.refresh);
   fastify.post('/forgot-password', authController.forgotPassword);
-  fastify.post('/verify-reset-token', authController.verifyResetToken);
+  fastify.get('/verify-reset-token/:token', authController.verifyResetToken);
   fastify.post('/reset-password', authController.resetPassword);
 };
 

@@ -70,12 +70,8 @@ class AuthController {
     await authService.forgotPassword(request.server, email);
   }
   
-  async verifyResetToken(request: FastifyRequest, reply: FastifyReply) {
-    const tokenSchema = resetPasswordSchema.omit({
-      password: true,
-    });
-    
-    const { token } = validateSchema<{ token: string }>(request, tokenSchema);
+  async verifyResetToken(request: FastifyRequest<{ Params: { token: string} }>, reply: FastifyReply) {
+    const { token } = request.params;
     await authService.verifyResetToken(request.server, token);
   }
   
