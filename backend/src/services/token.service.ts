@@ -13,27 +13,23 @@ class TokenService {
   }
   
   async saveToken(fastify: FastifyInstance, userId: number, refreshToken: string) {
-    const tokenData = await fastify.prisma.token.findFirst({
-      where: {
+    await fastify.prisma.token.create({
+      data: {
         userId: userId,
+        refreshToken: refreshToken,
+        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     });
-    
-    if (tokenData) {
-      await fastify.prisma.token.update({
-        where: { id: tokenData.id },
-        data: {
+  }
+  
+  async deleteToken(fastify: FastifyInstance, refreshToken: string) {
+    try {
+      await fastify.prisma.token.delete({
+        where: {
           refreshToken: refreshToken,
         },
       });
-    } else {
-      await fastify.prisma.token.create({
-        data: {
-          userId: userId,
-          refreshToken: refreshToken,
-        },
-      });
-    }
+    } catch {}
   }
   
   saveToCookie(reply: FastifyReply, refreshToken: string) {

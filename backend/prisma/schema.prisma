@@ -19,15 +19,16 @@ model User {
   password           String
   isActivated        Boolean
   activationLink     String? @unique
-  Token              Token?
+  Token              Token[]
   resetPasswordToken ResetPasswordToken[]
 }
 
 model Token {
   id           Int @id @default(autoincrement())
   user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       Int @unique
+  userId       Int
   refreshToken String @unique
+  expiresAt    DateTime
 }
 
 model ResetPasswordToken {

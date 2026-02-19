@@ -13,6 +13,7 @@ import { envSchema } from './commons/schemas/env.schema.js';
 import { AppError } from './commons/types/error.js';
 
 import createPasswordResetTokenJob from './jobs/clearPasswordResetTokens.job.js';
+import createExpiredRefreshTokensJob from './jobs/clearExpiredRefreshTokens.job.js';
 
 const buildApp = async () => {
   const app = Fastify({
@@ -47,6 +48,7 @@ const buildApp = async () => {
   // async jobs
   app.ready().then(() => {
     app.scheduler.addSimpleIntervalJob(createPasswordResetTokenJob(app));
+    app.scheduler.addSimpleIntervalJob(createExpiredRefreshTokensJob(app));
   });
 
   return app;

@@ -55,7 +55,7 @@ class AuthController {
   async logout(request: FastifyRequest, reply: FastifyReply) {
     const { refreshToken } = request.cookies;
     if (!refreshToken) {
-      throw request.server.httpErrors.badRequest('No refreshToken provided');
+      return;
     }
     await authService.logout(request.server, refreshToken);
     reply.clearCookie('refreshToken');

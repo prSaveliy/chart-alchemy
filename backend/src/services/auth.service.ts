@@ -127,19 +127,14 @@ class AuthService {
     };
     
     const tokens = tokenService.generateTokens(fastify, userData);
-    tokenService.saveToken(fastify, user.id, tokens.refreshToken);
+    await tokenService.deleteToken(fastify, token.refreshToken);
+    await tokenService.saveToken(fastify, user.id, tokens.refreshToken);
     
     return { ...tokens, user: userData };
   }
   
   async logout(fastify: FastifyInstance, refreshToken: string) {
-    try {
-      await fastify.prisma.token.delete({
-        where: {
-          refreshToken: refreshToken,
-        },
-      });
-    } catch (err) {}
+    await tokenService.deleteToken(fastify, refreshToken)
   }
   
   async forgotPassword(fastify: FastifyInstance, email: string) {
