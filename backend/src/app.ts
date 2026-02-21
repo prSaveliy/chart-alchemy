@@ -4,6 +4,7 @@ import fastifyEnv from '@fastify/env';
 import fastifySensible from '@fastify/sensible';
 import cookie from '@fastify/cookie';
 import fastifySchedule from '@fastify/schedule';
+import rateLimit from '@fastify/rate-limit';
 import authPlugin from './plugins/auth.plugin.js';
 import dbPlugin from './plugins/db.plugin.js';
 
@@ -18,6 +19,7 @@ import createExpiredRefreshTokensJob from './jobs/clearExpiredRefreshTokens.job.
 const buildApp = async () => {
   const app = Fastify({
     logger: true,
+    trustProxy: 1,
   });
   
   app.setErrorHandler((error: AppError, request: FastifyRequest, reply: FastifyReply) => {
@@ -37,6 +39,11 @@ const buildApp = async () => {
   app.register(fastifySensible);
   app.register(cookie);
   app.register(fastifySchedule);
+  await app.register(rateLimit, {
+    global: true,
+    max: 1000,
+    timeWindow: '15 minutes',
+  });
   app.register(dbPlugin);
   app.register(authPlugin);
 
