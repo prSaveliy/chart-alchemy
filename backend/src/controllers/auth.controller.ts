@@ -8,6 +8,8 @@ import validateSchema from '../utils/validateSchema.js';
 import { registrationSchema } from '../commons/schemas/registration.schema.js';
 import { resetPasswordSchema } from '../commons/schemas/resetPassword.schema.js';
 
+import { ActivateLinkRoute, VerifyTokenRoute } from '../commons/types/routes.js';
+
 class AuthController {
   async registration(request: FastifyRequest, reply: FastifyReply) {
     const { email, password } = validateSchema<{ email: string, password: string }>
@@ -27,7 +29,7 @@ class AuthController {
     return data;
   }
   
-  async activate(request: FastifyRequest<{ Params: { link: string } }>, reply: FastifyReply) {
+  async activate(request: FastifyRequest<ActivateLinkRoute>, reply: FastifyReply) {
     const { link } = request.params;
     await authService.activate(request.server, link);
     // redirect to the client
@@ -70,7 +72,7 @@ class AuthController {
     await authService.forgotPassword(request.server, email);
   }
   
-  async verifyResetToken(request: FastifyRequest<{ Params: { token: string} }>, reply: FastifyReply) {
+  async verifyResetToken(request: FastifyRequest<VerifyTokenRoute>, reply: FastifyReply) {
     const { token } = request.params;
     await authService.verifyResetToken(request.server, token);
   }
