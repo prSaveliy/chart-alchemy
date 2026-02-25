@@ -12,16 +12,14 @@ import { ActivateLinkRoute, VerifyTokenRoute } from '../commons/types/routes.js'
 
 class AuthController {
   async registration(request: FastifyRequest, reply: FastifyReply) {
-    const { email, password } = validateSchema<{ email: string, password: string }>
-      (request, registrationSchema);
+    const { email, password } = validateSchema(request, registrationSchema);
     
     const user = await authService.registration(request.server, email, password);
     return user;
   } 
   
   async login(request: FastifyRequest, reply: FastifyReply) {
-    const { email, password } = validateSchema<{ email: string, password: string }>
-      (request, registrationSchema);
+    const { email, password } = validateSchema(request, registrationSchema);
     
     const data = await authService.login(request.server, email, password);
     tokenService.saveToCookie(reply, data.refreshToken);
@@ -68,7 +66,7 @@ class AuthController {
       password: true,
     });
     
-    const { email } = validateSchema<{ email: string }>(request, emailSchema);
+    const { email } = validateSchema(request, emailSchema);
     await authService.forgotPassword(request.server, email);
   }
   
@@ -78,8 +76,7 @@ class AuthController {
   }
   
   async resetPassword(request: FastifyRequest, reply: FastifyReply) {
-    const { token, password } = validateSchema<{ token: string, password: string }>
-      (request, resetPasswordSchema);
+    const { token, password } = validateSchema(request, resetPasswordSchema);
     await authService.resetPassword(request.server, token, password);
     reply.code(201);
   }
