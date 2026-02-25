@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify';
 
 import bcrypt from 'bcrypt';
 import crypto from 'node:crypto';
-import { v4 } from 'uuid';
+import { randomLetterGenerator, generateString } from '../utils/generateRandomString.js';
 
 import mailService from './mail.service.js';
 import tokenService from './token.service.js';
@@ -22,7 +22,10 @@ class AuthService {
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const activationLink = v4();
+    
+    const iter = randomLetterGenerator();
+    const activationLink = await generateString(iter, 3);
+    
     const user = await fastify.prisma.user.create({
       data: {
         email: email,
