@@ -4,7 +4,10 @@ import { UserDTO } from '../commons/types/user.js';
 class TokenService {
   generateTokens(fastify: FastifyInstance, payload: UserDTO) {
     const accessToken = fastify.jwt.sign(payload, { expiresIn: '30m' });
-    const refreshToken = fastify.jwt.sign(payload, { expiresIn: '30d' });
+    const refreshToken = fastify.jwt.sign(
+      { ...payload, jti: crypto.randomUUID() },
+      { expiresIn: '30d' }
+    );
 
     return {
       accessToken,
