@@ -5,10 +5,12 @@ import fastifySensible from '@fastify/sensible';
 import cookie from '@fastify/cookie';
 import fastifySchedule from '@fastify/schedule';
 import rateLimit from '@fastify/rate-limit';
+import cors from '@fastify/cors';
 import authPlugin from './plugins/auth.plugin.js';
 import dbPlugin from './plugins/db.plugin.js';
 
 import authRoutes from './routes/auth.routes.js';
+import oAuthRoutes from './routes/oauth.routes.js';
 
 import { envSchema } from './commons/schemas/env.schema.js';
 import { AppError } from './commons/types/error.js';
@@ -44,12 +46,19 @@ const buildApp = async () => {
     max: 1000,
     timeWindow: '15 minutes',
   });
+  await app.register(cors, {
+    origin: 'http://localhost:5173',
+    credentials: true,
+  });
   app.register(dbPlugin);
   app.register(authPlugin);
 
   // routes
   app.register(authRoutes, {
     prefix: 'auth',
+  });
+  app.register(oAuthRoutes, {
+    prefix: 'oauth/google',
   });
   
   // async jobs

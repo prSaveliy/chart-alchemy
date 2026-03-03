@@ -16,9 +16,37 @@ class AuthService {
         email: email,
       },
     });
+    const pendingUser = await fastify.prisma.pendingUser.findUnique({
+      where: {
+        email: email,
+      },
+    });
 
     if (existingUser) {
-      throw fastify.httpErrors.conflict('User with this email already exists');
+      if (existingUser.password || pendingUser) {
+        throw fastify.httpErrors.conflict('User with this email already exists');
+      }
+      else if (!existingUser.password) {
+        const hashedPassword = await bcrypt.hash(password, 10);
+        const activationLink = v4();
+        const user = await fastify.prisma.pendingUser.create({
+          data: {
+            email: email,
+            password: hashedPassword,
+            activationLink: activationLink,
+          },
+        });
+        await mailService.sendActivationLink(
+          email,
+          `${fastify.config.API_URL}/auth/activate/${activationLink}`,
+        );
+        const userData = {
+          id: user.id,
+          email: email,
+        };
+        
+        return userData;
+      }
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -53,11 +81,7 @@ class AuthService {
       },
     });
     
-    if (!user) {
-      throw fastify.httpErrors.unauthorized('Invalid credentials');
-    }
-    
-    if (!user.isActivated) {
+    if (!user || !user.isActivated || !user.password) {
       throw fastify.httpErrors.unauthorized('Invalid credentials');
     }
     
@@ -83,20 +107,47 @@ class AuthService {
         activationLink: link,
       }
     });
-    
-    if (!user) {
-      throw fastify.httpErrors.badRequest('Incorrect activation link');
-    }
-    
-    await fastify.prisma.user.update({
+    const pendingUser = await fastify.prisma.pendingUser.findUnique({
       where: {
-        id: user.id,
-      },
-      data: {
-        isActivated: true,
-        activationLink: null,
-      },
+        activationLink: link,
+      }
     });
+    
+    if (!user && !pendingUser) {
+      throw fastify.httpErrors.badRequest('Incorrect activation link');
+    } else if (user && !pendingUser) {
+      await fastify.prisma.user.update({
+        where: {
+          id: user.id,
+        },
+        data: {
+          isActivated: true,
+          activationLink: null,
+        },
+      });
+    } else if (!user && pendingUser) {
+      const originalUser = await fastify.prisma.user.findUnique({
+        where: {
+          email: pendingUser.email,
+        },
+      });
+      if (originalUser) {
+        await fastify.prisma.user.update({
+          where: {
+            email: pendingUser.email,
+          },
+          data: {
+            password: pendingUser.password,
+            isActivated: true,
+          },
+        });
+      }
+      await fastify.prisma.pendingUser.delete({
+        where: {
+          activationLink: pendingUser.activationLink,
+        },
+      });
+    }
   }
   
   async refresh(fastify: FastifyInstance, refreshToken: string) {

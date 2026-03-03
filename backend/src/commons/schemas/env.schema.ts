@@ -10,6 +10,8 @@ export const envSchema = {
     'SMTP_PASSWORD',
     'API_URL',
     'CLIENT_API_URL',
+    'OAUTH_GOOGLE_CLIENT_ID',
+    'OAUTH_GOOGLE_CLIENT_SECRET',
   ],
   properties: {
     PORT: {
@@ -39,6 +41,12 @@ export const envSchema = {
     },
     CLIENT_API_URL: {
       type: 'string',
-    }
+    },
+    OAUTH_GOOGLE_CLIENT_ID: {
+      type: 'string'
+    },
+    OAUTH_GOOGLE_CLIENT_SECRET: {
+      type: 'string'
+    },
   },
 };
