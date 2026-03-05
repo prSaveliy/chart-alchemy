@@ -8,6 +8,7 @@ import tokenService from './refreshToken.service.js';
 import activationTokenService from './activationToken.service.js';
 
 import { UserDTO } from '../commons/types/user.d.js';
+import { PendingUser } from '../commons/types/pendingUser.js';
 
 class AuthService {
   async registration(fastify: FastifyInstance, email: string, password: string) {
@@ -157,7 +158,7 @@ class AuthService {
     return { ...tokens, user: userData };
   }
   
-  async activate(fastify: FastifyInstance, token: string) {;
+  async activate(fastify: FastifyInstance, token: string) {
     const user = await activationTokenService.findMainUserbyToken(fastify, token);
     const pendingUser = await activationTokenService.findPendingUserbyToken(fastify, token);
 
@@ -246,14 +247,19 @@ class AuthService {
         email: email,
       },
     });
+    const pendingUser = await fastify.prisma.pendingUser.findUnique({
+      where: {
+        email: email,
+      },
+    });
     
-    if (!user) {
-      return;
+    if ((!user && !pendingUser) || (!pendingUser && !user?.password)) {
+      throw fastify.httpErrors.unauthorized('Invalid credentials');
     }
     
     await fastify.prisma.resetPasswordToken.deleteMany({
       where: {
-        userId: user.id,
+        email: email,
       },
     });
     
@@ -264,7 +270,7 @@ class AuthService {
       .digest("hex");
     await fastify.prisma.resetPasswordToken.create({
       data: {
-        userId: user.id,
+        email: email,
         token: hashedToken,
         expiresAt: new Date(Date.now() + 60 * 60 * 1000),
       },
@@ -299,22 +305,43 @@ class AuthService {
     const resetToken = await this.verifyResetToken(fastify, token);
     const hashedPassword = await bcrypt.hash(password, 10);
     
+    let pendingUser: PendingUser | null = null;
+    try {
+      pendingUser = await fastify.prisma.pendingUser.delete({
+        where: {
+          email: resetToken.email,
+        },
+      })
+    } catch { }
+    
     const user = await fastify.prisma.user.update({
       where: {
-        id: resetToken?.userId,
+        email: resetToken.email,
       },
       data: {
         password: hashedPassword,
         isActivated: true,
       },
     });
-    await activationTokenService.deleteTokenByUserId(fastify, { type: 'main', id: user.id });
+    
+    await activationTokenService.deleteTokenByUserId(
+      fastify,
+      { type: 'main', id: user.id }
+    );
     
     await fastify.prisma.resetPasswordToken.deleteMany({
       where: {
-        userId: user.id,
+        email: user.email,
       },
     });
+    
+    if (!pendingUser) {
+      await fastify.prisma.refreshToken.deleteMany({
+        where: {
+          userId: user.id,
+        },
+      });
+    }
   }
 }
 
