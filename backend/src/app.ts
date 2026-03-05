@@ -17,6 +17,7 @@ import { AppError } from './commons/types/error.js';
 
 import createPasswordResetTokenJob from './jobs/clearPasswordResetTokens.job.js';
 import createExpiredRefreshTokensJob from './jobs/clearExpiredRefreshTokens.job.js';
+import createExpiredActivationTokensJob from './jobs/clearExpiredActivationTokens.job.js';
 
 const buildApp = async () => {
   const app = Fastify({
@@ -65,6 +66,7 @@ const buildApp = async () => {
   app.ready().then(() => {
     app.scheduler.addSimpleIntervalJob(createPasswordResetTokenJob(app));
     app.scheduler.addSimpleIntervalJob(createExpiredRefreshTokensJob(app));
+    app.scheduler.addSimpleIntervalJob(createExpiredActivationTokensJob(app));
   });
 
   return app;

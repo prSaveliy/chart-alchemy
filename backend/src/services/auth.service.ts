@@ -2,10 +2,10 @@ import { FastifyInstance } from 'fastify';
 
 import bcrypt from 'bcrypt';
 import crypto from 'node:crypto';
-import { randomLetterGenerator, generateString } from '../utils/generateRandomString.js';
 
 import mailService from './mail.service.js';
 import tokenService from './token.service.js';
+import activationTokenService from './activationToken.service.js';
 
 import { UserDTO } from '../commons/types/user.d.js';
 
@@ -23,61 +23,111 @@ class AuthService {
     });
 
     if (existingUser) {
-      if (existingUser.password || pendingUser) {
-        throw fastify.httpErrors.conflict('User with this email already exists');
-      }
-      else if (!existingUser.password) {
-        const hashedPassword = await bcrypt.hash(password, 10);
-        
-        const iter = randomLetterGenerator();
-        const activationLink = await generateString(iter, 3);
-        
-        const user = await fastify.prisma.pendingUser.create({
-          data: {
-            email: email,
-            password: hashedPassword,
-            activationLink: activationLink,
-          },
-        });
-        await mailService.sendActivationLink(
-          email,
-          `${fastify.config.API_URL}/auth/activate/${activationLink}`,
+      if (existingUser.password) {
+        const token = await activationTokenService.getTokenByUserId(
+          fastify,
+          { type: 'main', id: existingUser.id },
         );
-        const userData = {
-          id: user.id,
-          email: email,
-        };
-        
-        return userData;
+        if (!token && existingUser.isActivated) {
+          throw fastify.httpErrors.conflict('User with this email already exists');
+        } else if ((token && !existingUser.isActivated) || (!token && !existingUser.isActivated)) {
+          if (token) {
+            if (token.expiresAt > new Date()) {
+              throw fastify.httpErrors.badRequest('Activation token has not expired yet');
+            }
+          }
+          await activationTokenService.deleteTokenByUserId(
+            fastify,
+            { type: 'main', id: existingUser.id },
+          );
+          const activationToken = await activationTokenService.createToken(
+            fastify,
+            { type: 'main', id: existingUser.id },
+            new Date(Date.now() + 30 * 1000),
+          );
+          await mailService.sendActivationLink(
+            email,
+            `${fastify.config.API_URL}/auth/activate/${activationToken.token}`,
+          );
+        } 
+      } else {
+        if (pendingUser) { 
+          const token = await activationTokenService.getTokenByUserId(
+            fastify,
+            { type: 'pending', id: pendingUser.id },
+          );
+          if (!token || token.expiresAt < new Date()) {
+            await activationTokenService.deleteTokenByUserId(
+              fastify,
+              { type: 'pending', id: pendingUser.id },
+            );
+            const activationToken = await activationTokenService.createToken(
+              fastify,
+              { type: 'pending', id: pendingUser.id },
+              new Date(Date.now() + 60 * 1000),
+            );
+            await mailService.sendActivationLink(
+              email,
+              `${fastify.config.API_URL}/auth/activate/${activationToken.token}`,
+            );
+          } else if (token.expiresAt > new Date()) {
+            throw fastify.httpErrors.badRequest('Activation token has not expired yet');
+          }
+        } else {
+          const hashedPassword = await bcrypt.hash(password, 10);
+          const user = await fastify.prisma.pendingUser.create({
+            data: {
+              email: email,
+              password: hashedPassword,
+            },
+          });
+          const activationToken = await activationTokenService.createToken(
+            fastify,
+            { type: 'pending', id: user.id },
+            new Date(Date.now() + 60 * 1000),
+          );
+          await mailService.sendActivationLink(
+            email,
+            `${fastify.config.API_URL}/auth/activate/${activationToken.token}`,
+          );
+          const userData = {
+            id: user.id,
+            email: email,
+          };
+          
+          return userData;
+        }
       }
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-    
-    const iter = randomLetterGenerator();
-    const activationLink = await generateString(iter, 3);
-    
-    const user = await fastify.prisma.user.create({
-      data: {
+    } else {
+      const hashedPassword = await bcrypt.hash(password, 10);
+      
+      const user = await fastify.prisma.user.create({
+        data: {
+          email: email,
+          password: hashedPassword,
+          isActivated: false,
+        },
+      });
+      
+      const activationToken = await activationTokenService.createToken(
+        fastify,
+        { type: 'main', id: user.id },
+        new Date(Date.now() + 60 * 1000),
+      );
+  
+      await mailService.sendActivationLink(
+        email,
+        `${fastify.config.API_URL}/auth/activate/${activationToken.token}`,
+      );
+  
+      const userData: UserDTO = {
+        id: user.id,
         email: email,
-        password: hashedPassword,
-        isActivated: false,
-        activationLink: activationLink,
-      },
-    });
-
-    await mailService.sendActivationLink(
-      email,
-      `${fastify.config.API_URL}/auth/activate/${activationLink}`,
-    );
-
-    const userData: UserDTO = {
-      id: user.id,
-      email: email,
-      isActivated: user.isActivated,
-    };
-    
-    return userData;
+        isActivated: user.isActivated,
+      };
+      
+      return userData;
+    }
   }
   
   async login(fastify: FastifyInstance, email: string, password: string) {
@@ -107,18 +157,10 @@ class AuthService {
     return { ...tokens, user: userData };
   }
   
-  async activate(fastify: FastifyInstance, link: string) {
-    const user = await fastify.prisma.user.findUnique({
-      where: {
-        activationLink: link,
-      }
-    });
-    const pendingUser = await fastify.prisma.pendingUser.findUnique({
-      where: {
-        activationLink: link,
-      }
-    });
-    
+  async activate(fastify: FastifyInstance, token: string) {;
+    const user = await activationTokenService.findMainUserbyToken(fastify, token);
+    const pendingUser = await activationTokenService.findPendingUserbyToken(fastify, token);
+
     if (!user && !pendingUser) {
       throw fastify.httpErrors.badRequest('Incorrect activation link');
     } else if (user && !pendingUser) {
@@ -128,9 +170,9 @@ class AuthService {
         },
         data: {
           isActivated: true,
-          activationLink: null,
         },
       });
+      await activationTokenService.deleteTokenByUserId(fastify, { type: 'main', id: user.id });
     } else if (!user && pendingUser) {
       const originalUser = await fastify.prisma.user.findUnique({
         where: {
@@ -148,11 +190,15 @@ class AuthService {
           },
         });
       }
-      await fastify.prisma.pendingUser.delete({
-        where: {
-          activationLink: pendingUser.activationLink,
-        },
-      });
+      
+      const activationToken = await activationTokenService.getToken(fastify, token);
+      if (activationToken?.pendingUserId) {
+        await fastify.prisma.pendingUser.delete({
+          where: {
+            id: activationToken.pendingUserId,
+          },
+        });
+      }
     }
   }
   
@@ -260,9 +306,9 @@ class AuthService {
       data: {
         password: hashedPassword,
         isActivated: true,
-        activationLink: null,
       },
     });
+    await activationTokenService.deleteTokenByUserId(fastify, { type: 'main', id: user.id });
     
     await fastify.prisma.resetPasswordToken.deleteMany({
       where: {
