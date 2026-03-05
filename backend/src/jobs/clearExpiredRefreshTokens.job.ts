@@ -5,7 +5,7 @@ const createExpiredRefreshTokensJob = (fastify: FastifyInstance) => {
   const task = new AsyncTask(
     'clearExpiredRefreshTokens',
     async () => {
-      await fastify.prisma.token.deleteMany({
+      await fastify.prisma.refreshToken.deleteMany({
         where: {
           expiresAt: {
             lt: new Date(),

@@ -16,10 +16,10 @@ class TokenService {
   }
   
   async saveToken(fastify: FastifyInstance, userId: number, refreshToken: string) {
-    await fastify.prisma.token.create({
+    await fastify.prisma.refreshToken.create({
       data: {
         userId: userId,
-        refreshToken: refreshToken,
+        token: refreshToken,
         expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
       },
     });
@@ -27,9 +27,9 @@ class TokenService {
   
   async deleteToken(fastify: FastifyInstance, refreshToken: string) {
     try {
-      await fastify.prisma.token.delete({
+      await fastify.prisma.refreshToken.delete({
         where: {
-          refreshToken: refreshToken,
+          token: refreshToken,
         },
       });
     } catch {}

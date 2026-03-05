@@ -20,26 +20,26 @@ model User {
   sub                    String? @unique
   isActivated            Boolean
   accountActivationToken AccountActivationToken?
-  Token                  Token[]
+  refreshToken           RefreshToken[]
   resetPasswordToken     ResetPasswordToken[]
 }
 
 model AccountActivationToken {
-  id           Int @id @default(autoincrement())
-  user         User? @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       Int? @unique
-  pendingUser  PendingUser? @relation(fields: [pendingUserId], references: [id], onDelete: Cascade)
+  id            Int @id @default(autoincrement())
+  user          User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId        Int? @unique
+  pendingUser   PendingUser? @relation(fields: [pendingUserId], references: [id], onDelete: Cascade)
   pendingUserId Int? @unique
-  token        String @unique
-  expiresAt    DateTime
+  token         String @unique
+  expiresAt     DateTime
 }
 
-model Token {
-  id           Int @id @default(autoincrement())
-  user         User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId       Int
-  refreshToken String @unique
-  expiresAt    DateTime
+model RefreshToken {
+  id        Int @id @default(autoincrement())
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId    Int
+  token     String @unique
+  expiresAt DateTime
 }
 
 model ResetPasswordToken {
@@ -53,8 +53,8 @@ model ResetPasswordToken {
 // used as a temporary user until email confirmation in case the user
 // was previously authenticated with OAuth 2.0
 model PendingUser {
-  id             Int @id @default(autoincrement())
-  email          String @unique
-  password       String
+  id                     Int @id @default(autoincrement())
+  email                  String @unique
+  password               String
   accountActivationToken AccountActivationToken?
 }

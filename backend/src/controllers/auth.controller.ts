@@ -1,5 +1,5 @@
 import authService from '../services/auth.service.js';
-import tokenService from '../services/token.service.js';
+import tokenService from '../services/refreshToken.service.js';
 
 import { FastifyRequest, FastifyReply } from 'fastify';
 

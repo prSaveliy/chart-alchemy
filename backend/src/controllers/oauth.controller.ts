@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 
 import oAuthService from '../services/oauth.service.js';
-import tokenService from '../services/token.service.js';
+import tokenService from '../services/refreshToken.service.js';
 
 import validateSchema from '../utils/validateSchema.js';
 
