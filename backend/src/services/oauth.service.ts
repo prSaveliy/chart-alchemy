@@ -4,7 +4,7 @@ import { GoogleResponse } from '../commons/types/googleResponse.js';
 import { IDToken } from '../commons/types/idToken.js';
 import { UserDTO } from '../commons/types/user.js';
 
-import tokenService from './token.service.js';
+import tokenService from './refreshToken.service.js';
 
 class OAuthService {
   generateURI(fastify: FastifyInstance) {

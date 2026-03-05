@@ -4,7 +4,7 @@ import bcrypt from 'bcrypt';
 import crypto from 'node:crypto';
 
 import mailService from './mail.service.js';
-import tokenService from './token.service.js';
+import tokenService from './refreshToken.service.js';
 import activationTokenService from './activationToken.service.js';
 
 import { UserDTO } from '../commons/types/user.d.js';
@@ -203,9 +203,9 @@ class AuthService {
   }
   
   async refresh(fastify: FastifyInstance, refreshToken: string) {
-    const token = await fastify.prisma.token.findUnique({
+    const token = await fastify.prisma.refreshToken.findUnique({
       where: {
-        refreshToken: refreshToken,
+        token: refreshToken,
       },
     });
     
@@ -230,7 +230,7 @@ class AuthService {
     };
     
     const tokens = tokenService.generateTokens(fastify, userData);
-    await tokenService.deleteToken(fastify, token.refreshToken);
+    await tokenService.deleteToken(fastify, token.token);
     await tokenService.saveToken(fastify, user.id, tokens.refreshToken);
     
     return { ...tokens, user: userData };
