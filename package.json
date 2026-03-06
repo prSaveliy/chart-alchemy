@@ -1,0 +1,24 @@
+{
+  "name": "chart-alchemy",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Web application for data visualization using LLM",
+  "workspaces": [
+    "frontend",
+    "backend"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=frontend & npm run dev --workspace=backend",
+    "build": "npm run build --workspace=frontend && npm run build --workspace=backend"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prSaveliy/chart-alchemy.git"
+  },
+  "author": "Prysiazhnyi Savelii <papsavel@gmail.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/prSaveliy/chart-alchemy/issues"
+  },
+  "homepage": "https://github.com/prSaveliy/chart-alchemy#readme"
+}
