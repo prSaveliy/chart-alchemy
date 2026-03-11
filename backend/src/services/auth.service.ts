@@ -34,7 +34,10 @@ class AuthService {
         } else if ((token && !existingUser.isActivated) || (!token && !existingUser.isActivated)) {
           if (token) {
             if (token.expiresAt > new Date()) {
-              throw fastify.httpErrors.badRequest('Activation token has not expired yet');
+              throw fastify.httpErrors.badRequest(
+                `This email has already been registered and is awaiting activation. 
+                 Please check your inbox for the confirmation email`
+              );
             }
           }
           await activationTokenService.deleteTokenByUserId(
@@ -72,7 +75,10 @@ class AuthService {
               `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
             );
           } else if (token.expiresAt > new Date()) {
-            throw fastify.httpErrors.badRequest('Activation token has not expired yet');
+            throw fastify.httpErrors.badRequest(
+              `This email has already been registered and is awaiting activation. 
+               Please check your inbox for the confirmation email`
+            );
           }
         } else {
           const hashedPassword = await bcrypt.hash(password, 10);

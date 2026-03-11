@@ -15,7 +15,7 @@ const rateLimitByEmail = (max: number, timeWindow: number) => {
     
     if (timeStamps.length >= max) {
       store.set(email, timeStamps);
-      throw request.server.httpErrors.tooManyRequests(`Try again in ${timeStamps[0] + timeWindow - now}`);
+      throw request.server.httpErrors.tooManyRequests(`Too many requests. Try again later`);
     }
     
     timeStamps.push(now);
