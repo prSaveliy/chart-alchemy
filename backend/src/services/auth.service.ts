@@ -44,11 +44,11 @@ class AuthService {
           const activationToken = await activationTokenService.createToken(
             fastify,
             { type: 'main', id: existingUser.id },
-            new Date(Date.now() + 30 * 1000),
+            new Date(Date.now() + 60 * 60 * 1000),
           );
           await mailService.sendActivationLink(
             email,
-            `${fastify.config.API_URL}/auth/activate/${activationToken.token}`,
+            `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
           );
         } 
       } else {
@@ -65,11 +65,11 @@ class AuthService {
             const activationToken = await activationTokenService.createToken(
               fastify,
               { type: 'pending', id: pendingUser.id },
-              new Date(Date.now() + 60 * 1000),
+              new Date(Date.now() + 60 * 60 * 1000),
             );
             await mailService.sendActivationLink(
               email,
-              `${fastify.config.API_URL}/auth/activate/${activationToken.token}`,
+              `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
             );
           } else if (token.expiresAt > new Date()) {
             throw fastify.httpErrors.badRequest('Activation token has not expired yet');
@@ -85,11 +85,11 @@ class AuthService {
           const activationToken = await activationTokenService.createToken(
             fastify,
             { type: 'pending', id: user.id },
-            new Date(Date.now() + 60 * 1000),
+            new Date(Date.now() + 60 * 60 * 1000),
           );
           await mailService.sendActivationLink(
             email,
-            `${fastify.config.API_URL}/auth/activate/${activationToken.token}`,
+            `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
           );
           const userData = {
             id: user.id,
@@ -113,12 +113,12 @@ class AuthService {
       const activationToken = await activationTokenService.createToken(
         fastify,
         { type: 'main', id: user.id },
-        new Date(Date.now() + 60 * 1000),
+        new Date(Date.now() + 60 * 60 * 1000),
       );
   
       await mailService.sendActivationLink(
         email,
-        `${fastify.config.API_URL}/auth/activate/${activationToken.token}`,
+        `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
       );
   
       const userData: UserDTO = {
