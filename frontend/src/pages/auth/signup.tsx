@@ -142,6 +142,8 @@ export const SignUpForm = ({
               <Field>
                 <FieldLabel htmlFor="email">Email</FieldLabel>
                 <div className="relative">
+                  <CircleX color="#ff0000" size={18} className={`absolute -left-6 top-1/2 -translate-y-1/2 transition-opacity duration-100 ${email && emailError ? 'opacity-100' : 'opacity-0'}`} />
+                  <CircleCheck color="#37ff00" size={18} className={`absolute -left-6 top-1/2 -translate-y-1/2 transition-opacity duration-100 ${email && !emailError ? 'opacity-100' : 'opacity-0'}`} />
                   <Input
                     id="email"
                     type="email"
