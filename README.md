@@ -3,4 +3,4 @@
 ### Web application for data visualization using LLM
 
 ### Work in progress
- - currently implementing OpenID Connect
+ - currently working on auth frontend
