@@ -3,7 +3,7 @@
 ### Web application for data visualization using LLM
 
 ### Work in progress
- - currently implementing OpenID Connect
+ - currently working on auth frontend
  
  
 # Labs
@@ -18,9 +18,9 @@ The main goal is to generate a random string that will be used in the account ac
  - Timeout Iterator Function: consumes the iterator for a certain number of seconds (passed as a parameter), appending each letter to the end result and delaying the next iteration for **0.1 sec**, making the random string exactly **30 letters** long (in case of 3 sec timeout).
 
  ### Integration
-These functions are used in **/backend/src/services/auth.service.ts** (lines 26 & 27)
+These functions are used in **/backend/src/services/activationToken.service.ts** (lines 11 & 12)
 
 ```ts
 const iter = randomLetterGenerator();
-const activationLink = await generateString(iter, 3);
+const token = await generateString(iter, 3);
 ```
