@@ -1,125 +1,43 @@
+import fetchClient from "@/lib/fetchClient";
+
 class AuthService {
   async register(email: string, password: string) {
-    try {
-      const response = await fetch('http://localhost:3000/auth/registration', {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password: password }),
-      });
-
-      const data = await response.json().catch(() => null);
-
-      if (!response.ok) {
-        return { errorMessage: data.message };
-      }
-      
-      return {};
-    } catch {
-      return { errorMessage: 'Something went wrong' };
-    }
+    return await fetchClient.post(
+      'auth/registration',
+      { email, password },
+    );
   }
   
   async activate(token: string) {
-    try {
-      const response = await fetch(`http://localhost:3000/auth/activate/${token}`, {
-        method: "GET",
-        credentials: "include",
-      });
-      
-      if (!response.ok) {
-        return { statusCode: response.status };
-      }
-      
-      return {};
-    } catch {
-      return { errorMessage: 'Network error' };
-    }
+    return await fetchClient.get(`auth/activate/${token}`);
   }
   
   async login(email: string, password: string) {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/login`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email, password }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        return { errorMessage: data.message };
-      }
-      
-      localStorage.setItem('accessToken', data.accessToken);
-      return {};
-    } catch {
-      return { errorMessage: 'Something went wrong' };
-    }
+    return await fetchClient.post(
+      'auth/login',
+      { email, password },
+      (accessToken: string) => localStorage.setItem('accessToken', accessToken),
+      'accessToken',
+    );
   }
   
   async forgotPassword(email: string) {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/forgot-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ email }),
-      });
-      
-      const data = await response.json().catch(() => null);
-      
-      if (!response.ok) {
-        return { errorMessage: data.message };
-      }
-      
-      return {};
-    } catch {
-      return { errorMessage: 'Something went wrong' };
-    }
+    return await fetchClient.post(
+      'auth/forgot-password',
+      { email },
+    );
   }
   
   async verifyPasswordResetToken(token: string) {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-reset-token/${token}`, {
-        method: "GET",
-        credentials: "include",
-      });
-      
-      if (!response.ok) {
-        return { statusCode: response.status };
-      }
-      
-      return {};
-    } catch {
-      return { errorMessage: 'Something went wrong' };
-    }
+    return await fetchClient.get(`auth/verify-reset-token/${token}`)
   }
   
   async resetPassword(token: string, password: string) {
-    try {
-      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/reset-password`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ token, password }),
-      });
-      
-      const data = await response.json().catch(() => null);
-      
-      if (!response.ok) {
-        return { errorMessage: data.message };
-      }
-      
-      return {};
-    } catch {
-      return { errorMessage: 'Something went wrong' };
-    }
+    return await fetchClient.post(
+      'auth/reset-password',
+      { token, password },
+    );
   }
-
 }
 
 export default new AuthService();
-
-
