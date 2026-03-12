@@ -139,10 +139,10 @@ export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
               <h1 className="text-3xl font-bold text-center">
                 Check your email
               </h1>
-              <h1 className="text-sm font-semibold opacity-70 text-center mt-2">
+              <p className="text-center mt-2">
                 Password reset link was sent to your email:{" "}
                 <p className="font-bold">{email}</p>
-              </h1>
+              </p>
             </div>
           </div>
         </div>
