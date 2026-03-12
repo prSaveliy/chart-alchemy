@@ -5,7 +5,7 @@ import authService from "@/services/authService";
 
 import type { FetchResultErrorCode } from "@/commons/interfaces/authInterfaces";
 
-import { ScaleLoader } from "react-spinners";
+import { Loading } from "../loading";
 
 import { Error } from "../error";
 
@@ -67,10 +67,7 @@ export const ActivateAccount = () => {
         />
       )}
       {!networkError && !invalidToken && !serverError && !tooManyRequestsError && (
-        <div className="flex min-h-screen items-center justify-center">
-          <ScaleLoader height={20} width={4} margin={1} />
-          <span className="text-xl ml-2 font-semibold">Activating your account</span>
-        </div>
+        <Loading message="Activating your account" />
       )}
     </div>
   );

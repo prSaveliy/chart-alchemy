@@ -12,13 +12,12 @@ import { CircleX, CircleCheck, Eye, EyeClosed } from "lucide-react";
 import { useState, useEffect, type ChangeEvent } from 'react';
 import { useParams } from 'react-router-dom';
 
-import { ScaleLoader } from 'react-spinners';
-
 import type { FetchResultErrorCode, FetchResult } from '@/commons/interfaces/authInterfaces';
 
 import authService from '@/services/authService';
 
 import { Error } from "../error";
+import { Loading } from "../loading";
 
 import { registrationBaseSchema } from "@/commons/schemas/authSchema";
 
@@ -123,14 +122,7 @@ export const PasswordReset = () => {
   return (
     <div>
       {verifying && (
-        <div>
-          <div className='flex min-h-screen items-center justify-center'>
-            <ScaleLoader height={20} width={4} margin={1} />
-            <span className="text-xl ml-2 font-semibold">
-              Verifying
-            </span>
-          </div>
-        </div>
+        <Loading message="Verifying" />
       )}
       {networkError && (
         <Error

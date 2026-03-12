@@ -1,5 +1,6 @@
 import React from 'react'
-import { ScaleLoader } from 'react-spinners';
+
+import { Loading } from "../loading";
 
 export const GoogleLogin = () => {
   const authorize = () => {
@@ -29,11 +30,6 @@ export const GoogleLogin = () => {
   React.useEffect(authorize, []);
   
   return (
-    <div className='flex min-h-screen items-center justify-center'>
-      <ScaleLoader height={20} width={4} margin={1} />
-      <span className="text-xl ml-2 font-semibold">
-        Logging in
-      </span>
-    </div>
+    <Loading message="Logging in"/>
   )
 }
