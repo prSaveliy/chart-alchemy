@@ -3,7 +3,7 @@ import { useParams } from "react-router-dom";
 
 import authService from "@/services/authService";
 
-import type { ActivationResult } from "@/commons/interfaces/authInterfaces";
+import type { FetchResultErrorCode } from "@/commons/interfaces/authInterfaces";
 
 import { ScaleLoader } from "react-spinners";
 
@@ -17,7 +17,7 @@ export const ActivateAccount = () => {
   const { token } = useParams();
 
   const activate = async () => {
-    const fetchResult: ActivationResult = await authService.activate(token!);
+    const fetchResult: FetchResultErrorCode = await authService.activate(token!);
     
     const errors: Record<number, () => void> = {
       400: () => setInvalidToken(true),

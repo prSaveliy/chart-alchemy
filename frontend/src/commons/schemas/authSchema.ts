@@ -13,3 +13,7 @@ export const registrationSchema = registrationBaseSchema.refine(
     path: ["password2"],
   },
 );
+
+export const emailSchema = z.object({
+  email: z.email(),
+});

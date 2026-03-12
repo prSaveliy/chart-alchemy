@@ -2,7 +2,7 @@ export interface FetchResult {
   errorMessage?: string;
 }
 
-export interface ActivationResult {
+export interface FetchResultErrorCode {
   errorMessage?: string;
   statusCode?: number;
 }

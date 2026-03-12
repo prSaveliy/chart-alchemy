@@ -58,6 +58,66 @@ class AuthService {
       return { errorMessage: 'Something went wrong' };
     }
   }
+  
+  async forgotPassword(email: string) {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/forgot-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
+      
+      const data = await response.json().catch(() => null);
+      
+      if (!response.ok) {
+        return { errorMessage: data.message };
+      }
+      
+      return {};
+    } catch {
+      return { errorMessage: 'Something went wrong' };
+    }
+  }
+  
+  async verifyPasswordResetToken(token: string) {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/verify-reset-token/${token}`, {
+        method: "GET",
+        credentials: "include",
+      });
+      
+      if (!response.ok) {
+        return { statusCode: response.status };
+      }
+      
+      return {};
+    } catch {
+      return { errorMessage: 'Something went wrong' };
+    }
+  }
+  
+  async resetPassword(token: string, password: string) {
+    try {
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/reset-password`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ token, password }),
+      });
+      
+      const data = await response.json().catch(() => null);
+      
+      if (!response.ok) {
+        return { errorMessage: data.message };
+      }
+      
+      return {};
+    } catch {
+      return { errorMessage: 'Something went wrong' };
+    }
+  }
+
 }
 
 export default new AuthService();
