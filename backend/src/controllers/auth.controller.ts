@@ -7,8 +7,9 @@ import validateSchema from '../utils/validateSchema.js';
 
 import { registrationSchema } from '../commons/schemas/registration.schema.js';
 import { resetPasswordSchema } from '../commons/schemas/resetPassword.schema.js';
+import { accountActivationSchema } from '../commons/schemas/accountActivation.schema.js';
 
-import { ActivateLinkRoute, VerifyTokenRoute } from '../commons/types/routes.js';
+import { VerifyTokenRoute } from '../commons/types/routes.js';
 
 class AuthController {
   async registration(request: FastifyRequest, reply: FastifyReply) {
@@ -27,9 +28,9 @@ class AuthController {
     return data;
   }
   
-  async activate(request: FastifyRequest<ActivateLinkRoute>, reply: FastifyReply) {
-    const { link } = request.params;
-    await authService.activate(request.server, link);
+  async activate(request: FastifyRequest, reply: FastifyReply) {
+    const { token } = validateSchema(request, accountActivationSchema, 'Invalid request body');
+    await authService.activate(request.server, token);
   }
   
   async refresh(request: FastifyRequest, reply: FastifyReply) {

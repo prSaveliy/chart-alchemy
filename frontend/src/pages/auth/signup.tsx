@@ -19,7 +19,7 @@ import type { ChangeEvent } from "react";
 import authService from "@/services/authService";
 
 import { registrationBaseSchema, registrationSchema } from "@/commons/schemas/authSchema";
-import type { FetchResult } from '@/commons/interfaces/authInterfaces';
+import type { FetchResultErrorCode } from '@/commons/interfaces/authInterfaces';
 
 export const SignUpForm = ({
   className,
@@ -106,7 +106,7 @@ export const SignUpForm = ({
       return;
     }
     
-    const fetchResult: FetchResult = await authService.register(email, password1);
+    const fetchResult: FetchResultErrorCode = await authService.register(email, password1);
     
     if (fetchResult.errorMessage) {
       setFetchError(fetchResult.errorMessage);

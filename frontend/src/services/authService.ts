@@ -9,7 +9,10 @@ class AuthService {
   }
   
   async activate(token: string) {
-    return await fetchClient.get(`auth/activate/${token}`);
+    return await fetchClient.post(
+      `auth/activate`,
+      { token },
+    );
   }
   
   async login(email: string, password: string) {

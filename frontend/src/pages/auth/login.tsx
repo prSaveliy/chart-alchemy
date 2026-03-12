@@ -18,7 +18,7 @@ import type { ChangeEvent } from "react";
 
 import authService from "@/services/authService";
 
-import type { FetchResult } from '@/commons/interfaces/authInterfaces';
+import type { FetchResultErrorCode } from '@/commons/interfaces/authInterfaces';
 
 export const LoginForm = ({
   className,
@@ -38,7 +38,7 @@ export const LoginForm = ({
   }
   
   const login = async () => {
-    const fetchResult: FetchResult = await authService.login(email, password);
+    const fetchResult: FetchResultErrorCode = await authService.login(email, password);
    
     if (fetchResult.errorMessage) {
       setFetchError(fetchResult.errorMessage);

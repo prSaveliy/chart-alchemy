@@ -17,7 +17,7 @@ import { emailSchema } from "@/commons/schemas/authSchema";
 
 import authService from "@/services/authService";
 
-import type { FetchResult } from "@/commons/interfaces/authInterfaces";
+import type { FetchResultErrorCode } from "@/commons/interfaces/authInterfaces";
 
 export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
   const [email, setEmail] = useState("");
@@ -43,7 +43,7 @@ export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
   const forgotPassword = async () => {
     setAwaititng(true);
 
-    const fetchResult: FetchResult = await authService.forgotPassword(email);
+    const fetchResult: FetchResultErrorCode = await authService.forgotPassword(email);
 
     if (fetchResult.errorMessage) {
       setFetchError(fetchResult.errorMessage);
