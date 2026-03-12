@@ -260,7 +260,7 @@ class AuthService {
     });
     
     if ((!user && !pendingUser) || (!pendingUser && !user?.password)) {
-      throw fastify.httpErrors.unauthorized('Invalid credentials');
+      return;
     }
     
     await fastify.prisma.resetPasswordToken.deleteMany({
