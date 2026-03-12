@@ -34,7 +34,7 @@ export const ActivateAccount = () => {
     } else if (fetchResult.errorMessage) {
       setNetworkError(true);
     } else {
-      window.location.href = import.meta.env.VITE_API_URL;
+      window.location.href = `${import.meta.env.VITE_API_URL}/login`;
     }
   }
   
