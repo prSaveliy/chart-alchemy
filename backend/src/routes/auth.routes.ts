@@ -5,7 +5,7 @@ import authController from '../controllers/auth.controller.js';
 import rateLimitByEmail from '../hooks/rateLimitByEmail.js';
 import rateLimitByIp from '../hooks/rateLimitByIp.js';
 
-import { ActivateLinkRoute, VerifyTokenRoute } from '../commons/types/routes.js';
+import { VerifyTokenRoute } from '../commons/types/routes.js';
 
 const authRoutes = async (fastify: FastifyInstance) => {
   fastify.post('/registration', {
@@ -21,7 +21,7 @@ const authRoutes = async (fastify: FastifyInstance) => {
     onRequest: rateLimitByIp(100, 60 * 60 * 1000),
   }, authController.logout);
   
-  fastify.get<ActivateLinkRoute>('/activate/:link', {
+  fastify.post('/activate', {
     onRequest: rateLimitByIp(15, 60 * 60 * 1000),
   }, authController.activate);
   

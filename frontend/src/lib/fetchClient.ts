@@ -35,7 +35,7 @@ class FetchClient {
       const data = await response.json().catch(() => null);
 
       if (!response.ok) {
-        return { errorMessage: data.message };
+        return { errorMessage: data.message, statusCode: response.status };
       }
 
       if (fn) {

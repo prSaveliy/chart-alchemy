@@ -12,7 +12,7 @@ import { CircleX, CircleCheck, Eye, EyeClosed } from "lucide-react";
 import { useState, useEffect, type ChangeEvent } from 'react';
 import { useParams } from 'react-router-dom';
 
-import type { FetchResultErrorCode, FetchResult } from '@/commons/interfaces/authInterfaces';
+import type { FetchResultErrorCode } from '@/commons/interfaces/authInterfaces';
 
 import authService from '@/services/authService';
 
@@ -107,7 +107,7 @@ export const PasswordReset = () => {
   const resetPassword = async () => {
     setAwaititng(true);
     
-    const fetchResult: FetchResult = await authService.resetPassword(token!, password1);
+    const fetchResult: FetchResultErrorCode = await authService.resetPassword(token!, password1);
     
     if (fetchResult.errorMessage) {
       setFetchError(fetchResult.errorMessage);
