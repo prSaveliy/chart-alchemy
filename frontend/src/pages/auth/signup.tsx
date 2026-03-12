@@ -262,7 +262,7 @@ export const SignUpForm = ({
           </div>
           <div className="flex flex-col w-lg">
             <h1 className="text-3xl font-bold text-center">Confirmation email was successfully sent</h1>
-            <h1 className="text-sm font-semibold opacity-70 text-center mt-2">Check your inbox and click the link to activate your account</h1>
+            <p className="text-center mt-2">Check your inbox and click the link to activate your account</p>
           </div>
         </div>}
         
