@@ -8,6 +8,8 @@ import { Error } from "./pages/error";
 import { LoginForm } from "./pages/auth/login";
 import { SignUpForm } from "./pages/auth/signup";
 import { ActivateAccount } from "./pages/auth/activate-account";
+import { ForgotPassword } from "./pages/auth/forgot-password";
+import { PasswordReset } from "./pages/auth/password-reset";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -17,6 +19,8 @@ const router = createBrowserRouter([
   { path: "/signup", element: <SignUpForm /> },
   { path: "/auth/google/*", element: <GoogleLogin /> },
   { path: "/activate/:token", element: <ActivateAccount /> },
+  { path: "/forgot-password", element: <ForgotPassword /> },
+  { path: "/password-reset/:token", element: <PasswordReset /> },
   {
     path: "*",
     element: (
