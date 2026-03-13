@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { TextEffect } from "@/components/ui/text-effect";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { HeroHeader } from "../components/layout/header";
-import Footer from '../components/layout/footer';
+import Footer from "../components/layout/footer";
 import lauraImage from "@/assets/laura-lezman-Ml3Ah9JE70U-unsplash.jpg";
 
 const transitionVariants = {
@@ -97,7 +97,8 @@ export const HeroSection = () => {
                   as="p"
                   className="mx-auto mt-8 max-w-2xl text-balance text-lg"
                 >
-                  AI-powered when you want speed. Fully manual when you want control.
+                  AI-powered when you want speed. Fully manual when you want
+                  control.
                 </TextEffect>
 
                 <AnimatedGroup
@@ -145,15 +146,15 @@ export const HeroSection = () => {
                 ...transitionVariants,
               }}
             >
-              <div className="mask-b-from-55% relative -mr-56 mt-8 overflow-hidden px-2 sm:mr-0 sm:mt-12 md:mt-20">
+              <div className="mask-b-from-55% relative mt-8 overflow-hidden px-2 sm:mt-12 md:mt-20">
                 <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
                   <img
-                    className="bg-background aspect-15/8 relative hidden rounded-2xl dark:block"
+                    className="bg-background aspect-15/8 relative hidden w-full h-auto object-cover rounded-2xl dark:block"
                     src="/mail2.png"
                     alt="app screen"
                   />
                   <img
-                    className="z-2 border-border/25 aspect-15/8 relative rounded-2xl border dark:hidden"
+                    className="z-2 border-border/25 aspect-15/8 relative w-full h-auto object-cover rounded-2xl border dark:hidden"
                     src={lauraImage}
                     alt="app screen"
                   />
@@ -168,4 +169,4 @@ export const HeroSection = () => {
       </main>
     </>
   );
-}
+};

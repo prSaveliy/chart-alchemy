@@ -130,7 +130,7 @@ export const SignUpForm = ({
       </div>
 
       <div className="flex flex-1">
-        {!emailSentShown && <div className="w-1/2 flex items-center justify-center p-8">
+        {!emailSentShown && <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
           <form
             className={cn("flex flex-col gap-6 w-full max-w-sm", className)}
             {...props}
@@ -256,17 +256,17 @@ export const SignUpForm = ({
           </form>
         </div>}
         
-        {emailSentShown && <div className="w-1/2 relative flex flex-col items-center justify-center p-8">
-          <div className="relative flex w-lg items-center justify-center">
+        {emailSentShown && <div className="w-full lg:w-1/2 relative flex flex-col items-center justify-center p-8">
+          <div className="relative flex w-full max-w-lg items-center justify-center">
             <MailCheck size={100} color="#06ed02" className="absolute bottom-1/2 mb-4" />
           </div>
-          <div className="flex flex-col w-lg">
-            <h1 className="text-3xl font-bold text-center">Confirmation email was successfully sent</h1>
-            <p className="text-center mt-2">Check your inbox and click the link to activate your account</p>
+          <div className="flex flex-col w-full max-w-lg">
+            <h1 className="mx-auto text-3xl font-bold text-center text-balance">Confirmation email was successfully sent</h1>
+            <p className="mx-auto text-center mt-2 text-balance">Check your inbox and click the link to activate your account</p>
           </div>
         </div>}
         
-        <div className="w-1/2 bg-white flex items-center justify-center p-3">
+        <div className="hidden lg:flex lg:w-1/2 bg-white items-center justify-center p-3">
           <div className="w-full h-full rounded-2xl flex items-center justify-center">
             <img
               src={white}
