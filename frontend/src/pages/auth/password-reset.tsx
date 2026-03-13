@@ -160,7 +160,7 @@ export const PasswordReset = () => {
             </a>
           </div>
           <div className="flex justify-center content-center min-h-screen">
-            <div className="w-1/2 flex items-center justify-center p-8">
+            <div className="w-full flex items-center justify-center p-8">
               <form
                 className={cn("flex flex-col gap-6 w-full max-w-sm")}
               >

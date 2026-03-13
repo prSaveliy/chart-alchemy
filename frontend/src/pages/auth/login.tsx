@@ -61,7 +61,7 @@ export const LoginForm = ({
       </div>
 
       <div className="flex flex-1">
-        <div className="w-1/2 flex items-center justify-center p-8">
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
           <form
             className={cn("flex flex-col gap-6 w-full max-w-sm", className)}
             {...props}
@@ -178,7 +178,7 @@ export const LoginForm = ({
           </form>
         </div>
 
-        <div className="w-1/2 bg-white flex items-center justify-center p-3">
+        <div className="hidden lg:flex lg:w-1/2 bg-white items-center justify-center p-3">
           <div className="w-full h-full rounded-2xl flex items-center justify-center">
             <img
               src={white}

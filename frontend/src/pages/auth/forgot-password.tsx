@@ -68,7 +68,7 @@ export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
       </div>
       {!success ? (
         <div className="flex justify-center content-center min-h-full">
-          <div className="w-1/2 flex items-center justify-center p-8">
+          <div className="w-full flex items-center justify-center p-8">
             <form
               className={cn("flex flex-col gap-6 w-full max-w-sm")}
               {...props}
@@ -127,21 +127,21 @@ export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
         </div>
       ) : (
         <div className="flex justify-center min-h-full">
-          <div className="w-1/2 relative flex flex-col items-center justify-center p-8">
-            <div className="relative flex w-lg items-center justify-center">
+          <div className="w-full lg:w-1/2 relative flex flex-col items-center justify-center p-8">
+            <div className="relative flex w-full max-w-lg items-center justify-center">
               <MailCheck
                 size={100}
                 color="#06ed02"
                 className="absolute bottom-1/2 mb-4"
               />
             </div>
-            <div className="flex flex-col w-lg">
+            <div className="flex flex-col w-full max-w-lg">
               <h1 className="text-3xl font-bold text-center">
                 Check your email
               </h1>
-              <p className="text-center mt-2">
+              <p className="mx-auto text-center mt-2 text-balance">
                 Password reset link was sent to your email:{" "}
-                <p className="font-bold">{email}</p>
+                <p className="mx-auto font-bold text-balance">{email}</p>
               </p>
             </div>
           </div>
