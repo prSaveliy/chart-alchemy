@@ -13,6 +13,6 @@ const validateSchema = <T extends Record<string, any>>(request: FastifyRequest, 
   }
   
   return parseResult.data;
-}
+};
 
 export default validateSchema;
