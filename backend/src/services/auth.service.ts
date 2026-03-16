@@ -157,7 +157,7 @@ class AuthService {
       id: user.id,
       email: user.email,
       isActivated: user.isActivated,
-    }
+    };
     const tokens = tokenService.generateTokens(fastify, userData);
     await tokenService.saveToken(fastify, user.id, tokens.refreshToken);
     
@@ -244,7 +244,7 @@ class AuthService {
   }
   
   async logout(fastify: FastifyInstance, refreshToken: string) {
-    await tokenService.deleteToken(fastify, refreshToken)
+    await tokenService.deleteToken(fastify, refreshToken);
   }
   
   async forgotPassword(fastify: FastifyInstance, email: string) {
@@ -317,7 +317,7 @@ class AuthService {
         where: {
           email: resetToken.email,
         },
-      })
+      });
     } catch { }
     
     const user = await fastify.prisma.user.update({

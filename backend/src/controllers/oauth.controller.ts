@@ -17,7 +17,7 @@ class OAuthController {
       sameSite: 'lax',
       maxAge: 300,
       path: '/',
-    })
+    });
     reply.redirect(`${baseURL}?${uri}`);
   }
 
