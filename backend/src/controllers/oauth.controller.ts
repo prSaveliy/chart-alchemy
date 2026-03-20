@@ -22,7 +22,7 @@ class OAuthController {
   }
 
   async handleCode(request: FastifyRequest, reply: FastifyReply) {
-    const { code, state } = validateSchema(request, googleRedirectSchema);
+    const { code, state } = validateSchema(request, googleRedirectSchema, 'Invalid request body');
     const { oauth_state } = request.cookies;
     
     if (!oauth_state || oauth_state !== state) {

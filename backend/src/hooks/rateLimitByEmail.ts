@@ -7,7 +7,7 @@ const rateLimitByEmail = (max: number, timeWindow: number) => {
   const store = new Map();
   
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    const { email } = validateSchema(request, emailSchema);
+    const { email } = validateSchema(request, emailSchema, 'Invalid request body');
     const now = Date.now();
     
     let timeStamps: number[] = store.get(email) || [];
