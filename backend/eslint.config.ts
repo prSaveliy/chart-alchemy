@@ -19,6 +19,9 @@ export default [
   ...tseslint.configs.recommended,
   {
     languageOptions: {
+      parserOptions: {
+        tsconfigRootDir: import.meta.dirname,
+      },
       globals: {
         ...globals.browser,
         ...globals.node,
