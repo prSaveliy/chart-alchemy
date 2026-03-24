@@ -161,7 +161,7 @@ class AuthService {
     const tokens = tokenService.generateTokens(fastify, userData);
     await tokenService.saveToken(fastify, user.id, tokens.refreshToken);
     
-    return { ...tokens, user: userData };
+    return { ...tokens, user: userData, picture: user.picture };
   }
   
   async activate(fastify: FastifyInstance, token: string) {
