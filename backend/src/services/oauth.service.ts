@@ -64,6 +64,8 @@ class OAuthService {
       },
     });
 
+    const picture = idTokenData.picture;
+
     /*
       only check by email for the first time to prevent
       creating a new account if the user changed email
@@ -75,6 +77,7 @@ class OAuthService {
             email: idTokenData.email,
             sub: idTokenData.sub,
             isActivated: false,
+            picture,
           },
         });
       } else {
@@ -84,6 +87,7 @@ class OAuthService {
           },
           data: {
             sub: idTokenData.sub,
+            picture,
           },
         });
       }
@@ -103,7 +107,7 @@ class OAuthService {
     const tokens = tokenService.generateTokens(fastify, userData);
     await tokenService.saveToken(fastify, user!.id, tokens.refreshToken);
 
-    return { ...tokens, user: userData };
+    return { ...tokens, user: userData, picture };
   }
 }
 
