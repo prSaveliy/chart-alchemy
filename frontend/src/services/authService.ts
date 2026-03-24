@@ -1,5 +1,7 @@
 import fetchClient from "@/lib/fetchClient";
 
+import defaultUserPicture from "@/assets/user.png";
+
 class AuthService {
   async register(email: string, password: string) {
     return await fetchClient.post(
@@ -19,8 +21,11 @@ class AuthService {
     return await fetchClient.post(
       'auth/login',
       { email, password },
-      (accessToken: string) => localStorage.setItem('accessToken', accessToken),
-      'accessToken',
+      (accessToken: string, picture: string | null) => {
+        localStorage.setItem('accessToken', accessToken);
+        localStorage.setItem('picture', picture ? picture : defaultUserPicture);
+      },
+      ['accessToken', 'picture'],
     );
   }
   
