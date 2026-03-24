@@ -1,8 +1,12 @@
 class FetchClient {
   async get(uri: string) {
     try {
+      const accessToken = localStorage.getItem('accessToken');
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/${uri}`, {
         method: "GET",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+        },
         credentials: "include",
       });
       
@@ -18,15 +22,19 @@ class FetchClient {
 
   async post(
     uri: string,
-    paramObj: Record<string, string | number>,
+    paramObj: Record<string, string | number> = {},
     fn?: (...params: any[]) => void,
     dataFieldForFn?: string
   ) {
     try {
+      const accessToken = localStorage.getItem('accessToken');
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/${uri}`, {
         method: "POST",
         credentials: "include",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${accessToken}`,
+        },
         body: JSON.stringify({
           ...paramObj,
         }),
@@ -42,7 +50,7 @@ class FetchClient {
         fn(data[dataFieldForFn!]);
       }
       
-      return {};
+      return { data };
     } catch {
       return { errorMessage: "Something went wrong" };
     }
