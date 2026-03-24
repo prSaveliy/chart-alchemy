@@ -46,6 +46,17 @@ class AuthService {
       { token, password },
     );
   }
+
+  async logout() {
+    localStorage.removeItem('accessToken');
+    localStorage.removeItem('picture');
+    
+    await fetchClient.post(
+      'auth/logout',
+    )
+
+    window.location.href = "/login";
+  }
 }
 
 export default new AuthService();
