@@ -24,7 +24,7 @@ class FetchClient {
     uri: string,
     paramObj: Record<string, string | number> = {},
     fn?: (...params: any[]) => void,
-    dataFieldForFn?: string
+    dataFieldsForFn?: string[]
   ) {
     try {
       const accessToken = localStorage.getItem('accessToken');
@@ -47,7 +47,12 @@ class FetchClient {
       }
 
       if (fn) {
-        fn(data[dataFieldForFn!]);
+        if (dataFieldsForFn) {
+          const params = dataFieldsForFn.map(field => data[field]);
+          fn(...params);
+        } else {
+          fn();
+        }
       }
       
       return { data };
