@@ -10,6 +10,8 @@ import { SignUpForm } from "./pages/auth/signup";
 import { ActivateAccount } from "./pages/auth/activate-account";
 import { ForgotPassword } from "./pages/auth/forgot-password";
 import { PasswordReset } from "./pages/auth/password-reset";
+import { NewChart } from "./pages/chart/new-chart";
+import { Chart } from "./pages/chart/chart";
 
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
@@ -21,6 +23,8 @@ const router = createBrowserRouter([
   { path: "/activate/:token", element: <ActivateAccount /> },
   { path: "/forgot-password", element: <ForgotPassword /> },
   { path: "/password-reset/:token", element: <PasswordReset /> },
+  { path: "/new-chart", element: <NewChart /> },
+  { path: "/chart/:token", element: <Chart /> },
   {
     path: "*",
     element: (
