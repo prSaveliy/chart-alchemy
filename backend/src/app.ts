@@ -8,9 +8,11 @@ import rateLimit from '@fastify/rate-limit';
 import cors from '@fastify/cors';
 import authPlugin from './plugins/auth.plugin.js';
 import dbPlugin from './plugins/db.plugin.js';
+import geminiPlugin from './plugins/gemini.plugin.js';
 
 import authRoutes from './routes/auth.routes.js';
 import oAuthRoutes from './routes/oauth.routes.js';
+import geminiRoutes from './routes/gemini.routes.js';
 
 import { envSchema } from './commons/schemas/env.schema.js';
 import { AppError } from './commons/types/error.js';
@@ -53,6 +55,7 @@ const buildApp = async () => {
   });
   app.register(dbPlugin);
   app.register(authPlugin);
+  app.register(geminiPlugin);
 
   // routes
   app.register(authRoutes, {
@@ -60,6 +63,9 @@ const buildApp = async () => {
   });
   app.register(oAuthRoutes, {
     prefix: 'oauth/google',
+  });
+  app.register(geminiRoutes, {
+    prefix: 'gemini',
   });
   
   // async jobs
