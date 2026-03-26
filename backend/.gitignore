@@ -5,3 +5,6 @@ dist
 
 postgresdata
 /src/generated/prisma
+
+geminiResponse.json
+metadata.txt
