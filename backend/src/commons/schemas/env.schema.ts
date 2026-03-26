@@ -12,6 +12,7 @@ export const envSchema = {
     'CLIENT_API_URL',
     'OAUTH_GOOGLE_CLIENT_ID',
     'OAUTH_GOOGLE_CLIENT_SECRET',
+    'GEMINI_API_KEY',
   ],
   properties: {
     PORT: {
@@ -46,7 +47,10 @@ export const envSchema = {
       type: 'string'
     },
     OAUTH_GOOGLE_CLIENT_SECRET: {
-      type: 'string'
+      type: 'string',
+    },
+    GEMINI_API_KEY: {
+      type: 'string',
     },
   },
 };
