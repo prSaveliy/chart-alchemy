@@ -3,12 +3,17 @@ import geminiService from '../services/gemini.service.js';
 
 import validateSchema from '../utils/validateSchema.js';
 
-import { promptSchema } from '../commons/schemas/prompt.schema.js';
+import { chartGenerationRequestSchema } from '../commons/schemas/chartGenerationRequest.schema.js';
 
 class GeminiController {
   async generate(request: FastifyRequest, reply: FastifyReply) {
-    const { prompt } = validateSchema(request, promptSchema, 'Invalid request body');
-    return await geminiService.generate(request.server, prompt);
+    const { prompt, name, token } = validateSchema(
+      request,
+      chartGenerationRequestSchema,
+      'Invalid request body',
+    );
+    const userId = request.user.id;
+    return await geminiService.generate(request.server, prompt, name, token, userId);
   }
 }
 
