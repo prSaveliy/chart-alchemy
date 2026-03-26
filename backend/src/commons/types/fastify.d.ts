@@ -1,9 +1,12 @@
 import 'fastify';
+import '@fastify/jwt';
 
 import { FastifyRequest, FastifyReply } from 'fastify';
 
 import { PrismaClient } from '../../generated/prisma/client.ts';
 import { GoogleGenAI } from '@google/genai';
+
+import { UserDTO } from './user.js';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -20,5 +23,12 @@ declare module 'fastify' {
     prisma: PrismaClient;
     auth: (request: FastifyRequest, reply: FastifyReply) => void;
     gemini: GoogleGenAI;
+  }
+}
+
+declare module '@fastify/jwt' {
+  interface FastifyJWT {
+    payload: UserDTO;
+    user: UserDTO;
   }
 }
