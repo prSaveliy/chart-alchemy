@@ -2,6 +2,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 
 import crypto from 'node:crypto';
 
+import NodeCache from 'node-cache';
 import { z } from 'zod';
 
 import validateSchema from '../utils/validateSchema.js';
@@ -9,12 +10,14 @@ import validateSchema from '../utils/validateSchema.js';
 const hash = (prompt: string) =>
   crypto.createHash('sha256').update(prompt).digest('hex');
 
-const promptSchema = z.object({
-  prompt: z.string(),
-}).strict();
+const promptSchema = z
+  .object({
+    prompt: z.string(),
+  })
+  .strict();
 
-const memoizePrompt = () => {
-  const cache = new Map();
+const memoizePrompt = (ttlSeconds = 3600) => {
+  const cache = new NodeCache({ stdTTL: ttlSeconds, checkperiod: 120 });
 
   return {
     preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
@@ -37,7 +40,7 @@ const memoizePrompt = () => {
       if (key && reply.statusCode === 200) {
         cache.set(key, JSON.parse(payload));
       }
-      
+
       return payload;
     },
   };
