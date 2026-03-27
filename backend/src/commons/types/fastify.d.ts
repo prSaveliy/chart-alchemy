@@ -19,6 +19,9 @@ declare module 'fastify' {
       OAUTH_GOOGLE_CLIENT_ID: string;
       OAUTH_GOOGLE_CLIENT_SECRET: string;
       GEMINI_API_KEY: string;
+      GOOGLE_CLOUD_PROJECT: string;
+      GOOGLE_CLOUD_LOCATION: string;
+      GOOGLE_GENAI_USE_VERTEXAI: string;
     };
     prisma: PrismaClient;
     auth: (request: FastifyRequest, reply: FastifyReply) => void;

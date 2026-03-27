@@ -44,12 +44,21 @@ export const envSchema = {
       type: 'string',
     },
     OAUTH_GOOGLE_CLIENT_ID: {
-      type: 'string'
+      type: 'string',
     },
     OAUTH_GOOGLE_CLIENT_SECRET: {
       type: 'string',
     },
     GEMINI_API_KEY: {
+      type: 'string',
+    },
+    GOOGLE_CLOUD_PROJECT: {
+      type: 'string',
+    },
+    GOOGLE_CLOUD_LOCATION: {
+      type: 'string',
+    },
+    GOOGLE_GENAI_USE_VERTEXAI: {
       type: 'string',
     },
   },
