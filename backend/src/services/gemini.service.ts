@@ -12,6 +12,8 @@ class GeminiService {
     token: string,
     userId: number,
   ) {
+    await chartService.verifyToken(fastify, token, userId);
+
     const fullPrompt = `
       You are an API to generate charts using Apache Echarts.
 
@@ -41,7 +43,7 @@ class GeminiService {
       'utf8',
     );
 
-    await chartService.save(fastify, chartData, name, token, userId);
+    await chartService.save(fastify, chartData, name, token);
 
     return { chartData };
   }
