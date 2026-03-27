@@ -13,6 +13,7 @@ import geminiPlugin from './plugins/gemini.plugin.js';
 import authRoutes from './routes/auth.routes.js';
 import oAuthRoutes from './routes/oauth.routes.js';
 import geminiRoutes from './routes/gemini.routes.js';
+import chartRoutes from './routes/chart.routes.js';
 
 import { envSchema } from './commons/schemas/env.schema.js';
 import { AppError } from './commons/types/error.js';
@@ -66,6 +67,9 @@ const buildApp = async () => {
   });
   app.register(geminiRoutes, {
     prefix: 'gemini',
+  });
+  app.register(chartRoutes, {
+    prefix: 'chart',
   });
   
   // async jobs
