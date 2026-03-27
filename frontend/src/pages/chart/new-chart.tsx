@@ -95,7 +95,7 @@ export const NewChart = () => {
       {networkError && (
         <Error
           error="Something went wrong"
-          secondaryMessage="An error occurred while trying to activate your account."
+          secondaryMessage="An error occurred while trying to navigate to the page."
         />
       )}
       {serverError && (
