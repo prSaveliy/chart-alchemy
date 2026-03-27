@@ -4,6 +4,10 @@ import chartController from "../controllers/chart.controller.js";
 
 import rateLimitByIp from "../hooks/rateLimitByIp.js";
 
+import memoizePrompt from "../hooks/memoizePrompt.js";
+
+const promptHooks = memoizePrompt();
+
 const chartRoutes = (fastify: FastifyInstance) => {
   fastify.post("/init", {
     // onRequest: rateLimitByIp(5, 60 * 1000),
@@ -23,7 +27,9 @@ const chartRoutes = (fastify: FastifyInstance) => {
     // onRequest: rateLimitByIp(5, 60 * 1000),
     preHandler: [
       fastify.auth,
+      promptHooks.preHandler,
     ],
+    onSend: promptHooks.onSend,
   }, chartController.generate);
 };
 

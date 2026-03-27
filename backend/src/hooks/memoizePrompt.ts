@@ -7,14 +7,10 @@ import { z } from 'zod';
 
 import validateSchema from '../utils/validateSchema.js';
 
+import { chartGenerationRequestSchema } from '../commons/schemas/chartGenerationRequest.schema.js';
+
 const hash = (prompt: string) =>
   crypto.createHash('sha256').update(prompt).digest('hex');
-
-const promptSchema = z
-  .object({
-    prompt: z.string(),
-  })
-  .strict();
 
 const memoizePrompt = (ttlSeconds = 3600) => {
   const cache = new NodeCache({ stdTTL: ttlSeconds, checkperiod: 120 });
@@ -23,7 +19,7 @@ const memoizePrompt = (ttlSeconds = 3600) => {
     preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
       const { prompt } = validateSchema(
         request,
-        promptSchema,
+        chartGenerationRequestSchema,
         'Invalid request body',
       );
       const key = hash(prompt);
