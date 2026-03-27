@@ -1,49 +1,79 @@
-import React from 'react'
+import { useState, useEffect } from "react";
 
+import googleAuthService from "@/services/googleAuthService";
+
+import { Error } from "../error";
 import { Loading } from "../loading";
 
 export const GoogleLogin = () => {
-  const authorize = async () => {
-    const queryParams = new URLSearchParams(window.location.search)
-    const code = queryParams.get('code');
-    const state = queryParams.get('state');
+  const [badRequestError, setBadRequestError] = useState(false);
+  const [forbiddenError, setForbiddenError] = useState(false);
+  const [networkError, setNetworkError] = useState(false);
+  const [serverError, setServerError] = useState(false);
+  const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
+
+  const login = async () => {
+    const queryParams = new URLSearchParams(window.location.search);
+    const code = queryParams.get("code");
+    const state = queryParams.get("state");
+
     if (code) {
-      try {
-        const response = await fetch('http://localhost:3000/oauth/google/handle-code', {
-          method: "POST",
-          credentials: 'include',
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            code,
-            state,
-          }),
-        });
+      const fetchResult = await googleAuthService.login(code, state!);
 
-        const data = await response.json();
+      const errors: Record<number, () => void> = {
+        400: () => setBadRequestError(true),
+        403: () => setForbiddenError(true),
+        500: () => setServerError(true),
+        429: () => setTooManyRequestsError(true),
+      };
 
-        if (!response.ok) {
-          console.log(response.status);
-          return;
+      if (fetchResult.statusCode) {
+        if (fetchResult.statusCode in errors) {
+          errors[fetchResult.statusCode]();
+        } else {
+          setNetworkError(true);
         }
-
-        localStorage.setItem('picture', data.picture);
-        localStorage.setItem('accessToken', data.accessToken);
-
-        // change to dashboard later
+      } else if (fetchResult.errorMessage) {
+        setNetworkError(true);
+      } else {
         window.location.href = `${import.meta.env.VITE_API_URL}/new-chart`;
-      } catch (err) {
-        console.log(err);
       }
-      
-
     }
-  }
-  
-  React.useEffect(() => { authorize() }, []);
-  
+  };
+
+  useEffect(() => { login(); }, []);
+
   return (
-    <Loading message="Logging in"/>
-  )
-}
+    <div>
+      {networkError || badRequestError && (
+        <Error
+          error="Something went wrong"
+          secondaryMessage="An error occurred while trying to activate your account."
+        />
+      )}
+      {serverError && (
+        <Error
+          error="Server Error"
+          secondaryMessage="Something happend on our side. We are already working on it."
+        />
+      )}
+      {tooManyRequestsError && (
+        <Error
+          error="Too Many Requests"
+          secondaryMessage="You have made too many requests in a short period of time. Please try again later."
+        />
+      )}
+      {forbiddenError && (
+        <Error
+          error="Forbidden"
+          secondaryMessage="You do not have access to this resource."
+        />
+      )}
+      {!networkError &&
+        !forbiddenError &&
+        !badRequestError &&
+        !serverError &&
+        !tooManyRequestsError && <Loading message="Logging in" />}
+    </div>
+  );
+};
