@@ -1,14 +1,18 @@
 import fastifyPlugin from 'fastify-plugin';
-import {
-  FastifyInstance,
-  FastifyPluginAsync,
-} from 'fastify';
-import { GoogleGenAI } from "@google/genai";
+import { FastifyInstance, FastifyPluginAsync } from 'fastify';
+
+import { GoogleGenAI } from '@google/genai';
 
 const geminiPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  const ai = new GoogleGenAI({ apiKey: fastify.config.GEMINI_API_KEY });
+  const useVertex = fastify.config.GOOGLE_GENAI_USE_VERTEXAI === 'true';
 
-  fastify.decorate('gemini', ai);
+  const client = new GoogleGenAI({
+    vertexai: useVertex,
+    project: fastify.config.GOOGLE_CLOUD_PROJECT,
+    location: fastify.config.GOOGLE_CLOUD_LOCATION,
+  });
+
+  fastify.decorate('gemini', client);
 };
 
 export default fastifyPlugin(geminiPlugin);
