@@ -2,18 +2,11 @@ import { FastifyInstance } from 'fastify';
 
 import { writeFile } from 'node:fs/promises';
 
-import chartService from './chart.service.js';
-
 class GeminiService {
   async generate(
     fastify: FastifyInstance,
     prompt: string,
-    name: string,
-    token: string,
-    userId: number,
   ) {
-    await chartService.verifyToken(fastify, token, userId);
-
     const fullPrompt = `
       You are an API to generate charts using Apache Echarts.
 
@@ -43,9 +36,7 @@ class GeminiService {
       'utf8',
     );
 
-    await chartService.save(fastify, chartData, name, token);
-
-    return { chartData };
+    return chartData;
   }
 }
 

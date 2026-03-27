@@ -10,7 +10,7 @@ class ChartService {
   }
 
   async generate(prompt: string, name: string, token: string) {
-    return await fetchClient.post("gemini/generate", { prompt, name, token });
+    return await fetchClient.post("chart/generate", { prompt, name, token });
   }
 }
 
