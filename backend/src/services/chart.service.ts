@@ -1,5 +1,7 @@
 import { FastifyInstance } from 'fastify';
 
+import geminiService from './gemini.service.js';
+
 import { v4 } from 'uuid';
 
 class ChartService {
@@ -35,6 +37,22 @@ class ChartService {
         "You don't have permissions to access this chart",
       );
     }
+  }
+
+  async generate(
+    fastify: FastifyInstance,
+    prompt: string,
+    name: string,
+    token: string,
+    userId: number,
+  ) {
+    await this.verifyToken(fastify, token, userId);
+
+    const chartData = await geminiService.generate(fastify, prompt);
+
+    await this.save(fastify, chartData, name, token);
+
+    return { chartData };
   }
 
   async save(

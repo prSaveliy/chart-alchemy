@@ -6,6 +6,7 @@ import validateSchema from '../utils/validateSchema.js';
 
 import { chartInitRequestSchema } from '../commons/schemas/chartInitRequest.schema.js';
 import { accountActivationSchema as chartTokenSchema } from '../commons/schemas/accountActivation.schema.js';
+import { chartGenerationRequestSchema } from '../commons/schemas/chartGenerationRequest.schema.js';
 
 class ChartController {
   async init(request: FastifyRequest, reply: FastifyReply) {
@@ -26,6 +27,22 @@ class ChartController {
     );
     const userId = request.user.id;
     return await chartService.verifyToken(request.server, token, userId);
+  }
+
+  async generate(request: FastifyRequest, reply: FastifyReply) {
+    const { prompt, name, token } = validateSchema(
+      request,
+      chartGenerationRequestSchema,
+      'Invalid request body',
+    );
+    const userId = request.user.id;
+    return await chartService.generate(
+      request.server,
+      prompt,
+      name,
+      token,
+      userId,
+    );
   }
 }
 

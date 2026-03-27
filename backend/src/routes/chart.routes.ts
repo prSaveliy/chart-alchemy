@@ -11,12 +11,20 @@ const chartRoutes = (fastify: FastifyInstance) => {
       fastify.auth,
     ],
   }, chartController.init);
+
   fastify.post("/verify-token", {
     // onRequest: rateLimitByIp(30, 60 * 1000),
     preHandler: [
       fastify.auth,
     ],
   }, chartController.verifyToken);
+
+  fastify.post("/generate", {
+    // onRequest: rateLimitByIp(5, 60 * 1000),
+    preHandler: [
+      fastify.auth,
+    ],
+  }, chartController.generate);
 };
 
 export default chartRoutes;
