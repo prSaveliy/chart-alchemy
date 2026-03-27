@@ -21,6 +21,7 @@ import authService from "@/services/authService";
 import type { FetchResultErrorCode } from "@/commons/interfaces/authInterfaces";
 
 import { validateJWT } from "@/lib/validateJWTToken";
+import { unauthorizedInterceptor } from "@/lib/interceptors";
 
 export const LoginForm = ({
   className,
@@ -32,7 +33,7 @@ export const LoginForm = ({
   const [fetchError, setFetchError] = useState("");
   const [loginRequired, setLoginRequired] = useState(false);
 
-  const checkAuth = () => {
+  const checkAuth = async () => {
     const accessToken = localStorage.getItem("accessToken");
     const authorized = validateJWT(accessToken);
 
@@ -40,11 +41,16 @@ export const LoginForm = ({
       // change to dashboard later
       window.location.href = `${import.meta.env.VITE_API_URL}/new-chart`;
     } else {
-      setLoginRequired(true);
+      const result = await unauthorizedInterceptor();
+      if (result && !result.networkError && !result.statusCode) {
+        window.location.href = `${import.meta.env.VITE_API_URL}/new-chart`;
+      } else {
+        setLoginRequired(true);
+      }
     }
   };
 
-  useEffect(checkAuth, []);
+  useEffect(() => { checkAuth() }, []);
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);

@@ -7,7 +7,11 @@ export const unauthorizedInterceptor = async () => {
     
     if (!response.ok) {
       if (response.status === 401) {
-        window.location.href = "/login";
+        if (window.location.pathname !== "/login") {
+          window.location.href = "/login";
+        } else {
+          return { statusCode: 401 };
+        }
       } else {
         return { statusCode: response.status };
       }
