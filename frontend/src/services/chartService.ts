@@ -12,6 +12,10 @@ class ChartService {
   async generate(prompt: string, name: string, token: string) {
     return await fetchClient.post("chart/generate", { prompt, name, token });
   }
+
+  async getByToken(token: string) {
+    return await fetchClient.get(`chart/${token}`);
+  }
 }
 
 export default new ChartService();

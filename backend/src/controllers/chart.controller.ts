@@ -8,6 +8,8 @@ import { chartInitRequestSchema } from '../commons/schemas/chartInitRequest.sche
 import { accountActivationSchema as chartTokenSchema } from '../commons/schemas/accountActivation.schema.js';
 import { chartGenerationRequestSchema } from '../commons/schemas/chartGenerationRequest.schema.js';
 
+import { VerifyTokenRoute as GetChartByTokenRoute } from '../commons/types/routes.js';
+
 class ChartController {
   async init(request: FastifyRequest, reply: FastifyReply) {
     const { chartType } = validateSchema(
@@ -43,6 +45,13 @@ class ChartController {
       token,
       userId,
     );
+  }
+
+  async getByToken(request: FastifyRequest<GetChartByTokenRoute>, reply: FastifyReply) {
+    const { token } = request.params;
+    const userId = request.user.id;
+
+    return await chartService.getByToken(request.server, token, userId);
   }
 }
 
