@@ -71,6 +71,18 @@ class ChartService {
       },
     });
   }
+
+  async getByToken(fastify: FastifyInstance, token: string, userId: number) {
+    await this.verifyToken(fastify, token, userId);
+
+    const chart = await fastify.prisma.chart.findUnique({
+      where: {
+        token,
+      },
+    });
+
+    return { chartData: chart?.config };
+  }
 }
 
 export default new ChartService();

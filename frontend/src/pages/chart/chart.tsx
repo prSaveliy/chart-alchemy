@@ -18,10 +18,11 @@ export const Chart = () => {
   const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
 
   const [verified, setVerified] = useState(false);
+  const [chartData, setChartData] = useState({});
 
   useEffect(() => {
     const verify = async () => {
-      const fetchResult = await chartService.verifyToken(token!);
+      const fetchResult = await chartService.getByToken(token!);
 
       if (fetchResult.errorMessage) {
         if (!retried.current && fetchResult.statusCode === 401) {
@@ -47,6 +48,7 @@ export const Chart = () => {
         return;
       }
 
+      setChartData(fetchResult.data.chartData);
       setVerified(true);
     };
 
@@ -99,6 +101,6 @@ export const Chart = () => {
   }
 
   if (verified) {
-    return <AIChart />;
+    return <AIChart initialData={chartData} />;
   }
 };

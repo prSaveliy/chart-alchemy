@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useParams } from "react-router-dom";
 
 import defaultUserPicture from "@/assets/user.png";
 
@@ -10,12 +11,12 @@ import ReactECharts from "echarts-for-react";
 import chartService from "@/services/chartService";
 import { unauthorizedInterceptor } from "@/lib/interceptors";
 
-export const AIChart = () => {
+export const AIChart = ({ initialData }: { initialData: any }) => {
+  const { token } = useParams();
   const [prompt, setPrompt] = useState("");
   const [awaiting, setAwaiting] = useState(false);
   const [fetchError, setFetchError] = useState("");
-  const [chartData, setChartData] = useState<any>({});
-  const [success, setSuccess] = useState(false);
+  const [chartData, setChartData] = useState<any>(initialData || {});
   const retried = useRef(false);
 
   const userPicture = localStorage.getItem("picture");
@@ -23,7 +24,7 @@ export const AIChart = () => {
   const generate = async () => {
     setAwaiting(true);
 
-    const fetchResult = await chartService.generate(prompt);
+    const fetchResult = await chartService.generate(prompt, "test", token!);
 
     if (fetchResult.errorMessage) {
       if (!retried.current && fetchResult.statusCode === 401) {
@@ -38,8 +39,6 @@ export const AIChart = () => {
       if (fetchResult.data.chartData) {
         setFetchError("");
         setChartData(fetchResult.data.chartData);
-        console.log(fetchResult.data.chartData);
-        setSuccess(true);
       }
     }
 
@@ -52,13 +51,14 @@ export const AIChart = () => {
       <div className="flex flex-1">
         <div className="flex flex-col flex-1 items-center mt-6">
           <div className="flex w-380 h-162 border shadow-sm rounded-3xl justify-center items-center">
-            {success && (
+            {chartData?.option && (
               <div className="flex">
                 {/* @ts-expect-error - echarts-for-react typings are incompatible with React 19 */}
                 <ReactECharts
                   option={chartData.option}
                   style={{ height: "600px", width: "900px" }}
                   notMerge={true}
+                  lazyUpdate={true}
                 />
               </div>
             )}
