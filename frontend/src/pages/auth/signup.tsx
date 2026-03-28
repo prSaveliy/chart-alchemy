@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
 import white from "@/assets/Solid_white.png";
+import mountains from "@/assets/laura-lezman-Ml3Ah9JE70U-unsplash.jpg";
 import { Logo } from "@/components/layout/logo";
 
 import { CircleX, CircleCheck, Eye, EyeClosed, MailCheck } from 'lucide-react';
@@ -269,7 +270,7 @@ export const SignUpForm = ({
         <div className="hidden lg:flex lg:w-1/2 bg-white items-center justify-center p-3">
           <div className="w-full h-full rounded-2xl flex items-center justify-center">
             <img
-              src={white}
+              src={mountains}
               alt="Login visual"
               className="w-full h-full object-cover rounded-2xl"
             />

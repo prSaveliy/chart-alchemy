@@ -259,7 +259,7 @@ class AuthService {
       },
     });
     
-    if ((!user && !pendingUser) || (!pendingUser && !user?.password)) {
+    if (!user && !pendingUser) {
       return;
     }
     
