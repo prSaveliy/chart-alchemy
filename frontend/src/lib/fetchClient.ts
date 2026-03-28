@@ -10,11 +10,13 @@ class FetchClient {
         credentials: "include",
       });
       
+      const data = await response.json().catch(() => null);
+
       if (!response.ok) {
-        return { statusCode: response.status };
+        return { errorMessage: data?.message || "Error", statusCode: response.status };
       }
       
-      return {};
+      return { data };
     } catch {
       return { errorMessage: 'Something went wrong' };
     }
