@@ -32,7 +32,7 @@ const buildApp = async () => {
     reply.status(error.statusCode || 500).send({
       message: error.statusCode && error.statusCode < 500
         ? error.message
-        : error.message,
+        : 'Internal server error',
       details: error.details ?? '',
     });
   });
