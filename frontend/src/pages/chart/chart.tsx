@@ -21,14 +21,14 @@ export const Chart = () => {
   const [chartData, setChartData] = useState({});
 
   useEffect(() => {
-    const verify = async () => {
+    const getChart = async () => {
       const fetchResult = await chartService.getByToken(token!);
 
       if (fetchResult.errorMessage) {
         if (!retried.current && fetchResult.statusCode === 401) {
           await unauthorizedInterceptor();
           retried.current = true;
-          await verify();
+          await getChart();
           return;
         }
 
@@ -52,7 +52,7 @@ export const Chart = () => {
       setVerified(true);
     };
 
-    verify();
+    getChart();
   }, [token]);
 
   if (networkError) {
