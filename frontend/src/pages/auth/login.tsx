@@ -12,6 +12,7 @@ import white from "@/assets/Solid_white.png";
 import { Logo } from "@/components/layout/logo";
 
 import { Eye, EyeClosed } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import { useState, useEffect } from "react";
 import type { ChangeEvent } from "react";
@@ -32,6 +33,7 @@ export const LoginForm = ({
   const [passwordShown, setPasswordShown] = useState(false);
   const [fetchError, setFetchError] = useState("");
   const [loginRequired, setLoginRequired] = useState(false);
+  const navigate = useNavigate();
 
   const checkAuth = async () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -39,18 +41,20 @@ export const LoginForm = ({
 
     if (authorized) {
       // change to dashboard later
-      window.location.href = `${import.meta.env.VITE_API_URL}/new-chart`;
+      navigate("/new-chart");
     } else {
       const result = await unauthorizedInterceptor();
       if (result && !result.networkError && !result.statusCode) {
-        window.location.href = `${import.meta.env.VITE_API_URL}/new-chart`;
+        navigate("/new-chart");
       } else {
         setLoginRequired(true);
       }
     }
   };
 
-  useEffect(() => { checkAuth() }, []);
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
     setEmail(event.target.value);
@@ -72,8 +76,7 @@ export const LoginForm = ({
       setFetchError("");
 
       // change to dashboard later
-      window.location.href =
-        window.location.href = `${import.meta.env.VITE_API_URL}/new-chart`;
+      navigate("/new-chart");
     }
   };
 

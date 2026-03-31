@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import authService from "@/services/authService";
 
@@ -15,6 +15,7 @@ export const ActivateAccount = () => {
   const [serverError, setServerError] = useState(false);
   const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
   const { token } = useParams();
+  const navigate = useNavigate();
 
   const activate = async () => {
     const fetchResult: FetchResultErrorCode = await authService.activate(token!);
@@ -34,7 +35,7 @@ export const ActivateAccount = () => {
     } else if (fetchResult.errorMessage) {
       setNetworkError(true);
     } else {
-      window.location.href = `${import.meta.env.VITE_API_URL}/login`;
+      navigate('/login');
     }
   }
   

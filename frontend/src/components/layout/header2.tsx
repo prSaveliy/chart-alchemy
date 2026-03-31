@@ -11,12 +11,16 @@ import { Logo } from "@/components/layout/logo";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 
 import { ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 import authService from "@/services/authService";
 
 export const Header2 = (props: { userPicture: string | null }) => {
+  const navigate = useNavigate();
+
   const logout = async () => {
     await authService.logout();
+    navigate('/login');
   };
 
   return (
@@ -44,9 +48,7 @@ export const Header2 = (props: { userPicture: string | null }) => {
                   My Account
                 </DropdownMenuLabel>
                 <DropdownMenuItem
-                  onClick={() =>
-                    (window.location.href = `${import.meta.env.VITE_API_URL}/new-chart`)
-                  }
+                  onClick={() => navigate('/new-chart')}
                   className="cursor-pointer"
                 >
                   New Chart

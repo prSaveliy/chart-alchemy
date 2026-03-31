@@ -1,8 +1,10 @@
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/layout/logo";
 import { ArrowLeft } from "lucide-react";
+import { useNavigate } from "react-router-dom";
 
 export const Error = (props: { error: string; secondaryMessage: string }) => {
+  const navigate = useNavigate();
   return (
     <div className="relative w-full h-screen flex flex-col">
       <div className="absolute top-10 left-10 z-10">
@@ -22,9 +24,7 @@ export const Error = (props: { error: string; secondaryMessage: string }) => {
           <div className="mt-6 flex items-center justify-center gap-4 md:mt-8">
             <Button
               className="cursor-pointer"
-              onClick={() =>
-                (window.location.href = import.meta.env.VITE_API_URL)
-              }
+              onClick={() => navigate('/')}
             >
               <ArrowLeft className="size-4"></ArrowLeft>
               <span>Back Home</span>

@@ -10,7 +10,7 @@ import { Logo } from "@/components/layout/logo";
 import { CircleX, CircleCheck, Eye, EyeClosed } from "lucide-react";
 
 import { useState, useEffect, type ChangeEvent } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 
 import type { FetchResultErrorCode } from '@/commons/interfaces/authInterfaces';
 
@@ -37,6 +37,7 @@ export const PasswordReset = () => {
   const [fetchError, setFetchError] = useState("");
   const [awaiting, setAwaititng] = useState(false);
   const { token } = useParams();
+  const navigate = useNavigate();
   
   const verifyToken = async () => {
     const fetchResult: FetchResultErrorCode = await authService.verifyPasswordResetToken(token!);
@@ -113,7 +114,7 @@ export const PasswordReset = () => {
       setFetchError(fetchResult.errorMessage);
     } else {
       setFetchError("");
-      window.location.href = `${import.meta.env.VITE_API_URL}/login`;
+      navigate('/login');
     }
     
     setAwaititng(false);

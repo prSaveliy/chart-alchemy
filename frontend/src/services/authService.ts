@@ -54,8 +54,6 @@ class AuthService {
     await fetchClient.post(
       'auth/logout',
     )
-
-    window.location.href = "/login";
   }
 }
 

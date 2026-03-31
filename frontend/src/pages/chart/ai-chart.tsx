@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 
 import defaultUserPicture from "@/assets/user.png";
 
@@ -13,6 +13,7 @@ import { unauthorizedInterceptor } from "@/lib/interceptors";
 
 export const AIChart = ({ initialData }: { initialData: any }) => {
   const { token } = useParams();
+  const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [awaiting, setAwaiting] = useState(false);
   const [fetchError, setFetchError] = useState("");
@@ -28,7 +29,11 @@ export const AIChart = ({ initialData }: { initialData: any }) => {
 
     if (fetchResult.errorMessage) {
       if (!retried.current && fetchResult.statusCode === 401) {
-        await unauthorizedInterceptor();
+        const interceptorResult = await unauthorizedInterceptor();
+        if (interceptorResult && interceptorResult.statusCode === 401) {
+          navigate('/login');
+          return;
+        }
         retried.current = true;
         await generate();
         return;
