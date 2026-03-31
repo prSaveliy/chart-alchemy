@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 
 import googleAuthService from "@/services/googleAuthService";
 
@@ -11,6 +12,7 @@ export const GoogleLogin = () => {
   const [networkError, setNetworkError] = useState(false);
   const [serverError, setServerError] = useState(false);
   const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
+  const navigate = useNavigate();
 
   const login = async () => {
     const queryParams = new URLSearchParams(window.location.search);
@@ -36,7 +38,7 @@ export const GoogleLogin = () => {
       } else if (fetchResult.errorMessage) {
         setNetworkError(true);
       } else {
-        window.location.href = `${import.meta.env.VITE_API_URL}/new-chart`;
+        navigate('/new-chart');
       }
     }
   };

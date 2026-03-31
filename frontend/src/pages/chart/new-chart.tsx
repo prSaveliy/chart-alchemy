@@ -27,7 +27,11 @@ export const NewChart = () => {
 
     if (fetchResult.errorMessage) {
       if (!retried.current && fetchResult.statusCode === 401) {
-        await unauthorizedInterceptor();
+        const interceptorResult = await unauthorizedInterceptor();
+        if (interceptorResult && interceptorResult.statusCode === 401) {
+          navigate('/login');
+          return;
+        }
         retried.current = true;
         await redirect(chartType);
         return;

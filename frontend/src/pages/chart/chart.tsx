@@ -1,6 +1,6 @@
 import { AIChart } from "./ai-chart";
 
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 import { Error } from "../error";
 
@@ -9,6 +9,7 @@ import { unauthorizedInterceptor } from "@/lib/interceptors";
 
 export const Chart = () => {
   const { token } = useParams();
+  const navigate = useNavigate();
   const retried = useRef(false);
 
   const [notFoundError, setNotFoundError] = useState(false);
@@ -26,7 +27,11 @@ export const Chart = () => {
 
       if (fetchResult.errorMessage) {
         if (!retried.current && fetchResult.statusCode === 401) {
-          await unauthorizedInterceptor();
+          const interceptorResult = await unauthorizedInterceptor();
+          if (interceptorResult && interceptorResult.statusCode === 401) {
+            navigate('/login');
+            return;
+          }
           retried.current = true;
           await getChart();
           return;

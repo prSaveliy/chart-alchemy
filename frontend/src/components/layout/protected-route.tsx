@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Error } from "@/pages/error";
 import { validateJWT } from "@/lib/validateJWTToken";
 import { unauthorizedInterceptor } from "@/lib/interceptors";
@@ -8,6 +9,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
   const [networkError, setNetworkError] = useState(false);
   const [serverError, setServerError] = useState(false);
   const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
+  const navigate = useNavigate();
 
   const authorize = async () => {
     const accessToken = localStorage.getItem("accessToken");
@@ -23,6 +25,10 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
 
       if (response) {
         if (response.statusCode) {
+          if (response.statusCode === 401) {
+            navigate('/login');
+            return;
+          }
           if (response.statusCode in errors) {
             errors[response.statusCode]();
           }
