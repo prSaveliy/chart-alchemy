@@ -1,23 +1,23 @@
 import { FastifyInstance } from 'fastify';
 
-import { writeFile } from 'node:fs/promises';
+import { writeFile, readFile } from 'node:fs/promises';
+import { fileURLToPath } from 'node:url';
+import { join, dirname } from 'node:path';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+const PROMPT_TEMPLATE = await readFile(
+  join(__dirname, '../prompts/chart-generation.prompt.txt'),
+  'utf8',
+);
 
 class GeminiService {
   async generate(
     fastify: FastifyInstance,
     prompt: string,
   ) {
-    const fullPrompt = `
-      You are an API to generate charts using Apache Echarts.
-
-      Rules: 
-      Don't send anything except chart configurations.
-      You should return an object containing properties needed for ReactECharts component:
-      Always required: option property
-
-      User's prompt:
-      ${prompt}
-    `;
+    const fullPrompt = PROMPT_TEMPLATE.replace('{{USER_PROMPT}}', prompt);
 
     const response = await fastify.gemini.models.generateContent({
       model: 'gemini-3-flash-preview',
@@ -25,7 +25,8 @@ class GeminiService {
     });
     const usage = response.usageMetadata;
 
-    const cleaned = response.text.replace(/```json|```/g, '').trim();
+    const raw = response.text ?? '';
+    const cleaned = raw.replace(/```json|```/g, '').trim();
     const chartData = JSON.parse(cleaned);
 
     const cwd = process.cwd();
