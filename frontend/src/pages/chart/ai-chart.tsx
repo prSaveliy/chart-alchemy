@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
 import defaultUserPicture from "@/assets/user.png";
@@ -11,6 +11,26 @@ import ReactECharts from "echarts-for-react";
 import chartService from "@/services/chartService";
 import { unauthorizedInterceptor } from "@/lib/interceptors";
 
+const DEFAULT_TOOLBOX = {
+  show: true,
+  right: 20,
+  top: 8,
+  feature: {
+    dataZoom: {
+      title: { zoom: "Zoom", back: "Reset zoom" },
+      yAxisIndex: "none",
+    },
+    restore: {
+      title: "Restore",
+    },
+    saveAsImage: {
+      title: "Save as image",
+      type: "png",
+      pixelRatio: 2,
+    },
+  },
+};
+
 export const AIChart = ({ initialData }: { initialData: any }) => {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -19,6 +39,14 @@ export const AIChart = ({ initialData }: { initialData: any }) => {
   const [fetchError, setFetchError] = useState("");
   const [chartData, setChartData] = useState<any>(initialData || {});
   const retried = useRef(false);
+
+  const mergedOption = useMemo(
+    () =>
+      chartData?.option
+        ? { ...chartData.option, toolbox: DEFAULT_TOOLBOX }
+        : null,
+    [chartData],
+  );
 
   const userPicture = localStorage.getItem("picture");
 
@@ -31,7 +59,7 @@ export const AIChart = ({ initialData }: { initialData: any }) => {
       if (!retried.current && fetchResult.statusCode === 401) {
         const interceptorResult = await unauthorizedInterceptor();
         if (interceptorResult && interceptorResult.statusCode === 401) {
-          navigate('/login');
+          navigate("/login");
           return;
         }
         retried.current = true;
@@ -56,12 +84,12 @@ export const AIChart = ({ initialData }: { initialData: any }) => {
       <div className="flex flex-1">
         <div className="flex flex-col flex-1 items-center mt-6">
           <div className="flex w-380 h-162 border shadow-sm rounded-3xl justify-center items-center">
-            {chartData?.option && (
+            {mergedOption && (
               <div className="flex">
                 {/* @ts-expect-error - echarts-for-react typings are incompatible with React 19 */}
                 <ReactECharts
-                  option={chartData.option}
-                  style={{ height: "600px", width: "900px" }}
+                  option={mergedOption}
+                  style={{ height: "600px", width: "1000px" }}
                   notMerge={true}
                   lazyUpdate={true}
                 />
