@@ -108,8 +108,3 @@ IMPORTANT QUALITY RULES
 • For time-series data prefer line charts; for comparisons prefer bar; for distributions prefer scatter or box; for proportions prefer pie/doughnut.
 • Keep series names short and descriptive.
 • Prefer readable number formats (abbreviate large numbers with "k", "M" etc. in axis labels via "formatter").
-
-════════════════════════════════════════════
-USER PROMPT
-════════════════════════════════════════════
-{{USER_PROMPT}}

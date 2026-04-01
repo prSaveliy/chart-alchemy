@@ -32,18 +32,21 @@ class ChartController {
   }
 
   async generate(request: FastifyRequest, reply: FastifyReply) {
-    const { prompt, name, token } = validateSchema(
+    const { prompt, name, token, memory, thinkingMode } = validateSchema(
       request,
       chartGenerationRequestSchema,
       'Invalid request body',
     );
     const userId = request.user.id;
+    const useThinkingMode = thinkingMode === 'true';
     return await chartService.generate(
       request.server,
       prompt,
       name,
       token,
       userId,
+      memory,
+      useThinkingMode,
     );
   }
 
