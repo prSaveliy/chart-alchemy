@@ -1,6 +1,8 @@
 import { FastifyInstance } from 'fastify';
+import { Prisma } from '../generated/prisma/client.js';
 
 import geminiService from './gemini.service.js';
+import { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
 
 import { v4 } from 'uuid';
 
@@ -45,7 +47,7 @@ class ChartService {
     name: string,
     token: string,
     userId: number,
-    memory: any | null,
+    memory: ChartConfig | null,
     thinkingMode: boolean,
   ) {
     await this.verifyToken(fastify, token, userId);
@@ -59,7 +61,7 @@ class ChartService {
 
   async save(
     fastify: FastifyInstance,
-    chartData: any, // TODO: create chartData type
+    chartData: ChartConfig,
     name: string,
     token: string,
   ) {
@@ -69,7 +71,7 @@ class ChartService {
       },
       data: {
         name,
-        config: chartData,
+        config: chartData as Prisma.InputJsonValue,
       },
     });
   }

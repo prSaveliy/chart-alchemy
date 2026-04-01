@@ -4,6 +4,8 @@ import { writeFile, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 
+import { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -11,9 +13,9 @@ class GeminiService {
   async generate(
     fastify: FastifyInstance,
     prompt: string,
-    memory: any | null,
+    memory: ChartConfig | null,
     thinkingMode: boolean,
-  ) {
+  ): Promise<ChartConfig> {
     const SYSTEM_INSTRUCTION = await readFile(
       join(__dirname, '../prompts/system-instruction.txt'),
       'utf8',

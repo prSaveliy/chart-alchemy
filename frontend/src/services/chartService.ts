@@ -1,4 +1,5 @@
 import fetchClient from "@/lib/fetchClient";
+import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
 
 class ChartService {
   async init(chartType: "ai" | "dataset" | "manual") {
@@ -13,7 +14,7 @@ class ChartService {
     prompt: string,
     name: string,
     token: string,
-    memory: any | null,
+    memory: ChartConfig | null,
     thinkingMode: boolean,
   ) {
     return await fetchClient.post("chart/generate", {
