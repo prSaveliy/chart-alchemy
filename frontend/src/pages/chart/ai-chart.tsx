@@ -12,6 +12,7 @@ import ReactECharts from "echarts-for-react";
 
 import chartService from "@/services/chartService";
 import { unauthorizedInterceptor } from "@/lib/interceptors";
+import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
 
 const DEFAULT_TOOLBOX = {
   show: true,
@@ -33,13 +34,13 @@ const DEFAULT_TOOLBOX = {
   },
 };
 
-export const AIChart = ({ initialData }: { initialData: any }) => {
+export const AIChart = ({ initialData }: { initialData: ChartConfig | null }) => {
   const { token } = useParams();
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
   const [awaiting, setAwaiting] = useState(false);
   const [fetchError, setFetchError] = useState("");
-  const [chartData, setChartData] = useState<any>(initialData || {});
+  const [chartData, setChartData] = useState<ChartConfig | null>(initialData ?? null);
   const [useMemory, setUseMemory] = useState(false);
   const [thinkingMode, setThinkingMode] = useState(false);
   const retried = useRef(false);

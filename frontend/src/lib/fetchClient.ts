@@ -24,7 +24,7 @@ class FetchClient {
 
   async post(
     uri: string,
-    paramObj: Record<string, string | number> = {},
+    paramObj: Record<string, unknown> = {},
     fn?: (...params: any[]) => void,
     dataFieldsForFn?: string[]
   ) {
