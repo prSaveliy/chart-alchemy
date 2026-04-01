@@ -11,11 +11,6 @@ const textStyleSchema = z.looseObject({
   color: z.string().optional(),
 });
 
-const borderStyleSchema = z.looseObject({
-  borderWidth: z.number().optional(),
-  borderColor: z.string().optional(),
-});
-
 const lineStyleSchema = z.looseObject({
   color: z.string().optional(),
   width: z.number().optional(),
