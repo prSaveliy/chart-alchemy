@@ -4,7 +4,10 @@ import { writeFile, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 
-import { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
+import {
+  ChartConfig,
+  chartConfigSchema,
+} from '../commons/schemas/chartConfig.schema.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -45,12 +48,29 @@ class GeminiService {
         },
       ],
     });
-    
+
     const usage = response.usageMetadata;
 
     const raw = response.text ?? '';
     const cleaned = raw.replace(/```json|```/g, '').trim();
-    const chartData = JSON.parse(cleaned);
+    let rawJson;
+    try {
+      rawJson = JSON.parse(cleaned);
+    } catch {
+      throw fastify.httpErrors.badGateway(
+        'The AI generated invalid syntax. Please try again.',
+      );
+    }
+
+    const validationResult = chartConfigSchema.safeParse(rawJson);
+
+    if (!validationResult.success) {
+      throw fastify.httpErrors.badGateway(
+        'The AI generated an invalid chart configuration. Please try again.',
+      );
+    }
+
+    const chartData = validationResult.data;
 
     const cwd = process.cwd();
     await writeFile(`${cwd}/geminiResponse.json`, cleaned, 'utf8');
