@@ -1,6 +1,8 @@
 import { useState, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
+import { Info } from "lucide-react";
+
 import defaultUserPicture from "@/assets/user.png";
 
 import { Button } from "@/components/ui/button";
@@ -38,6 +40,8 @@ export const AIChart = ({ initialData }: { initialData: any }) => {
   const [awaiting, setAwaiting] = useState(false);
   const [fetchError, setFetchError] = useState("");
   const [chartData, setChartData] = useState<any>(initialData || {});
+  const [useMemory, setUseMemory] = useState(false);
+  const [thinkingMode, setThinkingMode] = useState(false);
   const retried = useRef(false);
 
   const mergedOption = useMemo(
@@ -53,7 +57,13 @@ export const AIChart = ({ initialData }: { initialData: any }) => {
   const generate = async () => {
     setAwaiting(true);
 
-    const fetchResult = await chartService.generate(prompt, "test", token!);
+    const fetchResult = await chartService.generate(
+      prompt,
+      "test",
+      token!,
+      useMemory ? chartData : null,
+      thinkingMode,
+    );
 
     if (fetchResult.errorMessage) {
       if (!retried.current && fetchResult.statusCode === 401) {
@@ -119,21 +129,67 @@ export const AIChart = ({ initialData }: { initialData: any }) => {
                 placeholder="Describe the chart you want to generate..."
                 className="w-full resize-none bg-transparent outline-none text-base leading-relaxed max-h-[200px] overflow-y-auto placeholder:text-gray-400"
               />
+              {fetchError && (
+                <span className="text-xs text-red-500">{fetchError}</span>
+              )}
               <div className="flex justify-between items-center">
-                {fetchError && (
-                  <span className="text-xs text-red-500">{fetchError}</span>
-                )}
-                <div className="ml-auto">
-                  <Button
-                    type="button"
-                    size="sm"
-                    className="cursor-pointer rounded-full"
-                    disabled={awaiting || !prompt}
-                    onClick={generate}
-                  >
-                    {awaiting ? "Generating..." : "Generate"}
-                  </Button>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-1.5">
+                    <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={useMemory}
+                        onChange={(e) => setUseMemory(e.target.checked)}
+                        className="w-3.5 h-3.5 accent-black cursor-pointer"
+                      />
+                      Use memory
+                    </label>
+                    <div className="relative flex items-center group">
+                      <Info
+                        size={14}
+                        className="text-gray-400 cursor-default"
+                      />
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 text-xs leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 shadow-md z-50">
+                        Includes the current chart configuration in the request,
+                        allowing the AI to modify or extend the existing
+                        visualisation.
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-200" />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
+                      <input
+                        type="checkbox"
+                        checked={thinkingMode}
+                        onChange={(e) => setThinkingMode(e.target.checked)}
+                        className="w-3.5 h-3.5 accent-black cursor-pointer"
+                      />
+                      Thinking mode
+                    </label>
+                    <div className="relative flex items-center group">
+                      <Info
+                        size={14}
+                        className="text-gray-400 cursor-default"
+                      />
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-56 px-3 py-2 rounded-xl bg-white border border-gray-200 text-gray-600 text-xs leading-relaxed opacity-0 pointer-events-none group-hover:opacity-100 transition-opacity duration-150 shadow-md z-50">
+                        Enables extended reasoning before generating the chart.
+                        Produces more accurate results for complex requests, but
+                        takes longer.
+                        <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-200" />
+                      </div>
+                    </div>
+                  </div>
                 </div>
+                <Button
+                  type="button"
+                  size="sm"
+                  className="cursor-pointer rounded-full"
+                  disabled={awaiting || !prompt}
+                  onClick={generate}
+                >
+                  {awaiting ? "Generating..." : "Generate"}
+                </Button>
               </div>
             </div>
           </div>

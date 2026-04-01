@@ -9,8 +9,20 @@ class ChartService {
     return await fetchClient.post("chart/verify-token", { token });
   }
 
-  async generate(prompt: string, name: string, token: string) {
-    return await fetchClient.post("chart/generate", { prompt, name, token });
+  async generate(
+    prompt: string,
+    name: string,
+    token: string,
+    memory: any | null,
+    thinkingMode: boolean,
+  ) {
+    return await fetchClient.post("chart/generate", {
+      prompt,
+      name,
+      token,
+      memory,
+      thinkingMode: thinkingMode ? "true" : "false",
+    });
   }
 
   async getByToken(token: string) {

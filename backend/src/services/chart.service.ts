@@ -45,10 +45,12 @@ class ChartService {
     name: string,
     token: string,
     userId: number,
+    memory: any | null,
+    thinkingMode: boolean,
   ) {
     await this.verifyToken(fastify, token, userId);
 
-    const chartData = await geminiService.generate(fastify, prompt);
+    const chartData = await geminiService.generate(fastify, prompt, memory, thinkingMode);
 
     await this.save(fastify, chartData, name, token);
 

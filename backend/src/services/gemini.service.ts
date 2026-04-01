@@ -7,22 +7,43 @@ import { join, dirname } from 'node:path';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-const PROMPT_TEMPLATE = await readFile(
-  join(__dirname, '../prompts/chart-generation.prompt.txt'),
-  'utf8',
-);
-
 class GeminiService {
   async generate(
     fastify: FastifyInstance,
     prompt: string,
+    memory: any | null,
+    thinkingMode: boolean,
   ) {
-    const fullPrompt = PROMPT_TEMPLATE.replace('{{USER_PROMPT}}', prompt);
+    const SYSTEM_INSTRUCTION = await readFile(
+      join(__dirname, '../prompts/system-instruction.txt'),
+      'utf8',
+    );
+
+    let promptText = '';
+    if (memory !== null && Object.keys(memory).length !== 0) {
+      promptText += `CURRENT_CHART_CONFIG: ${JSON.stringify(memory)}\n\n`;
+    }
+    promptText += `USER_REQUEST: ${prompt}`;
+
+    const model = thinkingMode
+      ? 'gemini-3.1-pro-preview'
+      : 'gemini-3-flash-preview';
 
     const response = await fastify.gemini.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: fullPrompt,
+      model,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+        // responseJsonSchema
+        responseMimeType: 'application/json',
+      },
+      contents: [
+        {
+          role: 'user',
+          parts: [{ text: promptText }],
+        },
+      ],
     });
+    
     const usage = response.usageMetadata;
 
     const raw = response.text ?? '';
