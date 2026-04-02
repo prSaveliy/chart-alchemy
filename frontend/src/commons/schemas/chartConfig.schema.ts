@@ -18,8 +18,8 @@ const lineStyleSchema = z.looseObject({
 const axisSchema = z.looseObject({
   type: z.enum(["category", "value", "time", "log"]).optional(),
   data: z.array(z.union([z.string(), z.number()])).optional(),
-  axisLine: z.looseObject({ lineStyle: lineStyleSchema }).optional(),
-  splitLine: z.looseObject({ lineStyle: lineStyleSchema }).optional(),
+  axisLine: z.looseObject({ lineStyle: lineStyleSchema.optional() }).optional(),
+  splitLine: z.looseObject({ lineStyle: lineStyleSchema.optional() }).optional(),
   axisLabel: z.looseObject({ formatter: z.string().optional() }).optional(),
   name: z.string().optional(),
   min: z.union([z.number(), z.string()]).optional(),
@@ -109,7 +109,7 @@ export const echartsOptionSchema = z.looseObject({
   grid: gridSchema.optional(),
   xAxis: z.union([axisSchema, z.array(axisSchema)]).optional(),
   yAxis: z.union([axisSchema, z.array(axisSchema)]).optional(),
-  polar: z.looseObject({ radius: z.array(z.string()).optional() }).optional(),
+  polar: z.looseObject({ radius: z.union([z.string(), z.array(z.string())]).optional() }).optional(),
   angleAxis: axisSchema.optional(),
   radiusAxis: axisSchema.optional(),
   radar: z.looseObject({
