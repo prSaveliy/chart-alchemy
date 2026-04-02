@@ -1,0 +1,29 @@
+### 1. Polar Line Chart (Spiral / Cyclical Data)
+"Create a polar line chart showing the monthly volume of rainfall over an entire 12-month period, but make it a smooth spiral effect by having the angle axis be a 'value' type from 0 to 360, and the radius representing the millimeters of rain. Fill it with a nice area gradient."
+
+### 2. Sankey Diagram (Flows)
+"Generate a Sankey diagram showing a detailed budget breakdown for a tech startup. Start with 'Total Funding' on the left, which flows into 'Salary', 'Marketing', 'Infrastructure', and 'Office'. Then 'Salary' breaks down further into 'Engineering', 'Sales', and 'Design'. Ensure the links have weights."
+
+### 3. ThemeRiver / Streamgraph (Time Series Evolution)
+"I want a ThemeRiver (streamgraph) showing the popularity of five different programming languages (JavaScript, Python, TypeScript, Rust, Go) over the last 12 months. Use realistic sounding data where Python and TypeScript grow steadily, while JavaScript stays large and stable. Make sure the 'singleAxis' is time-based."
+
+### 4. Hierarchical Sunburst (Nested Proportions)
+"Build a multi-level Sunburst chart displaying global energy production. The inner ring should be 'Renewable' and 'Non-Renewable'. The second ring splits 'Renewable' into 'Solar', 'Wind', and 'Hydro', and 'Non-Renewable' into 'Coal', 'Gas', and 'Nuclear'. The third ring should break down the top producers for each sector using realistic percentages."
+
+### 5. Advanced Gauge (Dashboard Dial)
+"Design a sleek, modern gauge chart that behaves like a speedometer for server CPU usage. The range should be 0 to 100. It's currently at 84%. Include a progress ring that's colored dynamically. Add a detail label in the middle reading '84% Load' with value animation enabled."
+
+### 6. Polar Bar Chart / Wind Rose (Directional Cyclical Data)
+"Create a Wind Rose chart (a polar bar chart) to show passenger numbers passing through an airport across the 7 days of the week. The angle axis should be the days of the week (category), and the radiating bars should use a 'stacked' configuration to split domestic vs international passengers. The chart must be circular."
+
+### 7. Calendar Heatmap (Daily Activity Trackers)
+"Show an entire year's GitHub-style contribution graph (Calendar Heatmap) for 2024. The visualMap should scale from 0 to 20 contributions per day. Add randomized, realistic-looking data points for scattered days across the year."
+
+### 8. Parallel Coordinates (Multi-Dimensional Analysis)
+"Visualize the specifications of popular electric vehicles using a Parallel coordinates chart. The vertical axes should be: Range (miles), Top Speed (mph), 0-60 Time (seconds), Battery Capacity (kWh), and Price ($). Provide data for at least 5 different car models."
+
+### 9. Statistical Boxplot (Distributions)
+"Generate a boxplot analyzing the distribution of employee salaries across four different departments (Engineering, HR, Sales, Marketing). You will need to calculate the min, Q1, median, Q3, and max. Make the engineering box significantly higher, with a wide variance."
+
+### 10. Multi-Series Metric Combinations
+"Create a combination line and bar Cartesian chart. Show 'Monthly New Users' as a bar chart on a primary Y-axis on the left, and 'Customer Acquisition Cost' as a smooth line chart on a secondary Y-axis on the right. Give them contrasting colors and ensure the layout accommodates both axes clearly."

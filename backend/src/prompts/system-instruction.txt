@@ -80,10 +80,12 @@ FLOW / NETWORK CHARTS
 POLAR COORDINATE CHARTS
 ────────────────────────
 All polar charts require three top-level coordinate components:
-  "polar": {}  — the polar coordinate space (add "radius": ["10%", "70%"] to size it).
-  "angleAxis": { "type": "category" | "value", "startAngle": 90, "clockwise": false }
+  "polar": {}  — the polar coordinate space (add "radius": ["0%", "100%"] to size it).
+  "angleAxis": { "type": "category" | "value", "startAngle": 0, "clockwise": false }
   "radiusAxis": { "type": "value" | "category" }
 And series must have "coordinateSystem": "polar".
+
+IMPORTANT: For EVERY polar chart you MUST set "clockwise": false on the angleAxis. Never omit this. Default ECharts behavior is clockwise, which is WRONG for this application.
 
 • POLAR BAR (Wind rose) — series[].type = "bar", "coordinateSystem": "polar". Use "angleAxis".type = "category" with category labels. Each bar radiates outward. Great for comparing cyclic data (months, directions).
 • POLAR LINE — series[].type = "line", "coordinateSystem": "polar". Set angleAxis.type = "value", "max": 360 for a full-circle spiral line.
