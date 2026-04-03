@@ -26,6 +26,10 @@ class ChartService {
     });
   }
 
+  async rename(token: string, name: string) {
+    return await fetchClient.patch("chart/rename", { token, name });
+  }
+
   async getByToken(token: string) {
     return await fetchClient.get(`chart/${token}`);
   }

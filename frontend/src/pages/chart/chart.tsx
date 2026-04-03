@@ -6,6 +6,7 @@ import { Error } from "../error";
 
 import chartService from "@/services/chartService";
 import { unauthorizedInterceptor } from "@/lib/interceptors";
+import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
 
 export const Chart = () => {
   const { token } = useParams();
@@ -19,7 +20,8 @@ export const Chart = () => {
   const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
 
   const [verified, setVerified] = useState(false);
-  const [chartData, setChartData] = useState({});
+  const [chartData, setChartData] = useState<ChartConfig | null>(null);
+  const [chartName, setChartName] = useState("");
 
   useEffect(() => {
     const getChart = async () => {
@@ -54,6 +56,7 @@ export const Chart = () => {
       }
 
       setChartData(fetchResult.data.chartData);
+      setChartName(fetchResult.data.chartName);
       setVerified(true);
     };
 
@@ -106,6 +109,6 @@ export const Chart = () => {
   }
 
   if (verified) {
-    return <AIChart initialData={chartData} />;
+    return <AIChart initialData={chartData} initialName={chartName} />;
   }
 };

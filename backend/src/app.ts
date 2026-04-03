@@ -53,6 +53,7 @@ const buildApp = async () => {
   await app.register(cors, {
     origin: 'http://localhost:5173',
     credentials: true,
+    methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   });
   app.register(dbPlugin);
   app.register(authPlugin);

@@ -39,6 +39,15 @@ const chartRoutes = (fastify: FastifyInstance) => {
     chartController.generate,
   );
 
+  fastify.patch(
+    '/rename',
+    {
+      // onRequest: rateLimitByIp(30, 60 * 1000),
+      preHandler: [fastify.auth],
+    },
+    chartController.rename,
+  );
+
   fastify.get<GetChartByTokenRoute>(
     '/:token',
     {
