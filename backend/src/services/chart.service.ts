@@ -59,6 +59,15 @@ class ChartService {
     return { chartData };
   }
 
+  async rename(fastify: FastifyInstance, name: string, token: string, userId: number) {
+    await this.verifyToken(fastify, token, userId);
+
+    await fastify.prisma.chart.update({
+      where: { token },
+      data: { name },
+    });
+  }
+
   async save(
     fastify: FastifyInstance,
     chartData: ChartConfig,
@@ -85,7 +94,7 @@ class ChartService {
       },
     });
 
-    return { chartData: chart?.config };
+    return { chartData: chart?.config, chartName: chart?.name };
   }
 }
 

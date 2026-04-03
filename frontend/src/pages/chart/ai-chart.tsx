@@ -1,7 +1,7 @@
 import { useState, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
-import { Info } from "lucide-react";
+import { Info, Check } from "lucide-react";
 
 import defaultUserPicture from "@/assets/user.png";
 
@@ -34,13 +34,23 @@ const DEFAULT_TOOLBOX = {
   },
 };
 
-export const AIChart = ({ initialData }: { initialData: ChartConfig | null }) => {
+export const AIChart = ({
+  initialData,
+  initialName,
+}: {
+  initialData: ChartConfig | null;
+  initialName?: string;
+}) => {
   const { token } = useParams();
   const navigate = useNavigate();
   const [prompt, setPrompt] = useState("");
+  const [chartName, setChartName] = useState(initialName ?? "");
+  const [savedName, setSavedName] = useState(initialName ?? "");
   const [awaiting, setAwaiting] = useState(false);
   const [fetchError, setFetchError] = useState("");
-  const [chartData, setChartData] = useState<ChartConfig | null>(initialData ?? null);
+  const [chartData, setChartData] = useState<ChartConfig | null>(
+    initialData ?? null,
+  );
   const [useMemory, setUseMemory] = useState(false);
   const [thinkingMode, setThinkingMode] = useState(false);
   const retried = useRef(false);
@@ -60,7 +70,7 @@ export const AIChart = ({ initialData }: { initialData: ChartConfig | null }) =>
 
     const fetchResult = await chartService.generate(
       prompt,
-      "test",
+      chartName,
       token!,
       useMemory ? chartData : null,
       thinkingMode,
@@ -89,18 +99,50 @@ export const AIChart = ({ initialData }: { initialData: ChartConfig | null }) =>
     setAwaiting(false);
   };
 
+  const saveName = async () => {
+    const result = await chartService.rename(token!, chartName);
+    if (!result.errorMessage) {
+      setSavedName(chartName);
+    }
+  };
+
   return (
     <div className="flex flex-col w-full min-h-screen">
       <Header2 userPicture={userPicture || defaultUserPicture} />
       <div className="flex flex-1">
         <div className="flex flex-col flex-1 items-center mt-6">
-          <div className="flex w-380 h-162 border shadow-sm rounded-3xl justify-center items-center">
+          <div className="flex w-7xl flex-col mb-2 items-start">
+            <div className="flex items-center gap-2">
+              <input
+                id="chart-name"
+                type="text"
+                value={chartName}
+                onChange={(e) => setChartName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") saveName();
+                }}
+                placeholder="Untitled chart"
+                maxLength={255}
+                className="w-80 text-xl font-semibold text-gray-800 bg-transparent outline-none placeholder:text-gray-300 border-b-2 border-transparent focus:border-gray-200 transition-colors duration-150 pb-1 truncate"
+              />
+              {chartName !== savedName && chartName.trim() && (
+                <button
+                  onClick={saveName}
+                  title="Save name"
+                  className="flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer"
+                >
+                  <Check size={13} className="text-gray-600" />
+                </button>
+              )}
+            </div>
+          </div>
+          <div className="flex w-7xl h-162 border shadow-sm rounded-3xl justify-center items-center">
             {mergedOption && (
               <div className="flex">
                 {/* @ts-expect-error - echarts-for-react typings are incompatible with React 19 */}
                 <ReactECharts
                   option={mergedOption}
-                  style={{ height: "600px", width: "1000px" }}
+                  style={{ height: "600px", width: "1232px" }}
                   notMerge={true}
                   lazyUpdate={true}
                 />
@@ -108,7 +150,7 @@ export const AIChart = ({ initialData }: { initialData: ChartConfig | null }) =>
             )}
           </div>
 
-          <div className="flex w-full max-w-3xl px-4 mt-4 mb-6">
+          <div className="flex w-full max-w-3xl px-4 mt-4 mb-3">
             <div className="flex flex-col w-full rounded-3xl border bg-white shadow-sm px-4 pt-3 pb-2 gap-2">
               <textarea
                 id="prompt"
