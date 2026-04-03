@@ -24,7 +24,7 @@ export const Header2 = (props: { userPicture: string | null }) => {
   };
 
   return (
-    <div className="flex h-30 border-b items-center px-10">
+    <div className="flex h-24 border-b items-center px-10">
       <div className="flex flex-1 content-center">
         <a href="/" aria-label="home" className="flex items-center space-x-2">
           <Logo />
