@@ -61,7 +61,7 @@ model PendingUser {
 
 model Chart {
   id          Int @id @default(autoincrement())
-  name        String @db.VarChar(255) @default("My New Chart")
+  name        String @db.VarChar(255) @default("")
   token       String @unique
 
   createdAt   DateTime @default(now())
