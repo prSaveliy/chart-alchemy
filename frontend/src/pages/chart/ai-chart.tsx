@@ -70,7 +70,6 @@ export const AIChart = ({
 
     const fetchResult = await chartService.generate(
       prompt,
-      chartName,
       token!,
       useMemory ? chartData : null,
       thinkingMode,

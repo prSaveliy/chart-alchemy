@@ -44,7 +44,6 @@ class ChartService {
   async generate(
     fastify: FastifyInstance,
     prompt: string,
-    name: string,
     token: string,
     userId: number,
     memory: ChartConfig | null,
@@ -54,7 +53,7 @@ class ChartService {
 
     const chartData = await geminiService.generate(fastify, prompt, memory, thinkingMode);
 
-    await this.save(fastify, chartData, name, token);
+    await this.save(fastify, chartData, token);
 
     return { chartData };
   }
@@ -71,7 +70,6 @@ class ChartService {
   async save(
     fastify: FastifyInstance,
     chartData: ChartConfig,
-    name: string,
     token: string,
   ) {
     await fastify.prisma.chart.update({
@@ -79,7 +77,6 @@ class ChartService {
         token,
       },
       data: {
-        name,
         config: chartData as Prisma.InputJsonValue,
       },
     });

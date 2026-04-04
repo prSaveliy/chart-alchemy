@@ -12,14 +12,12 @@ class ChartService {
 
   async generate(
     prompt: string,
-    name: string,
     token: string,
     memory: ChartConfig | null,
     thinkingMode: boolean,
   ) {
     return await fetchClient.post("chart/generate", {
       prompt,
-      name,
       token,
       memory,
       thinkingMode: thinkingMode ? "true" : "false",
