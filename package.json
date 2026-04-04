@@ -9,7 +9,13 @@
   ],
   "scripts": {
     "dev": "npm run dev --workspace=frontend & npm run dev --workspace=backend",
-    "build": "npm run build --workspace=frontend && npm run build --workspace=backend"
+    "dev:test": "npm run dev --workspace=frontend & npm run dev:test --workspace=backend",
+    "start": "npm run start --workspace=backend",
+    "start:test": "npm run start:test --workspace=backend",
+    "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
+    "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
+    "lint:fix": "npm run lint:fix --workspace=backend",
+    "test": "npm run test --workspace=backend"
   },
   "repository": {
     "type": "git",
