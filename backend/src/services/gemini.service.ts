@@ -56,21 +56,31 @@ class GeminiService {
       },
     ];
 
-    const response = await fastify.gemini.models.generateContent({
-      model,
-      config: {
-        systemInstruction: SYSTEM_INSTRUCTION,
-        // responseJsonSchema
-        responseMimeType: 'application/json',
-        safetySettings: safetySettings,
-      },
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: promptText }],
+    const response = await fastify.gemini.models
+      .generateContent({
+        model,
+        config: {
+          systemInstruction: SYSTEM_INSTRUCTION,
+          // responseJsonSchema
+          responseMimeType: 'application/json',
+          safetySettings: safetySettings,
         },
-      ],
-    });
+        contents: [
+          {
+            role: 'user',
+            parts: [{ text: promptText }],
+          },
+        ],
+      })
+      .catch((error) => {
+        console.log(error);
+        if (error.status === 429) {
+          throw fastify.httpErrors.tooManyRequests(
+            'The AI Chart Generator is currently experiencing high demand. Please wait a moment and try again.',
+          );
+        }
+        throw error;
+      });
 
     if (
       response.candidates &&
