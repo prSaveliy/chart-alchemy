@@ -4,6 +4,8 @@ import { writeFile, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 
+import { HarmCategory, HarmBlockThreshold } from '@google/genai';
+
 import {
   ChartConfig,
   chartConfigSchema,
@@ -11,6 +13,7 @@ import {
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
+const cwd = process.cwd();
 
 class GeminiService {
   async generate(
@@ -34,12 +37,32 @@ class GeminiService {
       ? 'gemini-3.1-pro-preview'
       : 'gemini-3-flash-preview';
 
+    const safetySettings = [
+      {
+        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
+        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
+        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
+        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+      },
+      {
+        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
+        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
+      },
+    ];
+
     const response = await fastify.gemini.models.generateContent({
       model,
       config: {
         systemInstruction: SYSTEM_INSTRUCTION,
         // responseJsonSchema
         responseMimeType: 'application/json',
+        safetySettings: safetySettings,
       },
       contents: [
         {
@@ -48,6 +71,16 @@ class GeminiService {
         },
       ],
     });
+
+    if (
+      response.candidates &&
+      response.candidates[0].finishReason === 'SAFETY'
+    ) {
+      await writeFile(`${cwd}/safetyBlock.json`, JSON.stringify(response.candidates[0]), 'utf8');
+      throw fastify.httpErrors.badRequest(
+        'Unable to generate chart: The request violates content safety guidelines.',
+      );
+    }
 
     const usage = response.usageMetadata;
 
@@ -72,7 +105,6 @@ class GeminiService {
 
     const chartData = validationResult.data;
 
-    const cwd = process.cwd();
     await writeFile(`${cwd}/geminiResponse.json`, cleaned, 'utf8');
     await writeFile(
       `${cwd}/metadata.txt`,
