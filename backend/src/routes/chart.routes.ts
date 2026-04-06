@@ -32,8 +32,8 @@ const chartRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/generate',
     {
-      // onRequest: rateLimitByIp(5, 60 * 1000),
-      preHandler: [fastify.auth, promptHooks.preHandler],
+      onRequest: [fastify.auth, rateLimitByIp(3, 60 * 1000)],
+      preHandler: [promptHooks.preHandler],
       onSend: promptHooks.onSend,
     },
     chartController.generate,

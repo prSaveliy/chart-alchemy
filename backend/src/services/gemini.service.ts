@@ -4,7 +4,7 @@ import { writeFile, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { join, dirname } from 'node:path';
 
-import { HarmCategory, HarmBlockThreshold } from '@google/genai';
+import { GoogleAuth } from 'google-auth-library';
 
 import {
   ChartConfig,
@@ -37,50 +37,53 @@ class GeminiService {
       ? 'gemini-3.1-pro-preview'
       : 'gemini-3-flash-preview';
 
-    const safetySettings = [
-      {
-        category: HarmCategory.HARM_CATEGORY_HARASSMENT,
-        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-      },
-      {
-        category: HarmCategory.HARM_CATEGORY_HATE_SPEECH,
-        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-      },
-      {
-        category: HarmCategory.HARM_CATEGORY_SEXUALLY_EXPLICIT,
-        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-      },
-      {
-        category: HarmCategory.HARM_CATEGORY_DANGEROUS_CONTENT,
-        threshold: HarmBlockThreshold.BLOCK_LOW_AND_ABOVE,
-      },
-    ];
+    const project = fastify.config.GOOGLE_CLOUD_PROJECT;
+    const location = fastify.config.GOOGLE_CLOUD_LOCATION;
+    const host = location === 'global'
+      ? 'aiplatform.googleapis.com'
+      : `${location}-aiplatform.googleapis.com`;
+    const url = `https://${host}/v1/projects/${project}/locations/${location}/publishers/google/models/${model}:generateContent`;
 
-    const response = await fastify.gemini.models
-      .generateContent({
-        model,
-        config: {
-          systemInstruction: SYSTEM_INSTRUCTION,
-          // responseJsonSchema
-          responseMimeType: 'application/json',
-          safetySettings: safetySettings,
-        },
-        contents: [
-          {
-            role: 'user',
-            parts: [{ text: promptText }],
-          },
-        ],
-      })
-      .catch((error) => {
-        console.log(error);
-        if (error.status === 429) {
-          throw fastify.httpErrors.tooManyRequests(
-            'The AI Chart Generator is currently experiencing high demand. Please wait a moment and try again.',
-          );
-        }
-        throw error;
-      });
+    const auth = new GoogleAuth({
+      scopes: ['https://www.googleapis.com/auth/cloud-platform'],
+    });
+    const accessToken = await auth.getAccessToken();
+    const authHeaders = { Authorization: `Bearer ${accessToken}` };
+
+    const requestBody = {
+      systemInstruction: { parts: [{ text: SYSTEM_INSTRUCTION }] },
+      contents: [{ role: 'user', parts: [{ text: promptText }] }],
+      safetySettings: [
+        { category: 'HARM_CATEGORY_HARASSMENT',       threshold: 'BLOCK_LOW_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_HATE_SPEECH',       threshold: 'BLOCK_LOW_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_LOW_AND_ABOVE' },
+        { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_LOW_AND_ABOVE' },
+      ],
+      generationConfig: { responseMimeType: 'application/json' },
+    };
+
+    const httpResponse = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', ...authHeaders },
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!httpResponse.ok) {
+      if (httpResponse.status === 429) {
+        throw fastify.httpErrors.tooManyRequests(
+          'The AI Chart Generator is currently experiencing high demand. Please wait a moment and try again.',
+        );
+      }
+      
+      throw fastify.httpErrors.badGateway(
+        `Something went wrong while trying to generate the chart`,
+      );
+    }
+
+    const response = await httpResponse.json() as {
+      candidates?: { content: { parts: { text: string }[] }; finishReason: string }[];
+      usageMetadata?: unknown;
+    };
 
     if (
       response.candidates &&
@@ -94,7 +97,7 @@ class GeminiService {
 
     const usage = response.usageMetadata;
 
-    const raw = response.text ?? '';
+    const raw = response.candidates?.[0]?.content?.parts?.[0]?.text ?? '';
     const cleaned = raw.replace(/```json|```/g, '').trim();
     let rawJson;
     try {
