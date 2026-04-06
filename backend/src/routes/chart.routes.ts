@@ -10,8 +10,8 @@ const chartRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/init',
     {
-      // onRequest: rateLimitByIp(5, 60 * 1000),
-      preHandler: [fastify.auth],
+      // onRequest: [fastify.auth, rateLimitByIp(5, 60 * 1000)],
+      onRequest: fastify.auth,
     },
     chartController.init,
   );
@@ -19,8 +19,8 @@ const chartRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/verify-token',
     {
-      // onRequest: rateLimitByIp(30, 60 * 1000),
-      preHandler: [fastify.auth],
+      // onRequest: [fastify.auth, rateLimitByIp(30, 60 * 1000)],
+      onRequest: fastify.auth,
     },
     chartController.verifyToken,
   );
@@ -28,8 +28,8 @@ const chartRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/generate',
     {
-      // onRequest: rateLimitByIp(5, 60 * 1000),
-      preHandler: [fastify.auth],
+      // onRequest: [fastify.auth, rateLimitByIp(5, 60 * 1000)],
+      onRequest: fastify.auth,
     },
     chartController.generate,
   );
@@ -37,8 +37,8 @@ const chartRoutes = (fastify: FastifyInstance) => {
   fastify.patch(
     '/rename',
     {
-      // onRequest: rateLimitByIp(30, 60 * 1000),
-      preHandler: [fastify.auth],
+      // onRequest: [fastify.auth, rateLimitByIp(30, 60 * 1000)],
+      onRequest: fastify.auth,
     },
     chartController.rename,
   );
@@ -46,8 +46,8 @@ const chartRoutes = (fastify: FastifyInstance) => {
   fastify.get<GetChartByTokenRoute>(
     '/:token',
     {
-      // onRequest: rateLimitByIp(5, 60 * 1000),
-      preHandler: [fastify.auth],
+      // onRequest: [fastify.auth, rateLimitByIp(5, 60 * 1000)],
+      onRequest: fastify.auth,
     },
     chartController.getByToken,
   );
