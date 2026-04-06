@@ -36,6 +36,7 @@ export const Chart = () => {
           }
           retried.current = true;
           await getChart();
+          retried.current = false;
           return;
         }
 

@@ -34,6 +34,7 @@ export const NewChart = () => {
         }
         retried.current = true;
         await redirect(chartType);
+        retried.current = false;
         return;
       }
 
