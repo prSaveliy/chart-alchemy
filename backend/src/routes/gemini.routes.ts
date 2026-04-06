@@ -6,10 +6,8 @@ import rateLimitByIp from '../hooks/rateLimitByIp.js';
 
 const geminiRoutes = (fastify: FastifyInstance) => {
   fastify.post("/generate", {
-    // onRequest: rateLimitByIp(5, 60 * 1000),
-    preHandler: [
-      fastify.auth,
-    ],
+    // onRequest: [fastify.auth, rateLimitByIp(5, 60 * 1000)],
+    onRequest: fastify.auth,
   }, geminiController.generate);
 };
 
