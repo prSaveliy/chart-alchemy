@@ -84,6 +84,7 @@ export const AIChart = ({
         }
         retried.current = true;
         await generate();
+        retried.current = false;
         return;
       } else {
         setFetchError(fetchResult.errorMessage);
