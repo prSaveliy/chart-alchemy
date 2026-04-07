@@ -14,7 +14,9 @@
     "start:test": "npm run start:test --workspace=backend",
     "build": "npm run build --workspace=frontend && npm run build --workspace=backend",
     "lint": "npm run lint --workspace=frontend && npm run lint --workspace=backend",
-    "lint:fix": "npm run lint:fix --workspace=backend",
+    "lint:fix": "npm run lint:fix --workspace=frontend && npm run lint:fix --workspace=backend",
+    "format": "npm run format --workspace=backend",
+    "format:check": "npm run format:check --workspace=backend",
     "test": "npm run test --workspace=backend"
   },
   "repository": {
