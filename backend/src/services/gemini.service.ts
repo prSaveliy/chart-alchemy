@@ -15,6 +15,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const cwd = process.cwd();
 
+const SYSTEM_INSTRUCTION = await readFile(
+  join(__dirname, '../prompts/system-instruction.txt'),
+  'utf8',
+);
+
 class GeminiService {
   async generate(
     fastify: FastifyInstance,
@@ -22,11 +27,6 @@ class GeminiService {
     memory: ChartConfig | null,
     thinkingMode: boolean,
   ): Promise<ChartConfig> {
-    const SYSTEM_INSTRUCTION = await readFile(
-      join(__dirname, '../prompts/system-instruction.txt'),
-      'utf8',
-    );
-
     let promptText = '';
     if (memory !== null && Object.keys(memory).length !== 0) {
       promptText += `CURRENT_CHART_CONFIG: ${JSON.stringify(memory)}\n\n`;
@@ -86,7 +86,11 @@ class GeminiService {
       response.candidates &&
       response.candidates[0].finishReason === 'SAFETY'
     ) {
-      await writeFile(`${cwd}/safetyBlock.json`, JSON.stringify(response.candidates[0]), 'utf8');
+      await writeFile(
+        `${cwd}/safetyBlock.json`,
+        JSON.stringify(response.candidates[0]),
+        'utf8',
+      );
       throw fastify.httpErrors.badRequest(
         'Unable to generate chart: The request violates content safety guidelines.',
       );
