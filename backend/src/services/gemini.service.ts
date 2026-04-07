@@ -15,6 +15,11 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 const cwd = process.cwd();
 
+const SYSTEM_INSTRUCTION = await readFile(
+  join(__dirname, '../prompts/system-instruction.txt'),
+  'utf8',
+);
+
 class GeminiService {
   async generate(
     fastify: FastifyInstance,
@@ -22,11 +27,6 @@ class GeminiService {
     memory: ChartConfig | null,
     thinkingMode: boolean,
   ): Promise<ChartConfig> {
-    const SYSTEM_INSTRUCTION = await readFile(
-      join(__dirname, '../prompts/system-instruction.txt'),
-      'utf8',
-    );
-
     let promptText = '';
     if (memory !== null && Object.keys(memory).length !== 0) {
       promptText += `CURRENT_CHART_CONFIG: ${JSON.stringify(memory)}\n\n`;
