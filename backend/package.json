@@ -12,6 +12,8 @@
     "build": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
     "test": "npx tsx --env-file=.env.test --test test/*"
   },
   "dependencies": {
