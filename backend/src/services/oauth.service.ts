@@ -45,14 +45,23 @@ class OAuthService {
       const user = await this.authorize(fastify, data);
 
       return user;
-    } catch (err) {
-      console.log(err);
+    } catch {
       throw fastify.httpErrors.badRequest();
     }
   }
 
   async authorize(fastify: FastifyInstance, data: GoogleResponse) {
-    const idTokenData = fastify.jwt.decode(data.id_token) as IDToken;
+    const ticket = await fastify.googleAuthClient.verifyIdToken({
+      idToken: data.id_token,
+      audience: fastify.config.OAUTH_GOOGLE_CLIENT_ID,
+    });
+    const idTokenData = ticket.getPayload();
+
+    if (!idTokenData) {
+      // technically should't happen if verifyIdToken succeeds
+      throw new Error();
+    }
+
     const userByEmail = await fastify.prisma.user.findUnique({
       where: {
         email: idTokenData.email,
@@ -74,7 +83,7 @@ class OAuthService {
       if (!userByEmail) {
         await fastify.prisma.user.create({
           data: {
-            email: idTokenData.email,
+            email: idTokenData.email!,
             sub: idTokenData.sub,
             isActivated: false,
             picture,
