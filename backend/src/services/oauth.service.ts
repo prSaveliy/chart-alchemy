@@ -91,57 +91,55 @@ class OAuthService {
           },
         });
       }
-    } else {
-      if (userByEmail) {
-        // check for duplicate email
-        if (!userByEmail.sub || userByEmail.sub !== idTokenData.sub) {
-          // delete the unactivated account and update the original user
-          if (!userByEmail.isActivated) {
-            await fastify.prisma.user.delete({
-              where: {
-                email: userByEmail.email,
-              },
-            });
+    } else if (
+      userByEmail &&
+      (!userByEmail.sub || userByEmail.sub !== idTokenData.sub) // check for duplicate email
+    ) {
+      // delete the unactivated account and update the original user
+      if (!userByEmail.isActivated) {
+        await fastify.prisma.user.delete({
+          where: {
+            email: userByEmail.email,
+          },
+        });
 
-            await fastify.prisma.user.update({
-              where: {
-                sub: idTokenData.sub,
-              },
-              data: {
-                email: idTokenData.email,
-                picture: idTokenData.picture,
-              },
-            });
-          } else {
-            // merge two accounts: keep userByEmail (activated, may have password),
-            // absorb userBySub's charts, then delete userBySub
-            await fastify.prisma.chart.updateMany({
-              where: { userId: userBySub.id },
-              data: { userId: userByEmail.id },
-            });
+        await fastify.prisma.user.update({
+          where: {
+            sub: idTokenData.sub,
+          },
+          data: {
+            email: idTokenData.email,
+            picture: idTokenData.picture,
+          },
+        });
+      } else {
+        // merge two accounts: keep userByEmail (activated, may have password),
+        // absorb userBySub's charts, then delete userBySub
+        await fastify.prisma.chart.updateMany({
+          where: { userId: userBySub.id },
+          data: { userId: userByEmail.id },
+        });
 
-            await fastify.prisma.user.delete({
-              where: { sub: idTokenData.sub },
-            });
-            
-            await fastify.prisma.user.update({
-              where: { email: userByEmail.email },
-              data: { sub: idTokenData.sub, picture: idTokenData.picture },
-            });
-          }
-        } else {
-          // just update the existing user
-          await fastify.prisma.user.update({
-            where: {
-              sub: idTokenData.sub,
-            },
-            data: {
-              email: idTokenData.email,
-              picture: idTokenData.picture,
-            },
-          });
-        }
+        await fastify.prisma.user.delete({
+          where: { sub: idTokenData.sub },
+        });
+
+        await fastify.prisma.user.update({
+          where: { email: userByEmail.email },
+          data: { sub: idTokenData.sub, picture: idTokenData.picture },
+        });
       }
+    } else {
+      // just update the existing user
+      await fastify.prisma.user.update({
+        where: {
+          sub: idTokenData.sub,
+        },
+        data: {
+          email: idTokenData.email,
+          picture: idTokenData.picture,
+        },
+      });
     }
 
     const user = await fastify.prisma.user.findUnique({
