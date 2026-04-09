@@ -5,6 +5,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 
 import { PrismaClient } from '../../generated/prisma/client.ts';
 import { GoogleGenAI } from '@google/genai';
+import { OAuth2Client } from 'google-auth-library';
 
 import { UserDTO } from './user.js';
 
@@ -26,6 +27,7 @@ declare module 'fastify' {
     prisma: PrismaClient;
     auth: (request: FastifyRequest, reply: FastifyReply) => void;
     gemini: GoogleGenAI;
+    googleAuthClient: OAuth2Client;
   }
 }
 
