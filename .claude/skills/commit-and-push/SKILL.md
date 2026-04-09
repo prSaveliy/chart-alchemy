@@ -29,6 +29,7 @@ Rules:
 - No period at the end
 - Scope is optional but preferred when the change is scoped to a subsystem
 - Description is imperative mood ("add", "fix", "move" — not "added", "fixes")
+- **Never** add Claude co-author credit to the commit message
 
 ---
 
