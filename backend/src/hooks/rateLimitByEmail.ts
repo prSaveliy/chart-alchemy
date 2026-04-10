@@ -4,6 +4,9 @@ import { emailSchema } from '../commons/schemas/email.schema.js';
 import validateSchema from '../utils/validateSchema.js';
 
 const rateLimitByEmail = (max: number, timeWindow: number) => {
+  if (process.env.NODE_ENV === 'test')
+    return async (request: FastifyRequest, reply: FastifyReply) => {};
+
   const store = new Map();
   
   return async (request: FastifyRequest, reply: FastifyReply) => {

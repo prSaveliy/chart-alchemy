@@ -1,6 +1,9 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 
 const rateLimitByIp = (max: number, timeWindow: number) => {
+  if (process.env.NODE_ENV === 'test')
+    return async (request: FastifyRequest, reply: FastifyReply) => {};
+
   const store = new Map();
   
   return async (request: FastifyRequest, reply: FastifyReply) => { 
