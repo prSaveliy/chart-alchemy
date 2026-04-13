@@ -12,7 +12,7 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "test": "npx tsx --env-file=.env.test --test test/*"
+    "test": "npx tsx --env-file=.env.test --test --test-concurrency=1 test/*"
   },
   "dependencies": {
     "@fastify/auth": "^5.0.4",
