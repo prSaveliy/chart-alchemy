@@ -1,4 +1,4 @@
-import { describe, test, before, after } from 'node:test';
+import { describe, test, before, after, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import crypto from 'node:crypto';
@@ -7,6 +7,8 @@ import { FastifyInstance } from 'fastify';
 
 import buildApp from '../src/app.js';
 
+import mailService from '../src/services/mail.service.js';
+
 describe('auth integration tests', () => {
   let app: FastifyInstance;
 
@@ -14,6 +16,9 @@ describe('auth integration tests', () => {
     if (process.env.NODE_ENV !== 'test') {
       throw new Error('Refusing to wipe database: NODE_ENV is not "test"');
     }
+
+    mock.method(mailService, 'sendActivationLink', async () => {});
+    mock.method(mailService, 'sendPasswordResetLink', async () => {});
 
     app = await buildApp();
     await app.ready();
