@@ -1,8 +1,10 @@
-import { describe, test, before, after } from 'node:test';
+import { describe, test, before, after, mock } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import { FastifyInstance } from 'fastify';
 import buildApp from '../src/app.js';
+
+import geminiService from '../src/services/gemini.service.js';
 
 const makeUser = async (app: FastifyInstance, email: string) => {
   const bcrypt = await import('bcrypt');
@@ -28,6 +30,13 @@ describe('chart integration tests', () => {
     if (process.env.NODE_ENV !== 'test') {
       throw new Error('Refusing to wipe database: NODE_ENV is not "test"');
     }
+
+    mock.method(geminiService, 'generate', async () => ({
+      option: {
+        series: [{ type: 'bar', data: [100, 150, 120] }],
+      },
+    }));
+
     app = await buildApp();
     await app.ready();
     const { execSync } = await import('node:child_process');
