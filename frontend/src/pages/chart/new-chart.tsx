@@ -1,6 +1,8 @@
 import { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
+import { handleUnauthorized } from "@/lib/handleUnauthorized";
+
 import defaultUserPicture from "@/assets/user.png";
 
 import { Sparkles, FileDown, Settings } from "lucide-react";
@@ -10,7 +12,6 @@ import { WorkflowChoiceCard } from "@/components/ui/workflow-choice-card";
 import { Error } from "../error";
 
 import chartService from "@/services/chartService";
-import { unauthorizedInterceptor } from "@/lib/interceptors";
 
 export const NewChart = () => {
   const navigate = useNavigate();
@@ -27,14 +28,7 @@ export const NewChart = () => {
 
     if (fetchResult.errorMessage) {
       if (!retried.current && fetchResult.statusCode === 401) {
-        const interceptorResult = await unauthorizedInterceptor();
-        if (interceptorResult && interceptorResult.statusCode === 401) {
-          navigate('/login');
-          return;
-        }
-        retried.current = true;
-        await redirect(chartType);
-        retried.current = false;
+        await handleUnauthorized(retried, navigate, () => redirect(chartType));
         return;
       }
 
