@@ -8,6 +8,8 @@
     "backend"
   ],
   "scripts": {
+    "db:up": "npm run db:up --workspace=backend",
+    "db:down": "npm run db:down --workspace=backend",
     "dev": "npm run dev --workspace=frontend & npm run dev --workspace=backend",
     "dev:test": "npm run dev --workspace=frontend & npm run dev:test --workspace=backend",
     "start": "npm run start --workspace=backend",

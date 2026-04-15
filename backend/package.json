@@ -5,6 +5,9 @@
   "main": "src/server.ts",
   "type": "module",
   "scripts": {
+    "db:up": "docker compose -f postgres/docker-compose.yml up -d --wait && npm run db:migrate",
+    "db:down": "docker compose -f postgres/docker-compose.yml down",
+    "db:migrate": "prisma migrate deploy && prisma generate",
     "dev": "nodemon",
     "start": "tsx src/server.ts",
     "build": "tsc",
