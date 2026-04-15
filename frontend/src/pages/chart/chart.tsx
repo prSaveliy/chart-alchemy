@@ -2,10 +2,13 @@ import { AIChart } from "./ai-chart";
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
+
+import { handleUnauthorized } from "@/lib/handleUnauthorized";
+
 import { Error } from "../error";
 
 import chartService from "@/services/chartService";
-import { unauthorizedInterceptor } from "@/lib/interceptors";
+
 import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
 
 export const Chart = () => {
@@ -29,14 +32,7 @@ export const Chart = () => {
 
       if (fetchResult.errorMessage) {
         if (!retried.current && fetchResult.statusCode === 401) {
-          const interceptorResult = await unauthorizedInterceptor();
-          if (interceptorResult && interceptorResult.statusCode === 401) {
-            navigate('/login');
-            return;
-          }
-          retried.current = true;
-          await getChart();
-          retried.current = false;
+          await handleUnauthorized(retried, navigate, getChart);
           return;
         }
 

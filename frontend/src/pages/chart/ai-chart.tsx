@@ -1,6 +1,8 @@
 import { useState, useRef, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 
+import { handleUnauthorized } from "@/lib/handleUnauthorized";
+
 import { Info, Check } from "lucide-react";
 
 import defaultUserPicture from "@/assets/user.png";
@@ -11,7 +13,6 @@ import { Header2 } from "@/components/layout/header2";
 import ReactECharts from "echarts-for-react";
 
 import chartService from "@/services/chartService";
-import { unauthorizedInterceptor } from "@/lib/interceptors";
 import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
 
 const DEFAULT_TOOLBOX = {
@@ -77,14 +78,7 @@ export const AIChart = ({
 
     if (fetchResult.errorMessage) {
       if (!retried.current && fetchResult.statusCode === 401) {
-        const interceptorResult = await unauthorizedInterceptor();
-        if (interceptorResult && interceptorResult.statusCode === 401) {
-          navigate("/login");
-          return;
-        }
-        retried.current = true;
-        await generate();
-        retried.current = false;
+        await handleUnauthorized(retried, navigate, generate);
         return;
       } else {
         setFetchError(fetchResult.errorMessage);
