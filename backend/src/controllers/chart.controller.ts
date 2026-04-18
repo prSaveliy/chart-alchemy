@@ -8,6 +8,7 @@ import { chartInitRequestSchema } from '../commons/schemas/chartInitRequest.sche
 import { accountActivationSchema as chartTokenSchema } from '../commons/schemas/accountActivation.schema.js';
 import { chartGenerationRequestSchema } from '../commons/schemas/chartGenerationRequest.schema.js';
 import { chartRenameRequestSchema } from '../commons/schemas/chartRenameRequest.schema.js';
+import { saveConfigRequestSchema } from '../commons/schemas/saveConfigRequestSchema.js';
 
 import { VerifyTokenRoute as GetChartByTokenRoute } from '../commons/types/routes.js';
 
@@ -50,7 +51,10 @@ class ChartController {
     );
   }
 
-  async getByToken(request: FastifyRequest<GetChartByTokenRoute>, reply: FastifyReply) {
+  async getByToken(
+    request: FastifyRequest<GetChartByTokenRoute>,
+    reply: FastifyReply,
+  ) {
     const { token } = request.params;
     const userId = request.user.id;
 
@@ -65,6 +69,16 @@ class ChartController {
     );
     const userId = request.user.id;
     return await chartService.rename(request.server, name, token, userId);
+  }
+
+  async saveConfig(request: FastifyRequest, reply: FastifyReply) {
+    const { token, chartData } = validateSchema(
+      request,
+      saveConfigRequestSchema,
+      'Invalid request body',
+    );
+    const userId = request.user.id;
+    return await chartService.saveConfig(request.server, token, chartData, userId);
   }
 }
 

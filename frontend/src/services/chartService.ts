@@ -31,6 +31,10 @@ class ChartService {
   async getByToken(token: string) {
     return await fetchClient.get(`chart/${token}`);
   }
+
+  async saveConfig(token: string, chartData: ChartConfig) {
+    return await fetchClient.patch("chart/save-config", { token, chartData });
+  }
 }
 
 export default new ChartService();
