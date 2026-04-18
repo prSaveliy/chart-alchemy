@@ -5,7 +5,7 @@ import { handleUnauthorized } from "@/lib/handleUnauthorized";
 
 import defaultUserPicture from "@/assets/user.png";
 
-import { Sparkles, FileDown, Settings } from "lucide-react";
+import { Sparkles, Settings } from "lucide-react";
 
 import { Header2 } from "@/components/layout/header2";
 import { WorkflowChoiceCard } from "@/components/ui/workflow-choice-card";
@@ -23,7 +23,7 @@ export const NewChart = () => {
   const [serverError, setServerError] = useState(false);
   const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
 
-  const redirect = async (chartType: "ai" | "dataset" | "manual") => {
+  const redirect = async (chartType: "ai" | "manual") => {
     const fetchResult = await chartService.init(chartType);
 
     if (fetchResult.errorMessage) {
@@ -92,12 +92,6 @@ export const NewChart = () => {
                     Icon={Sparkles}
                     title="Prompt AI to generate charts"
                     onCLick={() => redirect("ai")}
-                  />
-
-                  <WorkflowChoiceCard
-                    Icon={FileDown}
-                    title="Upload a dataset"
-                    onCLick={() => redirect("dataset")}
                   />
 
                   <WorkflowChoiceCard
