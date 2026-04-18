@@ -29,3 +29,11 @@ export interface ManualChartProps {
   initialData?: ChartConfig | null;
   initialType?: ManualChartType;
 }
+
+export interface ChartSummary {
+  token: string;
+  name: string;
+  manualType: string | null;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -43,6 +43,14 @@ const chartRoutes = (fastify: FastifyInstance) => {
     chartController.rename,
   );
 
+  fastify.get(
+    '/',
+    {
+      onRequest: fastify.auth,
+    },
+    chartController.list,
+  );
+
   fastify.get<GetChartByTokenRoute>(
     '/:token',
     {

@@ -89,6 +89,22 @@ class ChartService {
     });
   }
 
+  async listByUser(fastify: FastifyInstance, userId: number) {
+    const charts = await fastify.prisma.chart.findMany({
+      where: { userId },
+      orderBy: { updatedAt: 'desc' },
+      select: {
+        token: true,
+        name: true,
+        manualType: true,
+        createdAt: true,
+        updatedAt: true,
+      },
+    });
+
+    return { charts };
+  }
+
   async getByToken(fastify: FastifyInstance, token: string, userId: number) {
     await this.verifyToken(fastify, token, userId);
 
