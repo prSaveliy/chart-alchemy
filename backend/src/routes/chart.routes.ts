@@ -56,6 +56,15 @@ const chartRoutes = (fastify: FastifyInstance) => {
     },
     chartController.getByToken,
   );
+
+  fastify.patch(
+    '/save-config',
+    {
+      // onRequest: [fastify.auth, rateLimitByIp(30, 60 * 1000)],
+      onRequest: fastify.auth,
+    },
+    chartController.saveConfig,
+  );
 };
 
 export default chartRoutes;

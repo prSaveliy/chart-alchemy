@@ -1,4 +1,5 @@
 import { AIChart } from "./ai-chart";
+import { ManualChart } from "./manual-chart";
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
@@ -106,6 +107,6 @@ export const Chart = () => {
   }
 
   if (verified) {
-    return <AIChart initialData={chartData} initialName={chartName} />;
+    return <ManualChart initialName={chartName} />;
   }
 };

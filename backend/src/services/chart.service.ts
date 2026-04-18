@@ -3,6 +3,7 @@ import { Prisma } from '../generated/prisma/client.js';
 
 import geminiService from './gemini.service.js';
 import { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
+import { EChartsOption } from '../commons/schemas/chartConfig.schema.js';
 
 import { v4 } from 'uuid';
 
@@ -51,14 +52,24 @@ class ChartService {
   ) {
     await this.verifyToken(fastify, token, userId);
 
-    const chartData = await geminiService.generate(fastify, prompt, memory, thinkingMode);
+    const chartData = await geminiService.generate(
+      fastify,
+      prompt,
+      memory,
+      thinkingMode,
+    );
 
     await this.save(fastify, chartData, token);
 
     return { chartData };
   }
 
-  async rename(fastify: FastifyInstance, name: string, token: string, userId: number) {
+  async rename(
+    fastify: FastifyInstance,
+    name: string,
+    token: string,
+    userId: number,
+  ) {
     await this.verifyToken(fastify, token, userId);
 
     await fastify.prisma.chart.update({
@@ -67,11 +78,7 @@ class ChartService {
     });
   }
 
-  async save(
-    fastify: FastifyInstance,
-    chartData: ChartConfig,
-    token: string,
-  ) {
+  async save(fastify: FastifyInstance, chartData: ChartConfig, token: string) {
     await fastify.prisma.chart.update({
       where: {
         token,
@@ -92,6 +99,24 @@ class ChartService {
     });
 
     return { chartData: chart?.config, chartName: chart?.name };
+  }
+
+  async saveConfig(
+    fastify: FastifyInstance,
+    token: string,
+    chartData: EChartsOption,
+    userId: number,
+  ) {
+    await this.verifyToken(fastify, token, userId);
+
+    await fastify.prisma.chart.update({
+      where: {
+        token,
+      }, 
+      data: {
+        config: chartData as Prisma.InputJsonValue,
+      },
+    });
   }
 }
 
