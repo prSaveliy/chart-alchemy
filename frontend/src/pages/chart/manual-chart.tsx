@@ -12,21 +12,16 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 import chartService from "@/services/chartService";
+import type { ManualChartType } from "@/services/chartService";
 import type { EChartsOption } from "@/commons/schemas/chartConfig.schema";
+import type {
+  PieEntry,
+  RadarIndicator,
+  ManualChartProps,
+} from "@/commons/interfaces/chartInterfaces";
+import { parseManualChartState } from "@/lib/parseManualChartState";
 
-type ChartType = "bar" | "line" | "area" | "pie" | "scatter" | "radar";
-
-interface PieEntry {
-  name: string;
-  value: string;
-}
-
-interface RadarIndicator {
-  name: string;
-  max: string;
-}
-
-const CHART_TYPES: { type: ChartType; label: string; Icon: React.ElementType }[] = [
+const CHART_TYPES: { type: ManualChartType; label: string; Icon: React.ElementType }[] = [
   { type: "bar", label: "Bar", Icon: BarChart2 },
   { type: "line", label: "Line", Icon: TrendingUp },
   { type: "area", label: "Area", Icon: Layers },
@@ -45,11 +40,20 @@ const DEFAULT_TOOLBOX = {
   },
 };
 
-export const ManualChart = ({ initialName }: { initialName?: string }) => {
+export const ManualChart = ({
+  initialName,
+  initialData,
+  initialType,
+}: ManualChartProps) => {
   const { token } = useParams();
   const navigate = useNavigate();
   const retried = useRef(false);
   const savedTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const initial = useMemo(
+    () => parseManualChartState(initialData?.option, initialType),
+    [initialData, initialType],
+  );
 
   const [chartName, setChartName] = useState(initialName ?? "");
   const [savedName, setSavedName] = useState(initialName ?? "");
@@ -58,35 +62,26 @@ export const ManualChart = ({ initialName }: { initialName?: string }) => {
   const [saved, setSaved] = useState(false);
   const [saveError, setSaveError] = useState("");
 
-  const [selectedType, setSelectedType] = useState<ChartType>("bar");
+  const [selectedType, setSelectedType] = useState<ManualChartType>(initial.type);
 
   // Line / Bar / Area state
-  const [categories, setCategories] = useState("Jan,Feb,Mar,Apr,May,Jun");
-  const [seriesName, setSeriesName] = useState("Series 1");
-  const [seriesValues, setSeriesValues] = useState("42,65,51,88,73,59");
-  const [smooth, setSmooth] = useState(false);
+  const [categories, setCategories] = useState(initial.categories);
+  const [seriesName, setSeriesName] = useState(initial.seriesName);
+  const [seriesValues, setSeriesValues] = useState(initial.seriesValues);
+  const [smooth, setSmooth] = useState(initial.smooth);
 
   // Pie state
-  const [pieEntries, setPieEntries] = useState<PieEntry[]>([
-    { name: "Category A", value: "40" },
-    { name: "Category B", value: "30" },
-    { name: "Category C", value: "20" },
-    { name: "Category D", value: "10" },
-  ]);
+  const [pieEntries, setPieEntries] = useState<PieEntry[]>(initial.pieEntries);
 
   // Scatter state
-  const [scatterPoints, setScatterPoints] = useState("10,20\n30,50\n60,40\n80,90\n20,70");
+  const [scatterPoints, setScatterPoints] = useState(initial.scatterPoints);
 
   // Radar state
-  const [radarIndicators, setRadarIndicators] = useState<RadarIndicator[]>([
-    { name: "Speed", max: "100" },
-    { name: "Power", max: "100" },
-    { name: "Defense", max: "100" },
-    { name: "Tech", max: "100" },
-    { name: "Vision", max: "100" },
-  ]);
-  const [radarSeriesName, setRadarSeriesName] = useState("Stats");
-  const [radarValues, setRadarValues] = useState("80,60,70,90,50");
+  const [radarIndicators, setRadarIndicators] = useState<RadarIndicator[]>(
+    initial.radarIndicators,
+  );
+  const [radarSeriesName, setRadarSeriesName] = useState(initial.radarSeriesName);
+  const [radarValues, setRadarValues] = useState(initial.radarValues);
 
   const option = useMemo((): EChartsOption => {
     const base: EChartsOption = { toolbox: DEFAULT_TOOLBOX, tooltip: { trigger: "item" } };
@@ -166,7 +161,11 @@ export const ManualChart = ({ initialName }: { initialName?: string }) => {
   const saveChart = async () => {
     setIsSaving(true);
 
-    const fetchResult = await chartService.saveConfig(token!, { option });
+    const fetchResult = await chartService.saveConfig(
+      token!,
+      { option },
+      selectedType,
+    );
 
     if (fetchResult.errorMessage) {
       if (!retried.current && fetchResult.statusCode === 401) {

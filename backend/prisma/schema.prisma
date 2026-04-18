@@ -68,7 +68,8 @@ model Chart {
   updatedAt   DateTime @updatedAt
 
   config      Json @default("{}")
-  
+  manualType  String?
+
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
 }

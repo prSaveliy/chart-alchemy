@@ -98,7 +98,11 @@ class ChartService {
       },
     });
 
-    return { chartData: chart?.config, chartName: chart?.name };
+    return {
+      chartData: chart?.config,
+      chartName: chart?.name,
+      manualType: chart?.manualType ?? null,
+    };
   }
 
   async saveConfig(
@@ -106,15 +110,17 @@ class ChartService {
     token: string,
     chartData: EChartsOption,
     userId: number,
+    manualType?: string,
   ) {
     await this.verifyToken(fastify, token, userId);
 
     await fastify.prisma.chart.update({
       where: {
         token,
-      }, 
+      },
       data: {
         config: chartData as Prisma.InputJsonValue,
+        ...(manualType !== undefined ? { manualType } : {}),
       },
     });
   }
