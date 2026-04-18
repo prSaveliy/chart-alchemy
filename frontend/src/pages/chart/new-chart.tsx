@@ -80,24 +80,33 @@ export const NewChart = () => {
           <div className="flex flex-col w-full min-h-screen">
             <Header2 userPicture={userPicture || defaultUserPicture} />
 
-            <div className="flex flex-1">
-              <div className="flex flex-col w-full items-center justify-center">
-                <div className="flex mb-8">
-                  <h1 className="flex text-4xl font-bold ">
-                    Choose the workflow that suits you best
+            <div className="flex flex-1 items-center justify-center px-6 py-12">
+              <div className="flex flex-col items-center w-full max-w-5xl">
+                <div className="flex flex-col items-center mb-10 text-center">
+                  <h1 className="text-4xl font-bold text-gray-900">
+                    How would you like to create your chart?
                   </h1>
+                  <p className="mt-3 text-base text-gray-600 max-w-xl">
+                    Start from a natural-language prompt or build your chart by
+                    hand with full control over every field.
+                  </p>
                 </div>
-                <div>
+
+                <div className="flex flex-col sm:flex-row gap-6">
                   <WorkflowChoiceCard
                     Icon={Sparkles}
-                    title="Prompt AI to generate charts"
-                    onCLick={() => redirect("ai")}
+                    title="Generate with AI"
+                    description="Describe the chart you want in plain language and AI model will build it for you. Iterate with follow-up prompts, carry context forward with memory, and refine your visualization turn by turn."
+                    cta="Start with AI"
+                    onClick={() => redirect("ai")}
                   />
 
                   <WorkflowChoiceCard
                     Icon={Settings}
-                    title="Manual configuration"
-                    onCLick={() => redirect("manual")}
+                    title="Build manually"
+                    description="Configure each chart field by hand. Choose from bar, line, area, pie, scatter, or radar, supply your own data, and watch the chart update live as you edit."
+                    cta="Start manually"
+                    onClick={() => redirect("manual")}
                   />
                 </div>
               </div>
