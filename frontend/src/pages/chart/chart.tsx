@@ -9,6 +9,7 @@ import { handleUnauthorized } from "@/lib/handleUnauthorized";
 import { Error } from "../error";
 
 import chartService from "@/services/chartService";
+import type { ManualChartType } from "@/services/chartService";
 
 import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
 
@@ -26,6 +27,7 @@ export const Chart = () => {
   const [verified, setVerified] = useState(false);
   const [chartData, setChartData] = useState<ChartConfig | null>(null);
   const [chartName, setChartName] = useState("");
+  const [manualType, setManualType] = useState<ManualChartType | null>(null);
 
   useEffect(() => {
     const getChart = async () => {
@@ -55,6 +57,7 @@ export const Chart = () => {
 
       setChartData(fetchResult.data.chartData);
       setChartName(fetchResult.data.chartName);
+      setManualType(fetchResult.data.manualType ?? null);
       setVerified(true);
     };
 
@@ -107,6 +110,12 @@ export const Chart = () => {
   }
 
   if (verified) {
-    return <ManualChart initialName={chartName} />;
+    return (
+      <ManualChart
+        initialName={chartName}
+        initialData={chartData}
+        initialType={manualType ?? undefined}
+      />
+    );
   }
 };

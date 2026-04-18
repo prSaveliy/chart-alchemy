@@ -72,13 +72,19 @@ class ChartController {
   }
 
   async saveConfig(request: FastifyRequest, reply: FastifyReply) {
-    const { token, chartData } = validateSchema(
+    const { token, chartData, manualType } = validateSchema(
       request,
       saveConfigRequestSchema,
       'Invalid request body',
     );
     const userId = request.user.id;
-    return await chartService.saveConfig(request.server, token, chartData, userId);
+    return await chartService.saveConfig(
+      request.server,
+      token,
+      chartData,
+      userId,
+      manualType,
+    );
   }
 }
 

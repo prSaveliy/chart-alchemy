@@ -1,6 +1,14 @@
 import fetchClient from "@/lib/fetchClient";
 import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
 
+export type ManualChartType =
+  | "bar"
+  | "line"
+  | "area"
+  | "pie"
+  | "scatter"
+  | "radar";
+
 class ChartService {
   async init(chartType: "ai" | "dataset" | "manual") {
     return await fetchClient.post("chart/init", { chartType });
@@ -32,8 +40,16 @@ class ChartService {
     return await fetchClient.get(`chart/${token}`);
   }
 
-  async saveConfig(token: string, chartData: ChartConfig) {
-    return await fetchClient.patch("chart/save-config", { token, chartData });
+  async saveConfig(
+    token: string,
+    chartData: ChartConfig,
+    manualType?: ManualChartType,
+  ) {
+    return await fetchClient.patch("chart/save-config", {
+      token,
+      chartData,
+      ...(manualType ? { manualType } : {}),
+    });
   }
 }
 
