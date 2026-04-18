@@ -40,12 +40,11 @@ export const LoginForm = ({
     const authorized = validateJWT(accessToken);
 
     if (authorized) {
-      // change to dashboard later
-      navigate("/new-chart");
+      navigate("/dashboard");
     } else {
       const result = await unauthorizedInterceptor();
       if (result && !result.networkError && !result.statusCode) {
-        navigate("/new-chart");
+        navigate("/dashboard");
       } else {
         setLoginRequired(true);
       }
@@ -74,9 +73,7 @@ export const LoginForm = ({
       setFetchError(fetchResult.errorMessage);
     } else {
       setFetchError("");
-
-      // change to dashboard later
-      navigate("/new-chart");
+      navigate("/dashboard");
     }
   };
 

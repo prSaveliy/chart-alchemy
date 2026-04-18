@@ -58,7 +58,7 @@ export const Header2 = (props: { userPicture: string | null }) => {
                   New Chart
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() => {}}
+                  onClick={() => navigate('/dashboard')}
                   className="cursor-pointer"
                 >
                   Dashboard

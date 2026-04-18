@@ -38,7 +38,7 @@ export const GoogleLogin = () => {
       } else if (fetchResult.errorMessage) {
         setNetworkError(true);
       } else {
-        navigate('/new-chart');
+        navigate('/dashboard');
       }
     }
   };

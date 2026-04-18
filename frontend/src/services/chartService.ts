@@ -14,6 +14,10 @@ class ChartService {
     return await fetchClient.post("chart/init", { chartType });
   }
 
+  async list() {
+    return await fetchClient.get("chart");
+  }
+
   async verifyToken(token: string) {
     return await fetchClient.post("chart/verify-token", { token });
   }

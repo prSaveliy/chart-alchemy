@@ -51,6 +51,11 @@ class ChartController {
     );
   }
 
+  async list(request: FastifyRequest, reply: FastifyReply) {
+    const userId = request.user.id;
+    return await chartService.listByUser(request.server, userId);
+  }
+
   async getByToken(
     request: FastifyRequest<GetChartByTokenRoute>,
     reply: FastifyReply,
