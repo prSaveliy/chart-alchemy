@@ -705,6 +705,122 @@ describe('chart integration tests', () => {
     });
   });
 
+  describe('GET /chart', () => {
+    test('returns empty list when user has no charts', async () => {
+      const accessToken = await makeUser(app, 'list-empty@qwertyuiop1234.com');
+
+      const response = await request(app.server)
+        .get('/chart')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(response.status, 200);
+      assert.deepEqual(response.body.charts, []);
+    });
+
+    test('returns only charts belonging to current user', async () => {
+      const ownerToken = await makeUser(app, 'list-owner@qwertyuiop1234.com');
+      const otherToken = await makeUser(app, 'list-other@qwertyuiop1234.com');
+
+      const ownedInit = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ chartType: 'ai' })
+        .set('Content-Type', 'application/json');
+
+      await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${otherToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const response = await request(app.server)
+        .get('/chart')
+        .set('Authorization', `Bearer ${ownerToken}`);
+
+      assert.equal(response.status, 200);
+      assert.equal(response.body.charts.length, 1);
+      assert.equal(response.body.charts[0].token, ownedInit.body.token);
+    });
+
+    test('returns charts ordered by updatedAt desc', async () => {
+      const accessToken = await makeUser(app, 'list-order@qwertyuiop1234.com');
+
+      const firstInit = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const secondInit = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      await request(app.server)
+        .patch('/chart/rename')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ name: 'Bumped', token: firstInit.body.token })
+        .set('Content-Type', 'application/json');
+
+      const response = await request(app.server)
+        .get('/chart')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(response.status, 200);
+      assert.equal(response.body.charts.length, 2);
+      assert.equal(response.body.charts[0].token, firstInit.body.token);
+      assert.equal(response.body.charts[1].token, secondInit.body.token);
+    });
+
+    test('returns expected summary fields', async () => {
+      const accessToken = await makeUser(app, 'list-fields@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          token: initRes.body.token,
+          chartData: { series: [{ type: 'pie', data: [1, 2] }] },
+          manualType: 'pie',
+        })
+        .set('Content-Type', 'application/json');
+
+      await request(app.server)
+        .patch('/chart/rename')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ name: 'Summary', token: initRes.body.token })
+        .set('Content-Type', 'application/json');
+
+      const response = await request(app.server)
+        .get('/chart')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(response.status, 200);
+      const [chart] = response.body.charts;
+      assert.equal(chart.token, initRes.body.token);
+      assert.equal(chart.name, 'Summary');
+      assert.equal(chart.manualType, 'pie');
+      assert.ok(chart.createdAt);
+      assert.ok(chart.updatedAt);
+      assert.ok(!('config' in chart));
+      assert.ok(!('userId' in chart));
+      assert.ok(!('id' in chart));
+    });
+
+    test('returns 401 without auth', async () => {
+      const response = await request(app.server).get('/chart');
+
+      assert.equal(response.status, 401);
+    });
+  });
+
   describe('GET /chart/:token', () => {
     test('returns chart data for own chart', async () => {
       const accessToken = await makeUser(app, 'get-ok@qwertyuiop1234.com');
