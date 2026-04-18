@@ -419,6 +419,290 @@ describe('chart integration tests', () => {
 
       assert.equal(response.status, 401);
     });
+
+    test('preserves saved config and manualType', async () => {
+      const accessToken = await makeUser(
+        app,
+        'rename-preserve@qwertyuiop1234.com',
+      );
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+      const chartData = { series: [{ type: 'bar', data: [1, 2, 3] }] };
+
+      await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ token: chartToken, chartData, manualType: 'bar' })
+        .set('Content-Type', 'application/json');
+
+      await request(app.server)
+        .patch('/chart/rename')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ name: 'Renamed', token: chartToken })
+        .set('Content-Type', 'application/json');
+
+      const chart = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      assert.equal(chart.name, 'Renamed');
+      assert.deepEqual(chart.config, chartData);
+      assert.equal(chart.manualType, 'bar');
+    });
+  });
+
+  describe('PATCH /chart/save-config', () => {
+    test('saves chart config successfully', async () => {
+      const accessToken = await makeUser(app, 'save-ok@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+      const chartData = { series: [{ type: 'bar', data: [10, 20, 30] }] };
+
+      const response = await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ token: chartToken, chartData })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 200);
+
+      const chart = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      assert.deepEqual(chart.config, chartData);
+    });
+
+    test('persists manualType when provided', async () => {
+      const accessToken = await makeUser(
+        app,
+        'save-manual-type@qwertyuiop1234.com',
+      );
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+
+      const response = await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          token: chartToken,
+          chartData: { series: [{ type: 'pie', data: [1, 2, 3] }] },
+          manualType: 'pie',
+        })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 200);
+
+      const chart = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      assert.equal(chart.manualType, 'pie');
+    });
+
+    test('leaves manualType unchanged when omitted on subsequent save', async () => {
+      const accessToken = await makeUser(
+        app,
+        'save-preserve-type@qwertyuiop1234.com',
+      );
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+
+      await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          token: chartToken,
+          chartData: { series: [{ type: 'bar', data: [1] }] },
+          manualType: 'bar',
+        })
+        .set('Content-Type', 'application/json');
+
+      await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          token: chartToken,
+          chartData: { series: [{ type: 'bar', data: [2] }] },
+        })
+        .set('Content-Type', 'application/json');
+
+      const chart = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      assert.equal(chart.manualType, 'bar');
+    });
+
+    test('overwrites previous config on subsequent save', async () => {
+      const accessToken = await makeUser(
+        app,
+        'save-overwrite@qwertyuiop1234.com',
+      );
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+
+      await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          token: chartToken,
+          chartData: { series: [{ type: 'bar', data: [1] }] },
+        })
+        .set('Content-Type', 'application/json');
+
+      const newConfig = { series: [{ type: 'line', data: [5, 10, 15] }] };
+
+      await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ token: chartToken, chartData: newConfig })
+        .set('Content-Type', 'application/json');
+
+      const chart = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      assert.deepEqual(chart.config, newConfig);
+    });
+
+    test('returns 403 when chart belongs to another user', async () => {
+      const ownerToken = await makeUser(app, 'save-owner@qwertyuiop1234.com');
+      const otherToken = await makeUser(app, 'save-other@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const response = await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${otherToken}`)
+        .send({
+          token: initRes.body.token,
+          chartData: { series: [{ type: 'bar', data: [1] }] },
+        })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 403);
+    });
+
+    test('returns 404 for nonexistent chart token', async () => {
+      const accessToken = await makeUser(
+        app,
+        'save-notfound@qwertyuiop1234.com',
+      );
+
+      const response = await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          token: 'manual-00000000-0000-0000-0000-000000000000',
+          chartData: { series: [{ type: 'bar', data: [1] }] },
+        })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 404);
+    });
+
+    test('returns 400 when chartData is missing', async () => {
+      const accessToken = await makeUser(
+        app,
+        'save-no-data@qwertyuiop1234.com',
+      );
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const response = await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ token: initRes.body.token })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 400);
+    });
+
+    test('returns 400 when token is missing', async () => {
+      const accessToken = await makeUser(
+        app,
+        'save-no-token@qwertyuiop1234.com',
+      );
+
+      const response = await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartData: { series: [{ type: 'bar', data: [1] }] } })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 400);
+    });
+
+    test('returns 400 when manualType is invalid', async () => {
+      const accessToken = await makeUser(
+        app,
+        'save-bad-type@qwertyuiop1234.com',
+      );
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const response = await request(app.server)
+        .patch('/chart/save-config')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          token: initRes.body.token,
+          chartData: { series: [{ type: 'bar', data: [1] }] },
+          manualType: 'donut',
+        })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 400);
+    });
+
+    test('returns 401 without auth', async () => {
+      const response = await request(app.server)
+        .patch('/chart/save-config')
+        .send({
+          token: 'manual-some-token',
+          chartData: { series: [{ type: 'bar', data: [1] }] },
+        })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 401);
+    });
   });
 
   describe('GET /chart/:token', () => {
