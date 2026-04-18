@@ -5,6 +5,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
 
 import { handleUnauthorized } from "@/lib/handleUnauthorized";
+import { parseChartKind } from "@/lib/parseChartToken";
 
 import { Error } from "../error";
 
@@ -29,7 +30,14 @@ export const Chart = () => {
   const [chartName, setChartName] = useState("");
   const [manualType, setManualType] = useState<ManualChartType | null>(null);
 
+  const kind = token ? parseChartKind(token) : null;
+
   useEffect(() => {
+    if (!kind) {
+      setNotFoundError(true);
+      return;
+    }
+
     const getChart = async () => {
       const fetchResult = await chartService.getByToken(token!);
 
@@ -110,12 +118,17 @@ export const Chart = () => {
   }
 
   if (verified) {
-    return (
-      <ManualChart
-        initialName={chartName}
-        initialData={chartData}
-        initialType={manualType ?? undefined}
-      />
-    );
+    switch (kind) {
+      case "ai":
+        return <AIChart initialData={chartData} initialName={chartName} />;
+      case "manual":
+        return (
+          <ManualChart
+            initialName={chartName}
+            initialData={chartData}
+            initialType={manualType ?? undefined}
+          />
+        );
+    }
   }
 };
