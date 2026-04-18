@@ -10,7 +10,7 @@ export type ManualChartType =
   | "radar";
 
 class ChartService {
-  async init(chartType: "ai" | "dataset" | "manual") {
+  async init(chartType: "ai" | "manual") {
     return await fetchClient.post("chart/init", { chartType });
   }
 

@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ChartAlchemy is a full-stack web app for AI-powered data visualization. Users can generate charts via natural language prompts (Google Gemini), upload datasets, or build/edit charts manually. Authentication supports email/password and Google OAuth 2.0.
+ChartAlchemy is a full-stack web app for AI-powered data visualization. Users can generate charts via natural language prompts (Google Gemini) or build/edit charts manually. Authentication supports email/password and Google OAuth 2.0.
 
 ## Tech Stack
 
@@ -70,7 +70,7 @@ Routes (`routes/`) → Controllers (`controllers/`) → Services (`services/`) �
 - Google OAuth via ID token validation in `oauth.service.ts`
 
 ### Frontend structure
-- **Pages** (`pages/`): Split into `auth/` (login, signup, activate-account, forgot-password, password-reset, google-login) and `chart/` (ai-chart, chart, dataset-chart, manual-chart, new-chart), plus root pages (home, error, loading)
+- **Pages** (`pages/`): Split into `auth/` (login, signup, activate-account, forgot-password, password-reset, google-login) and `chart/` (ai-chart, chart, manual-chart, new-chart), plus root pages (home, error, loading)
 - **Components** (`components/`): `layout/` (header, footer, logo, protected-route) and `ui/` (shadcn-style primitives: button, input, field, textarea, dropdown-menu, avatar, etc.)
 - **commons/schemas/**: Zod schemas for auth and chart forms
 
