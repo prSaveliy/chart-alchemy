@@ -102,11 +102,11 @@ export const Dashboard = () => {
     <div className="flex flex-col w-full min-h-screen">
       <Header2 userPicture={userPicture || defaultUserPicture} />
 
-      <div className="flex flex-1 justify-center px-6 py-12">
+      <div className="flex flex-1 justify-center px-4 sm:px-6 py-8 sm:py-12">
         <div className="flex flex-col w-full max-w-6xl">
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-6 sm:mb-8">
             <div>
-              <h1 className="text-3xl font-bold text-gray-900">Your charts</h1>
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">Your charts</h1>
               <p className="mt-2 text-sm text-gray-600">
                 Browse, search, and open charts you have created.
               </p>

@@ -56,8 +56,8 @@ export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
   };
 
   return (
-    <div className="relative w-full h-screen flex flex-col">
-      <div className="absolute top-10 left-10 z-10">
+    <div className="relative w-full min-h-screen flex flex-col">
+      <div className="absolute top-4 left-4 sm:top-10 sm:left-10 z-10">
         <a
           href="/"
           aria-label="home"
@@ -67,8 +67,8 @@ export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
         </a>
       </div>
       {!success ? (
-        <div className="flex justify-center content-center min-h-full">
-          <div className="w-full flex items-center justify-center p-8">
+        <div className="flex flex-1 justify-center content-center min-h-full">
+          <div className="w-full flex items-center justify-center p-4 sm:p-8 pt-20 sm:pt-8">
             <form
               className={cn("flex flex-col gap-6 w-full max-w-sm")}
               {...props}
@@ -126,8 +126,8 @@ export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
           </div>
         </div>
       ) : (
-        <div className="flex justify-center min-h-full">
-          <div className="w-full lg:w-1/2 relative flex flex-col items-center justify-center p-8">
+        <div className="flex flex-1 justify-center min-h-full">
+          <div className="w-full lg:w-1/2 relative flex flex-col items-center justify-center p-4 sm:p-8 pt-20 sm:pt-8">
             <div className="relative flex w-full max-w-lg items-center justify-center">
               <MailCheck
                 size={100}

@@ -25,7 +25,7 @@ export const Header2 = (props: { userPicture: string | null }) => {
   };
 
   return (
-    <div className="flex h-24 border-b items-center px-10">
+    <div className="flex h-16 sm:h-20 lg:h-24 border-b items-center px-4 sm:px-6 lg:px-10">
       <div className="flex flex-1 content-center">
         <a href="/" aria-label="home" className="flex items-center space-x-2">
           <Logo />
@@ -36,7 +36,7 @@ export const Header2 = (props: { userPicture: string | null }) => {
         <div className="flex">
           <DropdownMenu>
             <DropdownMenuTrigger>
-              <button className="flex items-center justify-center w-18 h-12 rounded-2xl hover:bg-black/2 cursor-pointer">
+              <button className="flex items-center justify-center w-16 h-11 sm:w-18 sm:h-12 rounded-2xl hover:bg-black/2 cursor-pointer">
                 <Avatar className="mr-1">
                   <AvatarImage
                     src={props.userPicture ?? user}

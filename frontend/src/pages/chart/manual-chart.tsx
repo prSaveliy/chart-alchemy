@@ -33,7 +33,7 @@ const CHART_TYPES: { type: ManualChartType; label: string; Icon: React.ElementTy
 const DEFAULT_TOOLBOX = {
   show: true,
   right: 20,
-  top: 0,
+  top: 20,
   itemSize: 20,
   feature: {
     saveAsImage: { title: "Save as image", type: "png", pixelRatio: 2 },
@@ -187,7 +187,7 @@ export const ManualChart = ({
   const userPicture = localStorage.getItem("picture");
 
   return (
-    <div className="flex flex-col w-full h-screen">
+    <div className="flex flex-col w-full min-h-screen lg:h-screen">
       <div
         className={`fixed top-4 left-1/2 z-50 flex items-center gap-2 px-4 py-2.5 rounded-xl bg-black text-white text-sm shadow-lg transition-all duration-300 ease-out ${
           saved
@@ -200,9 +200,9 @@ export const ManualChart = ({
       </div>
       <Header2 userPicture={userPicture || defaultUserPicture} />
 
-      <div className="flex flex-1 items-start justify-center gap-6 p-8 overflow-hidden">
+      <div className="flex flex-col lg:flex-row flex-1 items-stretch lg:items-start justify-center gap-6 p-4 sm:p-6 lg:p-8 lg:overflow-hidden">
         {/* Left panel */}
-        <div className="flex flex-col w-96 shrink-0 gap-4 h-full overflow-y-auto pr-2">
+        <div className="flex flex-col w-full lg:w-96 lg:shrink-0 gap-4 lg:h-full lg:overflow-y-auto lg:pr-2">
           {/* Chart name */}
           <div className="flex items-center gap-2">
             <input
@@ -432,12 +432,12 @@ export const ManualChart = ({
         </div>
 
         {/* Right panel — preview */}
-        <div className="flex flex-1 border shadow-sm rounded-3xl items-center justify-center min-h-full">
-          <div className="flex">
+        <div className="w-full lg:flex-1 border shadow-sm rounded-3xl h-[80vh] lg:h-full lg:min-h-full overflow-x-auto overflow-y-hidden lg:overflow-hidden">
+          <div className="h-full min-w-[640px] lg:min-w-0">
             {/* @ts-expect-error - echarts-for-react typings are incompatible with React 19 */}
             <ReactECharts
               option={option}
-              style={{ height: "700px", width: "1400px" }}
+              style={{ height: "100%", width: "100%" }}
               notMerge={true}
               lazyUpdate={true}
             />
