@@ -3,7 +3,9 @@ import { TextEffect } from "@/components/ui/text-effect";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { HeroHeader } from "../components/layout/header";
 import Footer from "../components/layout/footer";
-import lauraImage from "@/assets/laura-lezman-Ml3Ah9JE70U-unsplash.jpg";
+import { FeatureImage } from "@/components/ui/feature-image";
+import chartAI from "@/assets/chart-ai.png";
+import chartManual from "@/assets/chart-manual.png";
 
 const transitionVariants = {
   item: {
@@ -93,7 +95,7 @@ export const HeroSection = () => {
                   per="line"
                   preset="fade-in-blur"
                   speedSegment={0.3}
-                  delay={0.5}
+                  delay={0.2}
                   as="p"
                   className="mx-auto mt-8 max-w-2xl text-balance text-lg"
                 >
@@ -124,7 +126,7 @@ export const HeroSection = () => {
                       size="lg"
                       className="rounded-xl px-5 text-base"
                     >
-                      <a href="#link">
+                      <a href="/new-chart">
                         <span className="text-nowrap">Start Plotting</span>
                       </a>
                     </Button>
@@ -146,18 +148,35 @@ export const HeroSection = () => {
                 ...transitionVariants,
               }}
             >
-              <div className="mask-b-from-55% relative mt-8 overflow-hidden px-2 sm:mt-12 md:mt-20">
-                <div className="inset-shadow-2xs ring-background dark:inset-shadow-white/20 bg-background relative mx-auto max-w-6xl overflow-hidden rounded-2xl border p-4 shadow-lg shadow-zinc-950/15 ring-1">
-                  <img
-                    className="bg-background aspect-15/8 relative hidden w-full h-auto object-cover rounded-2xl dark:block"
-                    src="/mail2.png"
-                    alt="app screen"
-                  />
-                  <img
-                    className="z-2 border-border/25 aspect-15/8 relative w-full h-auto object-cover rounded-2xl border dark:hidden"
-                    src={lauraImage}
-                    alt="app screen"
-                  />
+              <div className="relative mt-16 px-4 sm:px-6 lg:px-8 sm:mt-24 max-w-7xl mx-auto w-full">
+                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
+                  <FeatureImage src={chartAI} />
+                  <div className="flex-1 w-full text-center lg:text-left">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                      Generate with AI
+                    </h2>
+                    <p className="text-lg text-gray-600">
+                      Describe the chart you want in plain language and our
+                      advanced AI model will build it for you. Iterate with
+                      follow-up prompts, carry context forward with memory, and
+                      refine your visualization turn by turn.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="relative mt-16 px-4 sm:px-6 lg:px-8 sm:mt-24 mb-24 max-w-7xl mx-auto w-full">
+                <div className="flex flex-col lg:flex-row-reverse items-center gap-8 lg:gap-16">
+                  <FeatureImage src={chartManual} />
+                  <div className="flex-1 w-full text-center lg:text-left">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                      Build Manually
+                    </h2>
+                    <p className="text-lg text-gray-600">
+                      Configure each chart field by hand. Choose from bar, line,
+                      area, pie, scatter, or radar, supply your own data, and
+                      watch the chart update live as you edit.
+                    </p>
+                  </div>
                 </div>
               </div>
             </AnimatedGroup>
