@@ -32,7 +32,6 @@
     "crypto": "^1.0.1",
     "fastify": "^5.7.4",
     "fastify-plugin": "^5.1.0",
-    "google-auth-library": "^10.6.2",
     "node-cache": "^5.1.2",
     "nodemailer": "^8.0.1",
     "toad-scheduler": "^3.1.0",
