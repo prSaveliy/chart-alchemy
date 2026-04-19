@@ -1,3 +1,7 @@
 node_modules/
 
+.agents/
+.claude/
+AGENTS.md
+
 TODO.txt
