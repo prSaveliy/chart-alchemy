@@ -67,12 +67,6 @@ export const Header2 = (props: { userPicture: string | null }) => {
               <DropdownMenuSeparator />
               <DropdownMenuGroup>
                 <DropdownMenuItem
-                  onClick={() => {}}
-                  className="cursor-pointer"
-                >
-                  About
-                </DropdownMenuItem>
-                <DropdownMenuItem
                   onClick={() =>
                     (window.location.href = "https://github.com/prSaveliy/chart-alchemy")
                   }
