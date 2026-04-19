@@ -80,8 +80,8 @@ export const LoginForm = ({
   return (
     <div>
       {loginRequired && (
-        <div className="relative w-full h-screen flex flex-col">
-          <div className="absolute top-10 left-10 z-10">
+        <div className="relative w-full min-h-screen flex flex-col">
+          <div className="absolute top-4 left-4 sm:top-10 sm:left-10 z-10">
             <a
               href="/"
               aria-label="home"
@@ -92,7 +92,7 @@ export const LoginForm = ({
           </div>
 
           <div className="flex flex-1">
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-8">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 pt-20 sm:pt-8">
               <form
                 className={cn("flex flex-col gap-6 w-full max-w-sm", className)}
                 {...props}

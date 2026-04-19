@@ -143,8 +143,8 @@ export const PasswordReset = () => {
         />
       )}
       {verified && (
-        <div>
-          <div className="absolute top-10 left-10 z-10">
+        <div className="relative w-full min-h-screen">
+          <div className="absolute top-4 left-4 sm:top-10 sm:left-10 z-10">
             <a
               href="/"
               aria-label="home"
@@ -154,7 +154,7 @@ export const PasswordReset = () => {
             </a>
           </div>
           <div className="flex justify-center content-center min-h-screen">
-            <div className="w-full flex items-center justify-center p-8">
+            <div className="w-full flex items-center justify-center p-4 sm:p-8 pt-20 sm:pt-8">
               <form
                 className={cn("flex flex-col gap-6 w-full max-w-sm")}
               >

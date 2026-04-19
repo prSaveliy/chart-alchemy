@@ -80,19 +80,19 @@ export const NewChart = () => {
           <div className="flex flex-col w-full min-h-screen">
             <Header2 userPicture={userPicture || defaultUserPicture} />
 
-            <div className="flex flex-1 items-center justify-center px-6 py-12">
+            <div className="flex flex-1 items-center justify-center px-4 sm:px-6 py-8 sm:py-12">
               <div className="flex flex-col items-center w-full max-w-5xl">
-                <div className="flex flex-col items-center mb-10 text-center">
-                  <h1 className="text-4xl font-bold text-gray-900">
+                <div className="flex flex-col items-center mb-8 sm:mb-10 text-center">
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900">
                     How would you like to create your chart?
                   </h1>
-                  <p className="mt-3 text-base text-gray-600 max-w-xl">
+                  <p className="mt-3 text-sm sm:text-base text-gray-600 max-w-xl">
                     Start from a natural-language prompt or build your chart by
                     hand with full control over every field.
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-6">
+                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full">
                   <WorkflowChoiceCard
                     Icon={Sparkles}
                     title="Generate with AI"
