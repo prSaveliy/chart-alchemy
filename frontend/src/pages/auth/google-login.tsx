@@ -17,6 +17,12 @@ export const GoogleLogin = () => {
     const queryParams = new URLSearchParams(window.location.search);
     const code = queryParams.get("code");
     const state = queryParams.get("state");
+    const error = queryParams.get("error");
+
+    if (error) {
+      navigate('/login', { replace: true });
+      return;
+    }
 
     if (code) {
       const fetchResult = await googleAuthService.login(code, state!);
