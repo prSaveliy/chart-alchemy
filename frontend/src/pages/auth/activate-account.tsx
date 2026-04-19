@@ -5,8 +5,6 @@ import authService from "@/services/authService";
 
 import type { FetchResultErrorCode } from "@/commons/interfaces/authInterfaces";
 
-import { Loading } from "../loading";
-
 import { Error } from "../error";
 
 export const ActivateAccount = () => {
@@ -66,9 +64,6 @@ export const ActivateAccount = () => {
           error="Too Many Requests"
           secondaryMessage="You have made too many requests in a short period of time. Please try again later."
         />
-      )}
-      {!networkError && !invalidToken && !serverError && !tooManyRequestsError && (
-        <Loading message="Activating your account" />
       )}
     </div>
   );
