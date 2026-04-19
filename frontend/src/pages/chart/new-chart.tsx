@@ -92,7 +92,7 @@ export const NewChart = () => {
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 w-full">
+                <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 w-full">
                   <WorkflowChoiceCard
                     Icon={Sparkles}
                     title="Generate with AI"
