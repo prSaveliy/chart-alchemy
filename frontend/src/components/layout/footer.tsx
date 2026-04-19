@@ -3,16 +3,8 @@ import { Logo } from "./logo";
 
 const footerLinks = [
   {
-    title: "Features",
-    href: "#",
-  },
-  {
-    title: "About",
-    href: "#",
-  },
-  {
     title: "Contribute",
-    href: "#",
+    href: "https://github.com/prSaveliy/chart-alchemy",
   },
 ];
 
