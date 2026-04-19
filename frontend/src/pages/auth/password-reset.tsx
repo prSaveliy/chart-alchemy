@@ -17,12 +17,10 @@ import type { FetchResultErrorCode } from '@/commons/interfaces/authInterfaces';
 import authService from '@/services/authService';
 
 import { Error } from "../error";
-import { Loading } from "../loading";
 
 import { registrationBaseSchema } from "@/commons/schemas/authSchema";
 
 export const PasswordReset = () => {
-  const [verifying, setVerifying] = useState(true);
   const [verified, setVerified] = useState(false);
   const [invalidToken, setInvalidToken] = useState(false);
   const [networkError, setNetworkError] = useState(false);
@@ -59,8 +57,6 @@ export const PasswordReset = () => {
     } else {
       setVerified(true);
     }
-    
-    setVerifying(false);
   };
   
   useEffect(() => { verifyToken() }, []);
@@ -122,9 +118,6 @@ export const PasswordReset = () => {
   
   return (
     <div>
-      {verifying && (
-        <Loading message="Verifying" />
-      )}
       {networkError && (
         <Error
           error="Something went wrong"

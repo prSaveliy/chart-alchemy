@@ -10,7 +10,6 @@ import { DashboardEmptyState } from "@/components/ui/dashboard-empty-state";
 import { DashboardNoMatchState } from "@/components/ui/dashboard-no-match-state";
 import { Header2 } from "@/components/layout/header2";
 import { Error } from "./error";
-import { Loading } from "./loading";
 
 import { handleUnauthorized } from "@/lib/handleUnauthorized";
 import chartService from "@/services/chartService";
@@ -96,7 +95,7 @@ export const Dashboard = () => {
   }
 
   if (charts === null) {
-    return <Loading message="Loading your charts..." />;
+    return null;
   }
 
   return (

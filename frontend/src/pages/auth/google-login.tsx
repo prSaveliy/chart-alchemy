@@ -4,7 +4,6 @@ import { useNavigate } from "react-router-dom";
 import googleAuthService from "@/services/googleAuthService";
 
 import { Error } from "../error";
-import { Loading } from "../loading";
 
 export const GoogleLogin = () => {
   const [badRequestError, setBadRequestError] = useState(false);
@@ -71,11 +70,6 @@ export const GoogleLogin = () => {
           secondaryMessage="You do not have access to this resource."
         />
       )}
-      {!networkError &&
-        !forbiddenError &&
-        !badRequestError &&
-        !serverError &&
-        !tooManyRequestsError && <Loading message="Logging in" />}
     </div>
   );
 };
