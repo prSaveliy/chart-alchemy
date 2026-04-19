@@ -7,7 +7,7 @@ export const Error = (props: { error: string; secondaryMessage: string }) => {
   const navigate = useNavigate();
   return (
     <div className="relative w-full min-h-screen flex flex-col">
-      <div className="absolute top-4 left-4 sm:top-10 sm:left-10 z-10">
+      <div className="absolute top-4 left-4 sm:top-6 sm:left-6 lg:top-10 lg:left-10 z-10">
         <a
           href="/"
           aria-label="home"
