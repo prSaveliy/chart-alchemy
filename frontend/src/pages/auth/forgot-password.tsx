@@ -23,7 +23,7 @@ export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
   const [email, setEmail] = useState("");
   const [emailError, setEmailError] = useState(false);
   const [fetchError, setFetchError] = useState("");
-  const [awaiting, setAwaititng] = useState(false);
+  const [awaiting, setAwaiting] = useState(false);
   const [success, setSuccess] = useState(false);
 
   const handleEmailChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -41,7 +41,7 @@ export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
   };
 
   const forgotPassword = async () => {
-    setAwaititng(true);
+    setAwaiting(true);
 
     const fetchResult: FetchResultErrorCode = await authService.forgotPassword(email);
 
@@ -52,7 +52,7 @@ export const ForgotPassword = ({ ...props }: React.ComponentProps<"form">) => {
       setSuccess(true);
     }
 
-    setAwaititng(false);
+    setAwaiting(false);
   };
 
   return (
