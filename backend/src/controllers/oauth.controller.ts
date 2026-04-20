@@ -3,7 +3,7 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import oAuthService from '../services/oauth.service.js';
 import tokenService from '../services/refreshToken.service.js';
 
-import validateSchema from '../utils/validateSchema.js';
+import validateRequest from '../utils/validateRequest.js';
 
 import { googleRedirectSchema } from '../commons/schemas/googleRedirect.schema.js';
 
@@ -22,16 +22,23 @@ class OAuthController {
   }
 
   async handleCode(request: FastifyRequest, reply: FastifyReply) {
-    const { code, state } = validateSchema(request, googleRedirectSchema, 'Invalid request body');
+    const { code, state } = validateRequest(
+      request,
+      googleRedirectSchema,
+      'Invalid request body',
+    );
     const { oauth_state } = request.cookies;
-    
+
     if (!oauth_state || oauth_state !== state) {
       throw request.server.httpErrors.forbidden();
     }
-    
+
     reply.clearCookie('oauth_state');
-    
-    const { refreshToken, ...body } = await oAuthService.handleCode(request.server, code);
+
+    const { refreshToken, ...body } = await oAuthService.handleCode(
+      request.server,
+      code,
+    );
     tokenService.saveToCookie(reply, refreshToken);
 
     return body;

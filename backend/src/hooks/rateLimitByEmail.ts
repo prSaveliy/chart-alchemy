@@ -1,7 +1,7 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 
 import { emailSchema } from '../commons/schemas/email.schema.js'; 
-import validateSchema from '../utils/validateSchema.js';
+import validateRequest from '../utils/validateRequest.js';
 
 const rateLimitByEmail = (max: number, timeWindow: number) => {
   if (process.env.NODE_ENV === 'test')
@@ -10,7 +10,7 @@ const rateLimitByEmail = (max: number, timeWindow: number) => {
   const store = new Map();
   
   return async (request: FastifyRequest, reply: FastifyReply) => {
-    const { email } = validateSchema(request, emailSchema, 'Invalid request body');
+    const { email } = validateRequest(request, emailSchema, 'Invalid request body');
     const now = Date.now();
     
     let timeStamps: number[] = store.get(email) || [];
