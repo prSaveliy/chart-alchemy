@@ -1,5 +1,3 @@
-import React from "react";
-
 export const FeatureImage = ({
   src,
   darkSrc = "/mail2.png",
