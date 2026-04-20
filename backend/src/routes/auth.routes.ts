@@ -5,8 +5,6 @@ import authController from '../controllers/auth.controller.js';
 import rateLimitByEmail from '../hooks/rateLimitByEmail.js';
 import rateLimitByIp from '../hooks/rateLimitByIp.js';
 
-import { VerifyTokenRoute } from '../commons/types/routes.js';
-
 const authRoutes = async (fastify: FastifyInstance) => {
   fastify.post('/registration', {
     onRequest: rateLimitByIp(10, 60 * 60 * 1000),
@@ -34,7 +32,7 @@ const authRoutes = async (fastify: FastifyInstance) => {
     preHandler: rateLimitByEmail(3, 60 * 60 * 1000),
   }, authController.forgotPassword);
   
-  fastify.get<VerifyTokenRoute>('/verify-reset-token/:token', {
+  fastify.get('/verify-reset-token/:token', {
     onRequest: rateLimitByIp(20, 15 * 60 * 1000),
   }, authController.verifyResetToken);
   

@@ -4,8 +4,6 @@ import chartController from '../controllers/chart.controller.js';
 
 import rateLimitByIp from '../hooks/rateLimitByIp.js';
 
-import { VerifyTokenRoute as GetChartByTokenRoute } from '../commons/types/routes.js';
-
 const chartRoutes = (fastify: FastifyInstance) => {
   fastify.post(
     '/init',
@@ -51,7 +49,7 @@ const chartRoutes = (fastify: FastifyInstance) => {
     chartController.list,
   );
 
-  fastify.get<GetChartByTokenRoute>(
+  fastify.get(
     '/:token',
     {
       // onRequest: [fastify.auth, rateLimitByIp(5, 60 * 1000)],
