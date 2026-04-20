@@ -385,7 +385,7 @@ describe('auth integration tests', () => {
 
       assert.equal(response.status, 200);
       assert.ok(response.body.accessToken);
-      assert.ok(response.body.refreshToken);
+      assert.ok(response.headers['set-cookie']);
     });
 
     test('returns 401 on wrong password', async () => {
@@ -486,7 +486,7 @@ describe('auth integration tests', () => {
 
       assert.equal(response.status, 200);
       assert.ok(response.body.accessToken);
-      assert.ok(response.body.refreshToken);
+      assert.ok(response.headers['set-cookie']);
 
       const rotatedOut = await (app as any).prisma.refreshToken.findUnique({
         where: { token: oldToken.token },

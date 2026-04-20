@@ -210,7 +210,7 @@ describe('oauth integration tests', () => {
       assert.equal(user.picture, 'new-pic');
     });
 
-    test('returns access token, refresh token, and user DTO', async () => {
+    test('returns access token and refresh token', async () => {
       const email = 'returns-tokens@oauth-authorize.test';
       const sub = 'sub-returns-tokens';
 
@@ -218,8 +218,6 @@ describe('oauth integration tests', () => {
 
       assert.ok(result.accessToken);
       assert.ok(result.refreshToken);
-      assert.equal(result.user.email, email);
-      assert.ok(result.user.id);
     });
 
     test('saves refresh token to DB', async () => {
@@ -353,8 +351,9 @@ describe('oauth integration tests', () => {
         );
 
         assert.ok(result.accessToken);
-        assert.equal(result.user.id, emailUser.id);
-        assert.equal(result.user.email, 'merge-tokens-new@oauth-authorize.test');
+        const decoded = app.jwt.decode<{ id: number; email: string }>(result.accessToken);
+        assert.equal(decoded!.id, emailUser.id);
+        assert.equal(decoded!.email, 'merge-tokens-new@oauth-authorize.test');
       });
     });
   });
