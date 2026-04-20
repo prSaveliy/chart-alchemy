@@ -97,12 +97,6 @@ class AuthService {
             email,
             `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
           );
-          const userData = {
-            id: user.id,
-            email: email,
-          };
-          
-          return userData;
         }
       }
     } else {
@@ -126,14 +120,6 @@ class AuthService {
         email,
         `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
       );
-  
-      const userData: UserDTO = {
-        id: user.id,
-        email: email,
-        isActivated: user.isActivated,
-      };
-      
-      return userData;
     }
   }
   
@@ -160,8 +146,8 @@ class AuthService {
     };
     const tokens = tokenService.generateTokens(fastify, userData);
     await tokenService.saveToken(fastify, user.id, tokens.refreshToken);
-    
-    return { ...tokens, user: userData, picture: user.picture };
+
+    return { ...tokens, picture: user.picture };
   }
   
   async activate(fastify: FastifyInstance, token: string) {
@@ -239,8 +225,8 @@ class AuthService {
     const tokens = tokenService.generateTokens(fastify, userData);
     await tokenService.deleteToken(fastify, token.token);
     await tokenService.saveToken(fastify, user.id, tokens.refreshToken);
-    
-    return { ...tokens, user: userData };
+
+    return tokens;
   }
   
   async logout(fastify: FastifyInstance, refreshToken: string) {

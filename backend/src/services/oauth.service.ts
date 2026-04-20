@@ -164,7 +164,7 @@ class OAuthService {
     const tokens = tokenService.generateTokens(fastify, userData);
     await tokenService.saveToken(fastify, user!.id, tokens.refreshToken);
 
-    return { ...tokens, user: userData, picture };
+    return { ...tokens, picture };
   }
 }
 

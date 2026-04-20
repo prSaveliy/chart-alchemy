@@ -14,18 +14,16 @@ import { VerifyTokenRoute } from '../commons/types/routes.js';
 class AuthController {
   async registration(request: FastifyRequest, reply: FastifyReply) {
     const { email, password } = validateSchema(request, registrationSchema, 'Invalid credentials');
-    
-    const user = await authService.registration(request.server, email, password);
-    return user;
-  } 
-  
+    await authService.registration(request.server, email, password);
+  }
+
   async login(request: FastifyRequest, reply: FastifyReply) {
     const { email, password } = validateSchema(request, registrationSchema, 'Invalid credentials');
-    
-    const data = await authService.login(request.server, email, password);
-    tokenService.saveToCookie(reply, data.refreshToken);
 
-    return data;
+    const { refreshToken, ...body } = await authService.login(request.server, email, password);
+    tokenService.saveToCookie(reply, refreshToken);
+
+    return body;
   }
   
   async activate(request: FastifyRequest, reply: FastifyReply) {
@@ -46,10 +44,10 @@ class AuthController {
       throw request.server.httpErrors.unauthorized('Invalid refresh token');
     }
     
-    const data = await authService.refresh(request.server, refreshToken);
-    tokenService.saveToCookie(reply, data.refreshToken);
+    const tokens = await authService.refresh(request.server, refreshToken);
+    tokenService.saveToCookie(reply, tokens.refreshToken);
 
-    return data;
+    return { accessToken: tokens.accessToken };
   }
   
   async logout(request: FastifyRequest, reply: FastifyReply) {

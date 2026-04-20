@@ -31,10 +31,10 @@ class OAuthController {
     
     reply.clearCookie('oauth_state');
     
-    const data = await oAuthService.handleCode(request.server, code);
-    tokenService.saveToCookie(reply, data.refreshToken);
-    
-    return data;
+    const { refreshToken, ...body } = await oAuthService.handleCode(request.server, code);
+    tokenService.saveToCookie(reply, refreshToken);
+
+    return body;
   }
 }
 
