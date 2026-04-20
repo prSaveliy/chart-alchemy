@@ -5,7 +5,7 @@ class TokenService {
   generateTokens(fastify: FastifyInstance, payload: UserDTO) {
     const accessToken = fastify.jwt.sign(payload, { expiresIn: '30m' });
     const refreshToken = fastify.jwt.sign(
-      { ...payload, jti: crypto.randomUUID() },
+      { ...payload, jti: crypto.randomUUID() } as UserDTO,
       { expiresIn: '30d' }
     );
 
