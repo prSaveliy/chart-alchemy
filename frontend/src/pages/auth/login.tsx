@@ -171,7 +171,7 @@ export const LoginForm = ({
                   </Field>
                   <FieldSeparator>Or continue with</FieldSeparator>
                   <Field>
-                    <a href="http://localhost:3000/oauth/google/redirect-to-url">
+                    <a href={`${import.meta.env.VITE_SERVER_URL}/oauth/google/redirect-to-url`}>
                       <Button
                         variant="outline"
                         type="button"

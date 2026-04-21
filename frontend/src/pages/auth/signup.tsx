@@ -216,7 +216,7 @@ export const SignUpForm = ({
               </Field>
               <FieldSeparator>Or continue with</FieldSeparator>
               <Field>
-                <a href="http://localhost:3000/oauth/google/redirect-to-url">
+                <a href={`${import.meta.env.VITE_SERVER_URL}/oauth/google/redirect-to-url`}>
                   <Button variant="outline" type="button" className="w-full cursor-pointer">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
