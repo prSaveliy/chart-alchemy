@@ -3,9 +3,8 @@ import { FastifyRequest, FastifyReply } from 'fastify';
 import crypto from 'node:crypto';
 
 import NodeCache from 'node-cache';
-import { z } from 'zod';
 
-import validateSchema from '../utils/validateSchema.js';
+import validateRequest from '../utils/validateRequest.js';
 
 import { chartGenerationRequestSchema } from '../commons/schemas/chartGenerationRequest.schema.js';
 
@@ -17,7 +16,7 @@ const memoizePrompt = (ttlSeconds = 3600) => {
 
   return {
     preHandler: async (request: FastifyRequest, reply: FastifyReply) => {
-      const { prompt } = validateSchema(
+      const { prompt } = validateRequest(
         request,
         chartGenerationRequestSchema,
         'Invalid request body',
