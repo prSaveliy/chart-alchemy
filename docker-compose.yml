@@ -1,0 +1,57 @@
+services:
+  db:
+    image: postgres:18.2
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: userexample
+      POSTGRES_PASSWORD: example
+      POSTGRES_DB: exampledb
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./backend/postgres/postgresdata:/var/lib/postgresql
+      - ./backend/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U userexample -d exampledb']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  adminer:
+    image: adminer
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    depends_on:
+      - db
+
+  backend:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    env_file:
+      - ./backend/.env
+    environment:
+      - DATABASE_URL=postgresql://userexample:example@db:5432/exampledb?schema=public
+      - GOOGLE_APPLICATION_CREDENTIALS=/app/backend/gcp-key.json
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./backend/gcp-key.json:/app/backend/gcp-key.json:ro
+    depends_on:
+      db:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+      args:
+        - VITE_SERVER_URL=http://localhost:3000
+        - VITE_API_URL=http://localhost:5173
+    restart: unless-stopped
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
