@@ -8,7 +8,7 @@ import {
   FieldSeparator,
 } from "@/components/ui/field";
 import { Input } from "@/components/ui/input";
-import white from "@/assets/Solid_white.png";
+import { ChartOptionsShowcase } from "@/components/ui/chart-options-showcase";
 import { Logo } from "@/components/layout/logo";
 
 import { CircleX, CircleCheck, Eye, EyeClosed, MailCheck } from 'lucide-react';
@@ -266,14 +266,8 @@ export const SignUpForm = ({
           </div>
         </div>}
         
-        <div className="hidden lg:flex lg:w-1/2 bg-white items-center justify-center p-3">
-          <div className="w-full h-full rounded-2xl flex items-center justify-center">
-            <img
-              src={white}
-              alt="Login visual"
-              className="w-full h-full object-cover rounded-2xl"
-            />
-          </div>
+        <div className="hidden lg:flex lg:w-1/2 bg-gray-50 items-center justify-center p-8">
+          <ChartOptionsShowcase />
         </div>
       </div>
     </div>
