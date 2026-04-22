@@ -1,0 +1,78 @@
+FROM node:22-slim AS builder
+
+WORKDIR /app
+
+# Install OpenSSL for Prisma
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssl \
+ && rm -rf /var/lib/apt/lists/*
+
+# Copy the root dependency files
+COPY package.json package-lock.json ./
+
+# Copy workspace configurations
+COPY frontend/package.json ./frontend/
+COPY backend/package.json ./backend/
+
+# Install all dependencies
+RUN npm ci
+
+# Copy the rest of the frontend code
+COPY backend/ ./backend/
+
+# Generate Prisma Client
+RUN cd backend && npx prisma generate
+
+# Build the backend application
+COPY backend/src ./backend/src
+RUN npm run build -w @chart-alchemy/backend \
+ && cp -r backend/src/prompts backend/dist/prompts
+
+
+FROM node:22-slim AS installer
+
+WORKDIR /app
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssl dumb-init \
+ && rm -rf /var/lib/apt/lists/*
+
+COPY package.json package-lock.json ./
+
+COPY frontend/package.json ./frontend/
+COPY backend/package.json ./backend/
+
+# Install only production dependencies
+RUN npm ci --omit=dev
+
+# Regenerate the Prisma Client 
+COPY backend/prisma ./backend/prisma
+COPY backend/prisma.config.ts ./backend/prisma.config.ts
+RUN cd backend && npx prisma generate
+
+
+FROM node:22-slim AS runner
+
+WORKDIR /app
+
+RUN apt-get update \
+ && apt-get install -y --no-install-recommends openssl dumb-init \
+ && rm -rf /var/lib/apt/lists/*
+
+ENV NODE_ENV=production
+
+# Copy files from previous stages and change ownership to the 'node' user
+COPY --chown=node:node --from=installer /app/node_modules ./node_modules
+COPY --chown=node:node --from=installer /app/package.json ./package.json
+COPY --chown=node:node --from=installer /app/backend ./backend
+COPY --chown=node:node --from=builder /app/backend/dist ./backend/dist
+
+EXPOSE 3000
+
+USER node
+
+WORKDIR /app/backend
+
+ENTRYPOINT ["dumb-init", "--"]
+
+CMD ["npm", "run", "docker:start"]

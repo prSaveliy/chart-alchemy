@@ -1,0 +1,26 @@
+node_modules
+**/node_modules
+**/dist
+**/dist-ssr
+.git
+.gitignore
+**/.env
+**/.env.*
+**/*.local
+npm-debug.log*
+**/Dockerfile
+**/.dockerignore
+
+# IDEs and Caches
+.vscode
+.idea
+.eslintcache
+coverage/
+
+# backend specifics
+backend/postgres/postgresdata
+backend/geminiResponse.json
+backend/metadata.txt
+backend/safetyBlock.json
+backend/src/generated
+backend/test

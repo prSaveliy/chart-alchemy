@@ -10,3 +10,6 @@ postgresdata
 geminiResponse.json
 metadata.txt
 safetyBlock.json
+
+# GCP Credentials
+gcp-key.json

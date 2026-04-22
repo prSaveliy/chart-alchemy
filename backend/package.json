@@ -10,6 +10,7 @@
     "db:migrate": "prisma migrate deploy && prisma generate",
     "dev": "nodemon",
     "start": "tsx src/server.ts",
+    "docker:start": "npx prisma migrate deploy && node dist/server.js",
     "build": "tsc",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
