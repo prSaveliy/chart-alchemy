@@ -24,3 +24,4 @@ backend/metadata.txt
 backend/safetyBlock.json
 backend/src/generated
 backend/test
+backend/gcp-key.json
