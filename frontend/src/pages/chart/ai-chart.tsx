@@ -17,8 +17,8 @@ import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
 
 const DEFAULT_TOOLBOX = {
   show: true,
-  right: 20,
-  top: 20,
+  right: 10,
+  bottom: 10,
   itemSize: 20,
   feature: {
     restore: {
@@ -98,9 +98,9 @@ export const AIChart = ({
   };
 
   return (
-    <div className="flex flex-col w-full min-h-screen">
+    <div className="flex flex-col w-full min-h-screen lg:h-screen lg:overflow-hidden">
       <Header2 userPicture={userPicture || defaultUserPicture} />
-      <div className="flex flex-col flex-1 items-center p-4 sm:p-6 lg:p-8">
+      <div className="flex flex-col flex-1 items-center p-4 sm:p-6 lg:p-8 lg:min-h-0">
         <div className="flex w-full max-w-7xl flex-col mb-4 items-start">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <input
@@ -140,7 +140,7 @@ export const AIChart = ({
           )}
         </div>
 
-        <div className="flex w-full max-w-3xl mt-6 mb-3">
+        <div className="flex w-full max-w-3xl mt-6">
           <div className="flex flex-col w-full rounded-3xl border bg-white shadow-sm px-4 pt-3 pb-2 gap-2">
             <textarea
               id="prompt"

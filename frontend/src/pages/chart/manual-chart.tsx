@@ -32,8 +32,8 @@ const CHART_TYPES: { type: ManualChartType; label: string; Icon: React.ElementTy
 
 const DEFAULT_TOOLBOX = {
   show: true,
-  right: 20,
-  top: 20,
+  right: 10,
+  bottom: 10,
   itemSize: 20,
   feature: {
     saveAsImage: { title: "Save as image", type: "png", pixelRatio: 2 },
