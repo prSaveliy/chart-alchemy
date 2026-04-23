@@ -3,7 +3,7 @@
   "framework": "vite",
   "installCommand": "npm ci --workspace=@chart-alchemy/frontend",
   "buildCommand": "npm run build -w @chart-alchemy/frontend",
-  "outputDirectory": "frontend/dist",
+  "outputDirectory": "dist",
   "rewrites": [
     { "source": "/(.*)", "destination": "/" }
   ],
