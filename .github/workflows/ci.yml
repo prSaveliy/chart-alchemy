@@ -35,6 +35,7 @@ jobs:
       GOOGLE_CLOUD_PROJECT: ${{ secrets.GOOGLE_CLOUD_PROJECT }}
       GOOGLE_CLOUD_LOCATION: ${{ secrets.GOOGLE_CLOUD_LOCATION }}
       GOOGLE_GENAI_USE_VERTEXAI: ${{ secrets.GOOGLE_GENAI_USE_VERTEXAI }}
+      CORS_ORIGIN: http://localhost:5173
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -64,6 +65,7 @@ jobs:
           GOOGLE_CLOUD_PROJECT=$GOOGLE_CLOUD_PROJECT
           GOOGLE_CLOUD_LOCATION=$GOOGLE_CLOUD_LOCATION
           GOOGLE_GENAI_USE_VERTEXAI=$GOOGLE_GENAI_USE_VERTEXAI
+          CORS_ORIGIN=$CORS_ORIGIN
           EOF
       - name: Generate Prisma client
         working-directory: backend
