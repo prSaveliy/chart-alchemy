@@ -13,6 +13,7 @@ export const envSchema = {
     'OAUTH_GOOGLE_CLIENT_ID',
     'OAUTH_GOOGLE_CLIENT_SECRET',
     'GEMINI_API_KEY',
+    'CORS_ORIGIN',
   ],
   properties: {
     PORT: {
@@ -59,6 +60,9 @@ export const envSchema = {
       type: 'string',
     },
     GOOGLE_GENAI_USE_VERTEXAI: {
+      type: 'string',
+    },
+    CORS_ORIGIN: {
       type: 'string',
     },
   },

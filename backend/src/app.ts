@@ -51,7 +51,7 @@ const buildApp = async () => {
     timeWindow: '15 minutes',
   });
   await app.register(cors, {
-    origin: 'http://localhost:5173',
+    origin: app.config.CORS_ORIGIN.split(',').map(s => s.trim()).filter(Boolean),
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
   });
