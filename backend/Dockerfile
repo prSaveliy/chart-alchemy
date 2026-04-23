@@ -67,12 +67,16 @@ COPY --chown=node:node --from=installer /app/package.json ./package.json
 COPY --chown=node:node --from=installer /app/backend ./backend
 COPY --chown=node:node --from=builder /app/backend/dist ./backend/dist
 
+# Entrypoint materializes $GCP_KEY_JSON to a file for Vertex AI auth
+COPY --chown=root:root backend/docker-entrypoint.sh /usr/local/bin/docker-entrypoint.sh
+RUN chmod +x /usr/local/bin/docker-entrypoint.sh
+
 EXPOSE 3000
 
 USER node
 
 WORKDIR /app/backend
 
-ENTRYPOINT ["dumb-init", "--"]
+ENTRYPOINT ["dumb-init", "--", "/usr/local/bin/docker-entrypoint.sh"]
 
 CMD ["npm", "run", "docker:start"]
