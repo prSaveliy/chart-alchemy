@@ -121,6 +121,14 @@ class ChartService {
     };
   }
 
+  async delete(fastify: FastifyInstance, token: string, userId: number) {
+    await this.verifyToken(fastify, token, userId);
+
+    await fastify.prisma.chart.delete({
+      where: { token },
+    });
+  }
+
   async saveConfig(
     fastify: FastifyInstance,
     token: string,

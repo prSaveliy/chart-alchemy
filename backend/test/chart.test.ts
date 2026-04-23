@@ -900,4 +900,67 @@ describe('chart integration tests', () => {
       assert.equal(response.status, 401);
     });
   });
+
+  describe('DELETE /chart/:token', () => {
+    test('returns 204 and removes chart for owner', async () => {
+      const accessToken = await makeUser(app, 'delete-ok@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+
+      const response = await request(app.server)
+        .delete(`/chart/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(response.status, 204);
+
+      const chart = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      assert.equal(chart, null);
+    });
+
+    test('returns 403 when chart belongs to another user', async () => {
+      const ownerToken = await makeUser(app, 'delete-owner@qwertyuiop1234.com');
+      const otherToken = await makeUser(app, 'delete-other@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${ownerToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+
+      const response = await request(app.server)
+        .delete(`/chart/${initRes.body.token}`)
+        .set('Authorization', `Bearer ${otherToken}`);
+
+      assert.equal(response.status, 403);
+
+      const chart = await (app as any).prisma.chart.findUnique({
+        where: { token: initRes.body.token },
+      });
+      assert.ok(chart);
+    });
+
+    test('returns 404 for nonexistent token', async () => {
+      const accessToken = await makeUser(app, 'delete-notfound@qwertyuiop1234.com');
+
+      const response = await request(app.server)
+        .delete('/chart/ai-00000000-0000-0000-0000-000000000000')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(response.status, 404);
+    });
+
+    test('returns 401 without auth', async () => {
+      const response = await request(app.server).delete('/chart/ai-some-token');
+
+      assert.equal(response.status, 401);
+    });
+  });
 });

@@ -66,6 +66,14 @@ const chartRoutes = (fastify: FastifyInstance) => {
     },
     chartController.saveConfig,
   );
+
+  fastify.delete(
+    '/:token',
+    {
+      onRequest: [fastify.auth, rateLimitByIp(30, 60 * 1000)],
+    },
+    chartController.delete,
+  );
 };
 
 export default chartRoutes;

@@ -6,6 +6,7 @@ import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChartCard } from "@/components/ui/chart-card";
+import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DashboardEmptyState } from "@/components/ui/dashboard-empty-state";
 import { DashboardNoMatchState } from "@/components/ui/dashboard-no-match-state";
 import { Header2 } from "@/components/layout/header2";
@@ -29,6 +30,10 @@ export const Dashboard = () => {
   const [networkError, setNetworkError] = useState(false);
   const [serverError, setServerError] = useState(false);
   const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
+
+  const [pendingDeleteToken, setPendingDeleteToken] = useState<string | null>(null);
+  const [deletingToken, setDeletingToken] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState("");
 
   const fetchCharts = async () => {
     const fetchResult = await chartService.list();
@@ -59,6 +64,41 @@ export const Dashboard = () => {
   useEffect(() => {
     fetchCharts();
   }, []);
+
+  const confirmDelete = async (token: string) => {
+    if (deletingToken) return;
+
+    setDeletingToken(token);
+    const result = await chartService.delete(token);
+
+    if (result.errorMessage) {
+      if (!retriedRef.current && result.statusCode === 401) {
+        await handleUnauthorized(retriedRef, navigate, () => confirmDelete(token));
+        setDeletingToken(null);
+        return;
+      }
+
+      if (result.statusCode === 404) {
+        setCharts(prev => prev?.filter(c => c.token !== token) ?? null);
+        setDeleteError("");
+      } else {
+        setDeleteError(result.errorMessage);
+      }
+      setDeletingToken(null);
+      setPendingDeleteToken(null);
+      return;
+    }
+
+    setDeleteError("");
+    setCharts(prev => prev?.filter(c => c.token !== token) ?? null);
+    setDeletingToken(null);
+    setPendingDeleteToken(null);
+  };
+
+  const pendingDeleteName = pendingDeleteToken
+    ? (charts?.find(c => c.token === pendingDeleteToken)?.name ||
+        "Untitled chart")
+    : "";
 
   const filtered = useMemo(() => {
     if (!charts) return [];
@@ -135,6 +175,19 @@ export const Dashboard = () => {
             />
           </div>
 
+          {deleteError && (
+            <div className="mb-4 rounded-lg border border-red-200 bg-red-50 px-4 py-2 flex items-start justify-between gap-3">
+              <span className="text-sm text-red-700">{deleteError}</span>
+              <button
+                type="button"
+                onClick={() => setDeleteError("")}
+                className="text-red-500 hover:text-red-700 text-sm font-medium cursor-pointer"
+              >
+                Dismiss
+              </button>
+            </div>
+          )}
+
           {charts.length === 0 ? (
             <DashboardEmptyState onCreate={() => navigate("/new-chart")} />
           ) : filtered.length === 0 ? (
@@ -146,12 +199,30 @@ export const Dashboard = () => {
                   key={chart.token}
                   chart={chart}
                   onClick={() => navigate(`/chart/${chart.token}`)}
+                  onDelete={() => setPendingDeleteToken(chart.token)}
+                  deleting={deletingToken === chart.token}
                 />
               ))}
             </div>
           )}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={pendingDeleteToken !== null}
+        onOpenChange={open => {
+          if (!open && !deletingToken) setPendingDeleteToken(null);
+        }}
+        title="Delete chart?"
+        description={`"${pendingDeleteName}" will be permanently deleted. This action cannot be undone.`}
+        confirmLabel="Delete"
+        cancelLabel="Cancel"
+        destructive
+        loading={deletingToken !== null && deletingToken === pendingDeleteToken}
+        onConfirm={() => {
+          if (pendingDeleteToken) confirmDelete(pendingDeleteToken);
+        }}
+      />
     </div>
   );
 };
