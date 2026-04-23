@@ -9,8 +9,8 @@ COPY package.json package-lock.json ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
 
-# Install dependencies
-RUN npm ci
+# Install only the frontend workspace's deps
+RUN npm ci --workspace=@chart-alchemy/frontend
 
 # Copy the rest of the frontend code
 COPY frontend ./frontend
