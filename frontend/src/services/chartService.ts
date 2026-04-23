@@ -44,6 +44,10 @@ class ChartService {
     return await fetchClient.get(`chart/${token}`);
   }
 
+  async delete(token: string) {
+    return await fetchClient.delete(`chart/${token}`);
+  }
+
   async saveConfig(
     token: string,
     chartData: ChartConfig,

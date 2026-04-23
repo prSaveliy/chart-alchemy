@@ -77,6 +77,18 @@ class ChartController {
     return await chartService.rename(request.server, name, token, userId);
   }
 
+  async delete(request: FastifyRequest, reply: FastifyReply) {
+    const { token } = validateRequest(
+      request,
+      tokenSchema,
+      'Invalid request body',
+      'params',
+    );
+    const userId = request.user.id;
+    await chartService.delete(request.server, token, userId);
+    return reply.code(204).send();
+  }
+
   async saveConfig(request: FastifyRequest, reply: FastifyReply) {
     const { token, chartData, manualType } = validateRequest(
       request,

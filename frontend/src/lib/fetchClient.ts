@@ -62,6 +62,29 @@ class FetchClient {
       return { errorMessage: "Something went wrong" };
     }
   }
+  async delete(uri: string) {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/${uri}`, {
+        method: "DELETE",
+        credentials: "include",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+        },
+      });
+
+      const data = await response.json().catch(() => null);
+
+      if (!response.ok) {
+        return { errorMessage: data?.message || "Error", statusCode: response.status };
+      }
+
+      return { data };
+    } catch {
+      return { errorMessage: "Something went wrong" };
+    }
+  }
+
   async patch(uri: string, paramObj: Record<string, unknown> = {}) {
     try {
       const accessToken = localStorage.getItem('accessToken');
