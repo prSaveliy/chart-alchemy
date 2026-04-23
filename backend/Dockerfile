@@ -14,10 +14,10 @@ COPY package.json package-lock.json ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
 
-# Install all dependencies
-RUN npm ci
+# Install only the backend workspace's deps
+RUN npm ci --workspace=@chart-alchemy/backend
 
-# Copy the rest of the frontend code
+# Copy the rest of the backend code
 COPY backend/ ./backend/
 
 # Generate Prisma Client
@@ -42,8 +42,8 @@ COPY package.json package-lock.json ./
 COPY frontend/package.json ./frontend/
 COPY backend/package.json ./backend/
 
-# Install only production dependencies
-RUN npm ci --omit=dev
+# Install only the backend workspace's production deps
+RUN npm ci --omit=dev --workspace=@chart-alchemy/backend
 
 # Regenerate the Prisma Client 
 COPY backend/prisma ./backend/prisma
