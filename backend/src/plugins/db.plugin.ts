@@ -6,8 +6,10 @@ import { PrismaClient } from '../generated/prisma/client.js';
 import { FastifyInstance, FastifyPluginAsync } from 'fastify';
 
 const dbPlugin: FastifyPluginAsync = async (fastify: FastifyInstance) => {
-  const connectionString = `${fastify.config.DATABASE_URL}`;
-  const adapter = new PrismaPg({ connectionString });
+  const adapter = new PrismaPg({
+    connectionString: fastify.config.DATABASE_URL,
+    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined,
+  });
   const prisma = new PrismaClient({ adapter });
 
   await prisma.$connect();
