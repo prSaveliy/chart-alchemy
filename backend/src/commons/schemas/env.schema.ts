@@ -14,6 +14,9 @@ export const envSchema = {
     'OAUTH_GOOGLE_CLIENT_SECRET',
     'GEMINI_API_KEY',
     'CORS_ORIGIN',
+    'GOOGLE_CLOUD_PROJECT',
+    'GOOGLE_CLOUD_LOCATION',
+    'GOOGLE_GENAI_USE_VERTEXAI',
   ],
   properties: {
     PORT: {
