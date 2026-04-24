@@ -12,8 +12,8 @@ class FetchClient {
       
       const data = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        return { errorMessage: data?.message || "Error", statusCode: response.status };
+      if (!response.ok || data?.isStreamingError) {
+        return { errorMessage: data?.errorMessage || data?.message || "Error", statusCode: data?.statusCode || response.status };
       }
       
       return { data };
@@ -44,8 +44,8 @@ class FetchClient {
 
       const data = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        return { errorMessage: data.message, statusCode: response.status };
+      if (!response.ok || data?.isStreamingError) {
+        return { errorMessage: data?.errorMessage || data?.message || "Error", statusCode: data?.statusCode || response.status };
       }
 
       if (fn) {
@@ -75,8 +75,8 @@ class FetchClient {
 
       const data = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        return { errorMessage: data?.message || "Error", statusCode: response.status };
+      if (!response.ok || data?.isStreamingError) {
+        return { errorMessage: data?.errorMessage || data?.message || "Error", statusCode: data?.statusCode || response.status };
       }
 
       return { data };
@@ -100,8 +100,8 @@ class FetchClient {
 
       const data = await response.json().catch(() => null);
 
-      if (!response.ok) {
-        return { errorMessage: data?.message || "Error", statusCode: response.status };
+      if (!response.ok || data?.isStreamingError) {
+        return { errorMessage: data?.errorMessage || data?.message || "Error", statusCode: data?.statusCode || response.status };
       }
 
       return { data };

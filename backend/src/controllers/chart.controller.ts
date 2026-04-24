@@ -1,4 +1,5 @@
 import { FastifyReply, FastifyRequest } from 'fastify';
+import { PassThrough } from 'node:stream';
 
 import chartService from '../services/chart.service.js';
 
@@ -40,14 +41,52 @@ class ChartController {
     );
     const userId = request.user.id;
     const useThinkingMode = thinkingMode === 'true';
-    return await chartService.generate(
-      request.server,
-      prompt,
-      token,
-      userId,
-      memory,
-      useThinkingMode,
-    );
+
+    const stream = new PassThrough();
+    reply.type('application/json').send(stream);
+    stream.write(' ');
+
+    const keepAlive = setInterval(() => {
+      stream.write('\n');
+    }, 15000);
+
+    let aborted = false;
+    request.raw.on('close', () => {
+      if (stream.writableEnded) return;
+      aborted = true;
+      clearInterval(keepAlive);
+      stream.destroy();
+    });
+
+    chartService
+      .generate(request.server, prompt, token, userId, memory, useThinkingMode)
+      .then(result => {
+        if (aborted) return;
+        clearInterval(keepAlive);
+        stream.write(JSON.stringify(result));
+        stream.end();
+      })
+      .catch(error => {
+        if (aborted) return;
+        clearInterval(keepAlive);
+        const statusCode = error.statusCode || 500;
+        if (statusCode >= 500) {
+          request.log.error({ err: error }, 'streaming generate failed');
+        }
+        stream.write(
+          JSON.stringify({
+            isStreamingError: true,
+            errorMessage:
+              statusCode < 500 || statusCode === 502
+                ? error.message
+                : 'Internal server error',
+            statusCode,
+          }),
+        );
+        stream.end();
+      });
+
+    return reply;
   }
 
   async list(request: FastifyRequest, reply: FastifyReply) {
