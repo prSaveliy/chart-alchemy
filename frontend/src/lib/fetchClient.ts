@@ -1,4 +1,14 @@
 class FetchClient {
+  private getError(response: Response, data: any) {
+    if (!response.ok || data?.isStreamingError) {
+      return {
+        errorMessage: data?.errorMessage || data?.message || "Error",
+        statusCode: data?.statusCode || response.status,
+      };
+    }
+    return null;
+  }
+
   async get(uri: string) {
     try {
       const accessToken = localStorage.getItem('accessToken');
@@ -12,9 +22,8 @@ class FetchClient {
       
       const data = await response.json().catch(() => null);
 
-      if (!response.ok || data?.isStreamingError) {
-        return { errorMessage: data?.errorMessage || data?.message || "Error", statusCode: data?.statusCode || response.status };
-      }
+      const error = this.getError(response, data);
+      if (error) return error;
       
       return { data };
     } catch {
@@ -44,9 +53,8 @@ class FetchClient {
 
       const data = await response.json().catch(() => null);
 
-      if (!response.ok || data?.isStreamingError) {
-        return { errorMessage: data?.errorMessage || data?.message || "Error", statusCode: data?.statusCode || response.status };
-      }
+      const error = this.getError(response, data);
+      if (error) return error;
 
       if (fn) {
         if (dataFieldsForFn) {
@@ -75,9 +83,8 @@ class FetchClient {
 
       const data = await response.json().catch(() => null);
 
-      if (!response.ok || data?.isStreamingError) {
-        return { errorMessage: data?.errorMessage || data?.message || "Error", statusCode: data?.statusCode || response.status };
-      }
+      const error = this.getError(response, data);
+      if (error) return error;
 
       return { data };
     } catch {
@@ -100,9 +107,8 @@ class FetchClient {
 
       const data = await response.json().catch(() => null);
 
-      if (!response.ok || data?.isStreamingError) {
-        return { errorMessage: data?.errorMessage || data?.message || "Error", statusCode: data?.statusCode || response.status };
-      }
+      const error = this.getError(response, data);
+      if (error) return error;
 
       return { data };
     } catch {
