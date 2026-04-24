@@ -73,13 +73,15 @@ class GeminiService {
         ],
       })
       .catch((error) => {
-        console.log(error);
         if (error.status === 429) {
           throw fastify.httpErrors.tooManyRequests(
             'The AI Chart Generator is currently experiencing high demand. Please wait a moment and try again.',
           );
         }
-        throw error;
+        fastify.log.error({ err: error }, 'gemini generateContent failed');
+        throw fastify.httpErrors.badGateway(
+          'Unable to generate chart. Please try again.',
+        );
       });
 
     if (

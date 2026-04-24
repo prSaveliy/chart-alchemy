@@ -29,8 +29,12 @@ const buildApp = async () => {
   });
   
   app.setErrorHandler((error: AppError, request: FastifyRequest, reply: FastifyReply) => {
-    reply.status(error.statusCode || 500).send({
-      message: error.statusCode && (error.statusCode < 500 || error.statusCode === 502)
+    const statusCode = error.statusCode || 500;
+    if (statusCode >= 500) {
+      request.log.error({ err: error }, 'request failed');
+    }
+    reply.status(statusCode).send({
+      message: statusCode < 500 || statusCode === 502
         ? error.message
         : 'Internal server error',
       details: error.details ?? '',
