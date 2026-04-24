@@ -1,5 +1,7 @@
+import type { FetchResult } from '@/commons/interfaces/fetchInterfaces';
+
 class FetchClient {
-  private getError(response: Response, data: any) {
+  private getError(response: Response, data: any): FetchResult | null {
     if (!response.ok || data?.isStreamingError) {
       return {
         errorMessage: data?.errorMessage || data?.message || "Error",
@@ -9,7 +11,7 @@ class FetchClient {
     return null;
   }
 
-  async get(uri: string) {
+  async get(uri: string): Promise<FetchResult> {
     try {
       const accessToken = localStorage.getItem('accessToken');
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/${uri}`, {
@@ -36,7 +38,7 @@ class FetchClient {
     paramObj: Record<string, unknown> = {},
     fn?: (...params: any[]) => void,
     dataFieldsForFn?: string[]
-  ) {
+  ): Promise<FetchResult> {
     try {
       const accessToken = localStorage.getItem('accessToken');
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/${uri}`, {
@@ -70,7 +72,7 @@ class FetchClient {
       return { errorMessage: "Something went wrong" };
     }
   }
-  async delete(uri: string) {
+  async delete(uri: string): Promise<FetchResult> {
     try {
       const accessToken = localStorage.getItem('accessToken');
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/${uri}`, {
@@ -92,7 +94,7 @@ class FetchClient {
     }
   }
 
-  async patch(uri: string, paramObj: Record<string, unknown> = {}) {
+  async patch(uri: string, paramObj: Record<string, unknown> = {}): Promise<FetchResult> {
     try {
       const accessToken = localStorage.getItem('accessToken');
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/${uri}`, {
