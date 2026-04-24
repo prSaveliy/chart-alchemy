@@ -98,10 +98,10 @@ export const AIChart = ({
   };
 
   return (
-    <div className="flex flex-col w-full min-h-screen lg:h-screen lg:overflow-hidden">
+    <div className="flex flex-col w-full min-h-screen">
       <Header2 userPicture={userPicture || defaultUserPicture} />
-      <div className="flex flex-col flex-1 items-center p-4 sm:p-6 lg:p-8 lg:min-h-0">
-        <div className="flex w-full max-w-7xl flex-col mb-4 items-start">
+      <div className="flex flex-col flex-1 items-center px-4 sm:px-6 lg:px-8 pb-0 pt-2 sm:pt-3 lg:pt-4">
+        <div className="flex w-full max-w-7xl flex-col mb-2 items-start">
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <input
               id="chart-name"
@@ -140,7 +140,7 @@ export const AIChart = ({
           )}
         </div>
 
-        <div className="flex w-full max-w-3xl mt-6">
+        <div className="flex w-full max-w-3xl mt-6 mb-3">
           <div className="flex flex-col w-full rounded-3xl border bg-white shadow-sm px-4 pt-3 pb-2 gap-2">
             <textarea
               id="prompt"
