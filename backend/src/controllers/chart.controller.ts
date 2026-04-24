@@ -42,6 +42,8 @@ class ChartController {
     const userId = request.user.id;
     const useThinkingMode = thinkingMode === 'true';
 
+    await chartService.verifyToken(request.server, token, userId);
+
     const stream = new PassThrough();
     reply.type('application/json').send(stream);
     stream.write(' ');

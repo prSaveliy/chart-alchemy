@@ -50,8 +50,6 @@ class ChartService {
     memory: ChartConfig | null,
     thinkingMode: boolean,
   ) {
-    await this.verifyToken(fastify, token, userId);
-
     const chartData = await geminiService.generate(
       fastify,
       prompt,
