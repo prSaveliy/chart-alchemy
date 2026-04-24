@@ -165,7 +165,7 @@ export const AIChart = ({
             {fetchError && (
               <span className="text-xs text-red-500">{fetchError}</span>
             )}
-            <div className="flex justify-between items-center">
+            <div className="flex flex-wrap justify-between items-center gap-2">
               <div className="flex items-center gap-4">
                 <div className="flex items-center gap-1.5">
                   <label className="flex items-center gap-1.5 text-sm text-gray-600 cursor-pointer select-none">
@@ -211,7 +211,7 @@ export const AIChart = ({
               <Button
                 type="button"
                 size="sm"
-                className="cursor-pointer rounded-full"
+                className="cursor-pointer rounded-full min-w-[110px]"
                 disabled={awaiting || !prompt}
                 onClick={generate}
               >
