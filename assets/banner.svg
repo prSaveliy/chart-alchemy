@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1760 280">
+  <rect width="1760" height="280" fill="white"/>
+  <g transform="translate(50, 40)">
+    <path d="M 20 180 L 20 138 Q 20 130 28 130 L 62 130 Q 70 130 70 138 L 70 180 Z" fill="black"/>
+    <path d="M 80 180 L 80 88 Q 80 80 88 80 L 122 80 Q 130 80 130 88 L 130 180 Z" fill="black"/>
+    <path d="M 140 180 L 140 38 Q 140 30 148 30 L 182 30 Q 190 30 190 38 L 190 180 Z" fill="black"/>
+    <text
+      x="205"
+      y="180"
+      font-family="'Montserrat', 'Arial Black', Arial, sans-serif"
+      font-weight="700"
+      font-size="210"
+      letter-spacing="-12"
+      fill="black"
+    >ChartAlchemy</text>
+  </g>
+</svg>

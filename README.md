@@ -1,10 +1,8 @@
-# Chart Alchemy
+# ChartAlchemy - Web application for AI data visualization
 
-### Web application for data visualization using LLM
-
-### Work in progress
- - currently working on chart generation
- 
+<p align="center">
+  <img src="assets/banner.svg" alt="ChartAlchemy" width="900"/>
+</p>
  
 # Labs
 
