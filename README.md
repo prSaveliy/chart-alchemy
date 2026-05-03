@@ -6,7 +6,11 @@
 
 ---
 
-**ChartAlchemy** is a web application for AI-powered data visualization. Describe your data in plain language and get a chart back — or build and edit charts manually with a full configuration editor.
+**ChartAlchemy** is a web application for AI-powered data visualization. Three ways to create a chart:
+
+- **Generate with AI** — describe your data in plain language and get a chart back, then refine it with follow-up prompts.
+- **Generate from a dataset** — upload a CSV or XLSX file (up to 5 MB) and have the chart built from your data automatically. Switch between bar, line, pie, and scatter and review the detected fields in real time.
+- **Build manually** — configure every chart field by hand and watch the chart update live.
 
 Authentication supports email/password (with email confirmation) and Google sign-in.
 
