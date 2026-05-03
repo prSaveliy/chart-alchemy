@@ -69,6 +69,7 @@ model Chart {
 
   config      Json @default("{}")
   manualType  String?
+  datasetMeta Json?
 
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int

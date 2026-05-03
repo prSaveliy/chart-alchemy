@@ -10,7 +10,7 @@ import { v4 } from 'uuid';
 class ChartService {
   async init(
     fastify: FastifyInstance,
-    chartType: 'ai' | 'manual',
+    chartType: 'ai' | 'manual' | 'dataset',
     userId: number,
   ) {
     const randomString = v4();

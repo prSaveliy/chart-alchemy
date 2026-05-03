@@ -14,8 +14,15 @@ export const ChartCard = ({
   onDelete: () => void;
   deleting?: boolean;
 }) => {
+  const CHART_TYPES: Record<string, string> = {
+    ai: "AI",
+    dataset: "Dataset",
+    manual: "Manual",
+  };
+
   const displayName = chart.name || "Untitled chart";
-  const kind = chart.token.startsWith("ai-") ? "AI" : "Manual";
+  const kind = chart.token.split("-")[0];
+  const chartType = CHART_TYPES[kind] ?? "";
   const subtype = chart.manualType ? ` · ${chart.manualType}` : "";
   const updated = new Date(chart.updatedAt).toLocaleDateString();
 
@@ -58,7 +65,7 @@ export const ChartCard = ({
         {displayName}
       </h3>
       <p className="mt-1 text-xs text-gray-500">
-        {kind}
+        {chartType}
         {subtype} · Updated {updated}
       </p>
     </div>

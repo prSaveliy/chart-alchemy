@@ -2,12 +2,14 @@ import { FastifyReply, FastifyRequest } from 'fastify';
 import { PassThrough } from 'node:stream';
 
 import chartService from '../services/chart.service.js';
+import datasetService from '../services/dataset/index.js';
 
 import validateRequest from '../utils/validateRequest.js';
 
 import { chartInitRequestSchema } from '../commons/schemas/chartInitRequest.schema.js';
 import { accountActivationSchema as chartTokenSchema } from '../commons/schemas/accountActivation.schema.js';
 import { chartGenerationRequestSchema } from '../commons/schemas/chartGenerationRequest.schema.js';
+import { datasetGenerationRequestSchema } from '../commons/schemas/datasetGenerationRequest.schema.js';
 import { chartRenameRequestSchema } from '../commons/schemas/chartRenameRequest.schema.js';
 import { saveConfigRequestSchema } from '../commons/schemas/saveConfigRequestSchema.js';
 import { tokenSchema } from '../commons/schemas/token.schema.js';
@@ -143,6 +145,65 @@ class ChartController {
       chartData,
       userId,
       manualType,
+    );
+  }
+
+  async generateFromDataset(request: FastifyRequest, reply: FastifyReply) {
+    const { token } = validateRequest(
+      request,
+      tokenSchema,
+      'Invalid token',
+      'params',
+    );
+    const userId = request.user.id;
+    await chartService.verifyToken(request.server, token, userId);
+
+    const fields: Record<string, string> = {};
+    let fileBuffer: Buffer | null = null;
+    let filename = '';
+    let mimetype = '';
+
+    for await (const part of request.parts()) {
+      if (part.type === 'file') {
+        fileBuffer = await part.toBuffer();
+        filename = part.filename;
+        mimetype = part.mimetype;
+      } else {
+        if (part.fieldname in fields) {
+          throw request.server.httpErrors.badRequest(
+            `Duplicate field: ${part.fieldname}`,
+          );
+        }
+        if (typeof part.value !== 'string') {
+          throw request.server.httpErrors.badRequest(
+            `Field ${part.fieldname} must be a string`,
+          );
+        }
+        fields[part.fieldname] = part.value;
+      }
+    }
+
+    if (!fileBuffer) {
+      throw request.server.httpErrors.badRequest('File is required');
+    }
+
+    request.body = fields;
+    const { chartType, xField, yField } = validateRequest(
+      request,
+      datasetGenerationRequestSchema,
+      'Invalid request body',
+    );
+
+    return await datasetService.generate(
+      request.server,
+      fileBuffer,
+      filename,
+      mimetype,
+      chartType,
+      token,
+      userId,
+      xField,
+      yField,
     );
   }
 }

@@ -37,3 +37,31 @@ export interface ChartSummary {
   createdAt: string;
   updatedAt: string;
 }
+
+export type DatasetChartType = "bar" | "line" | "pie" | "scatter";
+
+export type DatasetFieldType =
+  | "number"
+  | "string"
+  | "boolean"
+  | "date"
+  | "mixed";
+
+export interface DatasetField {
+  name: string;
+  type: DatasetFieldType;
+}
+
+export interface DatasetGenerationResult {
+  chartData: ChartConfig;
+  fields: DatasetField[];
+  selectedType: DatasetChartType;
+  selectedXField: string;
+  selectedYField: string;
+  truncated: boolean;
+}
+
+export interface DatasetChartProps {
+  initialName?: string;
+  initialData?: ChartConfig | null;
+}
