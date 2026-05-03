@@ -1,4 +1,4 @@
-import { LineChart, Trash2 } from "lucide-react";
+import { LineChart, Trash2, Sparkles, Settings, FileSpreadsheet } from "lucide-react";
 import type { KeyboardEvent, MouseEvent } from "react";
 
 import type { ChartSummary } from "@/commons/interfaces/chartInterfaces";
@@ -22,6 +22,13 @@ export const ChartCard = ({
 
   const displayName = chart.name || "Untitled chart";
   const kind = chart.token.split("-")[0];
+  const ICONS: Record<string, React.ElementType> = {
+    ai: Sparkles,
+    dataset: FileSpreadsheet,
+    manual: Settings,
+  };
+  const Icon = ICONS[kind] || LineChart;
+
   const chartType = CHART_TYPES[kind] ?? "";
   const subtype = chart.manualType ? ` · ${chart.manualType}` : "";
   const updated = new Date(chart.updatedAt).toLocaleDateString();
@@ -59,7 +66,7 @@ export const ChartCard = ({
         <Trash2 strokeWidth={1.5} className="w-4 h-4" />
       </button>
       <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-gray-100 mb-4">
-        <LineChart strokeWidth={1.5} className="w-5 h-5 text-gray-700" />
+        <Icon strokeWidth={1.5} className="w-5 h-5 text-gray-700" />
       </div>
       <h3 className="font-semibold text-gray-900 truncate w-full pr-8">
         {displayName}
