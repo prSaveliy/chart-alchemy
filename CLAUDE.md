@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-ChartAlchemy is a full-stack web app for AI-powered data visualization. Users can generate charts via natural language prompts (Google Gemini) or build/edit charts manually. Authentication supports email/password and Google OAuth 2.0.
+ChartAlchemy is a full-stack web app for AI-powered data visualization. Users can generate charts via natural language prompts (Google Gemini), upload a CSV/XLSX dataset to have a chart built automatically, or build/edit charts manually. Authentication supports email/password and Google OAuth 2.0.
 
 ## Tech Stack
 
@@ -64,14 +64,14 @@ docker compose up -d
 ### Request flow (backend)
 Routes (`routes/`) → Controllers (`controllers/`) → Services (`services/`) → Prisma
 
-- **Routes** (`routes/`): `auth.routes.ts`, `oauth.routes.ts`, `chart.routes.ts`. Registered in `app.ts` with prefixes `auth`, `oauth/google`, `chart`. Apply rate-limit hooks and attach controller handlers.
+- **Routes** (`routes/`): `auth.routes.ts`, `oauth.routes.ts`, `chart.routes.ts`. Registered in `app.ts` with prefixes `auth`, `oauth/google`, `chart`. Apply rate-limit hooks and attach controller handlers. Dataset generation is exposed as `POST /chart/generate-from-dataset/:token` — accepts `multipart/form-data` with a `file` part (CSV or XLSX, max 5 MB) plus optional `chartType`, `xField`, and `yField` fields.
 - **Controllers** (`controllers/`): `auth.controller.ts`, `oauth.controller.ts`, `chart.controller.ts`. Validate request body/params/query with Zod schemas via `utils/validateRequest.ts`, call services, return responses.
-- **Services** (`services/`): Business logic only — no HTTP concerns. Includes `auth.service.ts`, `oauth.service.ts`, `chart.service.ts`, `gemini.service.ts`, `mail.service.ts`, plus token-specific services (`refreshToken.service.ts`, `activationToken.service.ts`).
+- **Services** (`services/`): Business logic only — no HTTP concerns. Includes `auth.service.ts`, `oauth.service.ts`, `chart.service.ts`, `gemini.service.ts`, `mail.service.ts`, plus token-specific services (`refreshToken.service.ts`, `activationToken.service.ts`). Dataset generation lives in `services/dataset/` — `index.ts` (orchestrator), `parseFile.ts` (CSV/XLSX → `ParsedDataset`), `inferFields.ts` (column type detection), `buildChartOption.ts` (ECharts option builder), and `parsers/` (format-specific parsers).
 - **Plugins** (`plugins/`): `auth.plugin.ts` (JWT), `db.plugin.ts` (Prisma client), `gemini.plugin.ts` (Gemini SDK), `googleAuth.ts` (Google OAuth client).
 - **Hooks** (`hooks/`): Custom rate limiting — `rateLimitByIp.ts`, `rateLimitByEmail.ts`.
 - **Jobs** (`jobs/`): Scheduled cleanup (toad-scheduler via `@fastify/schedule`) for expired tokens — `clearExpiredActivationTokens.job.ts`, `clearExpiredRefreshTokens.job.ts`, `clearPasswordResetTokens.job.ts`. Registered on `app.ready`.
-- **commons/schemas/**: Zod validation schemas shared across controllers (auth, chart config, prompts, env, etc.).
-- **commons/types/**: TypeScript type/interface declarations (Fastify augmentations, domain types — `error.d.ts`, `fastify.d.ts`, `googleResponse.d.ts`, `idToken.d.ts`, `pendingUser.d.ts`, `user.d.ts`).
+- **commons/schemas/**: Zod validation schemas shared across controllers (auth, chart config, prompts, env, dataset generation request, etc.).
+- **commons/types/**: TypeScript type/interface declarations (Fastify augmentations, domain types — `error.d.ts`, `fastify.d.ts`, `googleResponse.d.ts`, `idToken.d.ts`, `pendingUser.d.ts`, `user.d.ts`, `dataset.d.ts`).
 - **utils/**: Shared utilities — `validateRequest.ts` runs a Zod schema against `request.body | params | query` and throws a Fastify `badRequest` with `details`.
 - **prompts/**: Gemini system instruction (`system-instruction.txt`) and `test-prompts.txt`.
 - **generated/**: Prisma client output (`src/generated/prisma`, configured in `schema.prisma`).
@@ -84,19 +84,19 @@ Routes (`routes/`) → Controllers (`controllers/`) → Services (`services/`) �
 - Google OAuth via ID token validation in `oauth.service.ts` + `googleAuth.ts` plugin
 
 ### Frontend structure
-- **Pages** (`pages/`): Split into `auth/` (login, signup, activate-account, forgot-password, password-reset, google-login) and `chart/` (ai-chart, chart, manual-chart, new-chart), plus root pages `home.tsx`, `dashboard.tsx`, `error.tsx`.
+- **Pages** (`pages/`): Split into `auth/` (login, signup, activate-account, forgot-password, password-reset, google-login) and `chart/` (ai-chart, chart, manual-chart, new-chart, dataset-chart), plus root pages `home.tsx`, `dashboard.tsx`, `error.tsx`.
 - **Components** (`components/`):
   - `layout/` — `header.tsx`, `header2.tsx`, `footer.tsx`, `logo.tsx`, `protected-route.tsx`
   - `ui/` — shadcn-style primitives (button, input, field, label, textarea, dropdown-menu, avatar, separator) plus app-specific UI (`chart-card`, `chart-options-showcase`, `confirm-dialog`, `dashboard-empty-state`, `dashboard-no-match-state`, `feature-image`, `workflow-choice-card`, `animated-group`, `text-effect`).
 - **commons/**:
   - `schemas/` — Zod schemas (`authSchema.ts`, `chartConfig.schema.ts`, `promptSchema.ts`)
-  - `interfaces/` — TS interfaces (`authInterfaces.ts`, `chartInterfaces.ts`, `fetchInterfaces.ts`)
+  - `interfaces/` — TS interfaces (`authInterfaces.ts`, `chartInterfaces.ts`, `fetchInterfaces.ts`); dataset-specific types (`DatasetChartType`, `DatasetField`, `DatasetGenerationResult`, `DatasetChartProps`) live in `chartInterfaces.ts`
 
 ### Frontend API client
 `lib/fetchClient.ts` is a custom HTTP client with interceptors (`lib/interceptors.ts`) that automatically attach JWT tokens and handle 401 refresh via `lib/handleUnauthorized.ts`. Services in `services/` (`authService.ts`, `chartService.ts`, `googleAuthService.ts`) wrap the fetch client per domain. Other `lib/` helpers: `validateJWTToken.ts`, `parseChartToken.ts`, `parseManualChartState.ts`, `utils.ts` (Tailwind `cn`).
 
 ### Database schema highlights
-- `Chart.token` — unique share/access token (UUID), separate from the primary `id`. Also stores `name`, `config` (JSON), `manualType` (nullable, set when chart was built via the manual editor).
+- `Chart.token` — unique share/access token (UUID), separate from the primary `id`. Also stores `name`, `config` (JSON), `manualType` (nullable, set when chart was built via the manual editor), and `datasetMeta` (nullable JSON, stores field/type metadata from the last dataset upload).
 - `PendingUser` — temporary record holding a hashed password during email-confirmation registration when the email already has a Google-OAuth-only account. Deleted on activation.
 - `User.password` and `User.sub` are both nullable to support either email/password or Google OAuth (or both linked).
 - All token tables (`RefreshToken`, `AccountActivationToken`, `ResetPasswordToken`) have `expiresAt` and are cleaned by scheduled jobs.
@@ -104,7 +104,7 @@ Routes (`routes/`) → Controllers (`controllers/`) → Services (`services/`) �
 
 ## Testing
 
-- Tests live in `backend/test/`: `auth.test.ts`, `chart.test.ts`, `oauth.test.ts`.
+- Tests live in `backend/test/`: `auth.test.ts`, `chart.test.ts`, `oauth.test.ts`, `dataset.test.ts`.
 - Each test file runs `prisma migrate reset --force` in a `before()` hook — tests require a running test database configured in `.env.test`.
 - Tests run with `--test-concurrency=1` (sequential) since they share the database.
 - No frontend tests currently exist.
