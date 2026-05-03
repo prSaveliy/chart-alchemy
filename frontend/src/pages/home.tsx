@@ -5,6 +5,7 @@ import { HeroHeader } from "../components/layout/header";
 import Footer from "../components/layout/footer";
 import { FeatureImage } from "@/components/ui/feature-image";
 import chartAI from "@/assets/chart-ai.png";
+import chartDataset from "@/assets/chart-dataset.png";
 import chartManual from "@/assets/chart-manual.png";
 
 const transitionVariants = {
@@ -99,8 +100,8 @@ export const HeroSection = () => {
                   as="p"
                   className="mx-auto mt-8 max-w-2xl text-balance text-lg"
                 >
-                  AI-powered when you want speed. Fully manual when you want
-                  control.
+                  AI-powered, dataset-driven, or fully manual — chart your data
+                  your way.
                 </TextEffect>
 
                 <AnimatedGroup
@@ -164,8 +165,23 @@ export const HeroSection = () => {
                   </div>
                 </div>
               </div>
-              <div className="relative mt-16 px-4 sm:px-6 lg:px-8 sm:mt-24 mb-24 max-w-7xl mx-auto w-full">
+              <div className="relative mt-16 px-4 sm:px-6 lg:px-8 sm:mt-24 max-w-7xl mx-auto w-full">
                 <div className="flex flex-col lg:flex-row-reverse items-center gap-8 lg:gap-16">
+                  <FeatureImage src={chartDataset} />
+                  <div className="flex-1 w-full text-center lg:text-left">
+                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                      Generate from a Dataset
+                    </h2>
+                    <p className="text-lg text-gray-600">
+                      Upload a CSV or XLSX file and have the chart built from
+                      your data automatically. Switch between bar, line, pie,
+                      and scatter and review the detected fields in real time.
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="relative mt-16 px-4 sm:px-6 lg:px-8 sm:mt-24 mb-24 max-w-7xl mx-auto w-full">
+                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
                   <FeatureImage src={chartManual} />
                   <div className="flex-1 w-full text-center lg:text-left">
                     <h2 className="text-3xl font-bold text-gray-900 mb-4">
