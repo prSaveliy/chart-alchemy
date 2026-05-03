@@ -7,6 +7,7 @@ import {
   PieChart,
   Activity,
   Check,
+  Loader2,
   UploadCloud,
   FileSpreadsheet,
   X,
@@ -107,6 +108,7 @@ export const DatasetChart = ({
   );
 
   const [generateError, setGenerateError] = useState("");
+  const [generating, setGenerating] = useState(false);
 
   const userPicture = localStorage.getItem("picture");
 
@@ -167,30 +169,35 @@ export const DatasetChart = ({
     const yf = yFieldArg !== undefined ? yFieldArg : yField;
     if (!f) return;
     setGenerateError("");
+    setGenerating(true);
 
-    const fetchResult = await chartService.generateFromDataset(
-      f,
-      token!,
-      ct,
-      xf || undefined,
-      yf || undefined,
-    );
+    try {
+      const fetchResult = await chartService.generateFromDataset(
+        f,
+        token!,
+        ct,
+        xf || undefined,
+        yf || undefined,
+      );
 
-    if (fetchResult.errorMessage) {
-      if (!retriedRef.current && fetchResult.statusCode === 401) {
-        await handleUnauthorized(retriedRef, navigate, generate);
+      if (fetchResult.errorMessage) {
+        if (!retriedRef.current && fetchResult.statusCode === 401) {
+          await handleUnauthorized(retriedRef, navigate, generate);
+          return;
+        }
+        setGenerateError(fetchResult.errorMessage);
         return;
       }
-      setGenerateError(fetchResult.errorMessage);
-      return;
-    }
 
-    const result = fetchResult.data as DatasetGenerationResult;
-    setChartData(result.chartData);
-    setFields(result.fields);
-    setXField(result.selectedXField);
-    setYField(result.selectedYField);
-    setTruncated(result.truncated);
+      const result = fetchResult.data as DatasetGenerationResult;
+      setChartData(result.chartData);
+      setFields(result.fields);
+      setXField(result.selectedXField);
+      setYField(result.selectedYField);
+      setTruncated(result.truncated);
+    } finally {
+      setGenerating(false);
+    }
   };
 
   const saveName = async () => {
@@ -291,8 +298,9 @@ export const DatasetChart = ({
                 </div>
                 <button
                   onClick={() => onPickFile(null)}
+                  disabled={generating}
                   title="Remove file"
-                  className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0"
+                  className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:pointer-events-none"
                 >
                   <X size={14} />
                 </button>
@@ -316,7 +324,8 @@ export const DatasetChart = ({
                     setChartType(type);
                     if (file) generate(file, type, xField, yField);
                   }}
-                  className={`flex flex-col items-center justify-center gap-1.5 h-16 rounded-xl border-2 cursor-pointer transition-colors ${
+                  disabled={generating}
+                  className={`flex flex-col items-center justify-center gap-1.5 h-16 rounded-xl border-2 cursor-pointer transition-colors disabled:opacity-40 disabled:pointer-events-none ${
                     chartType === type
                       ? "border-black bg-black/5"
                       : "border-gray-200 hover:border-gray-300"
@@ -345,7 +354,8 @@ export const DatasetChart = ({
                     setXField(e.target.value);
                     generate(undefined, undefined, e.target.value, yField);
                   }}
-                  className="w-full h-9 rounded-md border bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1px] cursor-pointer"
+                  disabled={generating}
+                  className="w-full h-9 rounded-md border bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1px] cursor-pointer disabled:opacity-40"
                 >
                   {fields.map((f) => (
                     <option key={f.name} value={f.name}>
@@ -364,7 +374,8 @@ export const DatasetChart = ({
                     setYField(e.target.value);
                     generate(undefined, undefined, xField, e.target.value);
                   }}
-                  className="w-full h-9 rounded-md border bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1px] cursor-pointer"
+                  disabled={generating}
+                  className="w-full h-9 rounded-md border bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1px] cursor-pointer disabled:opacity-40"
                 >
                   {fields.map((f) => (
                     <option key={f.name} value={f.name}>
@@ -412,7 +423,12 @@ export const DatasetChart = ({
 
         {/* Right panel — preview */}
         <div className="w-full lg:flex-1 border shadow-sm rounded-3xl h-[80vh] lg:h-full lg:min-h-full overflow-x-auto overflow-y-hidden lg:overflow-hidden">
-          <div className="h-full min-w-[640px] lg:min-w-0">
+          <div className="relative h-full min-w-[640px] lg:min-w-0">
+            {generating && (
+              <div className="absolute inset-0 z-10 flex items-center justify-center bg-white/70 rounded-3xl">
+                <Loader2 className="w-8 h-8 animate-spin text-gray-400" />
+              </div>
+            )}
             {mergedOption ? (
               /* @ts-expect-error - echarts-for-react typings are incompatible with React 19 */
               <ReactECharts
