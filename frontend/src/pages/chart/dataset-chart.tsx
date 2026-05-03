@@ -427,7 +427,7 @@ export const DatasetChart = ({
                   strokeWidth={1.25}
                   className="w-10 h-10 mb-3"
                 />
-                Upload a dataset and click "Generate chart" to preview.
+                Upload a dataset to visualize your data.
               </div>
             )}
           </div>

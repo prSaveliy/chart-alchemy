@@ -87,8 +87,8 @@ export const NewChart = () => {
                     How would you like to create your chart?
                   </h1>
                   <p className="mt-3 text-sm sm:text-base text-gray-600 max-w-xl">
-                    Start from a natural-language prompt or build your chart by
-                    hand with full control over every field.
+                    Generate from a prompt, upload a dataset, or configure every
+                    field by hand.
                   </p>
                 </div>
 

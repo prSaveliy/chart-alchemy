@@ -1,4 +1,4 @@
-import { Sparkles, Settings } from "lucide-react";
+import { Sparkles, Settings, FileSpreadsheet } from "lucide-react";
 
 export const ChartOptionsShowcase = () => {
   return (
@@ -8,7 +8,7 @@ export const ChartOptionsShowcase = () => {
           Create charts your way
         </h2>
         <p className="mt-2 text-sm text-gray-600">
-          Two ways to bring your data to life
+          Three ways to bring your data to life
         </p>
       </div>
 
@@ -23,6 +23,20 @@ export const ChartOptionsShowcase = () => {
           Describe the chart you want in plain language and an AI model will
           build it for you. Iterate with follow-up prompts and refine your
           visualization turn by turn.
+        </p>
+      </div>
+
+      <div className="flex flex-col items-start text-left p-6 border rounded-2xl bg-white">
+        <div className="flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100">
+          <FileSpreadsheet strokeWidth={1.5} className="w-6 h-6 text-gray-700" />
+        </div>
+        <h3 className="mt-5 text-xl font-semibold text-gray-900">
+          Generate from a dataset
+        </h3>
+        <p className="mt-2 text-sm leading-relaxed text-gray-600">
+          Upload a CSV or XLSX file and have the chart built from your data.
+          Switch between bar, line, pie, and scatter and review the detected
+          fields.
         </p>
       </div>
 
