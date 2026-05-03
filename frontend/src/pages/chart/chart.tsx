@@ -1,5 +1,6 @@
 import { AIChart } from "./ai-chart";
 import { ManualChart } from "./manual-chart";
+import { DatasetChart } from "./dataset-chart";
 
 import { useParams, useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
@@ -121,6 +122,8 @@ export const Chart = () => {
     switch (kind) {
       case "ai":
         return <AIChart initialData={chartData} initialName={chartName} />;
+      case "dataset":
+        return <DatasetChart initialName={chartName} initialData={chartData} />;
       case "manual":
         return (
           <ManualChart

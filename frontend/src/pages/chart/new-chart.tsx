@@ -5,7 +5,7 @@ import { handleUnauthorized } from "@/lib/handleUnauthorized";
 
 import defaultUserPicture from "@/assets/user.png";
 
-import { Sparkles, Settings } from "lucide-react";
+import { Sparkles, Settings, FileSpreadsheet } from "lucide-react";
 
 import { Header2 } from "@/components/layout/header2";
 import { WorkflowChoiceCard } from "@/components/ui/workflow-choice-card";
@@ -23,7 +23,7 @@ export const NewChart = () => {
   const [serverError, setServerError] = useState(false);
   const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
 
-  const redirect = async (chartType: "ai" | "manual") => {
+  const redirect = async (chartType: "ai" | "manual" | "dataset") => {
     const fetchResult = await chartService.init(chartType);
 
     if (fetchResult.errorMessage) {
@@ -92,13 +92,21 @@ export const NewChart = () => {
                   </p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row justify-center items-center gap-4 sm:gap-6 w-full">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap justify-center items-center gap-4 sm:gap-6 w-full">
                   <WorkflowChoiceCard
                     Icon={Sparkles}
                     title="Generate with AI"
                     description="Describe the chart you want in plain language and AI model will build it for you. Iterate with follow-up prompts, carry context forward with memory, and refine your visualization turn by turn."
                     cta="Start with AI"
                     onClick={() => redirect("ai")}
+                  />
+
+                  <WorkflowChoiceCard
+                    Icon={FileSpreadsheet}
+                    title="Generate from a dataset"
+                    description="Upload a CSV or XLSX file and have the chart built from your data. Switch between bar, line, pie, and scatter and review the detected fields."
+                    cta="Upload a file"
+                    onClick={() => redirect("dataset")}
                   />
 
                   <WorkflowChoiceCard

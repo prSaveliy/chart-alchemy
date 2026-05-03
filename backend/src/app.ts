@@ -6,6 +6,7 @@ import cookie from '@fastify/cookie';
 import fastifySchedule from '@fastify/schedule';
 import rateLimit from '@fastify/rate-limit';
 import cors from '@fastify/cors';
+import multipart from '@fastify/multipart';
 import authPlugin from './plugins/auth.plugin.js';
 import dbPlugin from './plugins/db.plugin.js';
 import geminiPlugin from './plugins/gemini.plugin.js';
@@ -58,6 +59,14 @@ const buildApp = async () => {
     origin: app.config.CORS_ORIGIN.split(',').map(s => s.trim()).filter(Boolean),
     credentials: true,
     methods: ['GET', 'POST', 'PATCH', 'DELETE', 'OPTIONS'],
+  });
+  await app.register(multipart, {
+    limits: {
+      fileSize: 5 * 1024 * 1024,
+      files: 1,
+      fields: 10,
+    },
+    throwFileSizeLimit: true,
   });
   app.register(dbPlugin);
   app.register(authPlugin);

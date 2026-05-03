@@ -2,6 +2,7 @@ import 'fastify';
 import '@fastify/jwt';
 
 import { FastifyRequest, FastifyReply } from 'fastify';
+import type { Multipart } from '@fastify/multipart';
 
 import { PrismaClient } from '../../generated/prisma/client.ts';
 import { GoogleGenAI } from '@google/genai';
@@ -29,6 +30,10 @@ declare module 'fastify' {
     auth: (request: FastifyRequest, reply: FastifyReply) => void;
     gemini: GoogleGenAI;
     googleAuthClient: OAuth2Client;
+  }
+
+  interface FastifyRequest {
+    parts: () => AsyncIterableIterator<Multipart>;
   }
 }
 

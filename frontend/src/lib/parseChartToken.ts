@@ -1,6 +1,6 @@
-export type ChartKind = "ai" | "manual";
+export type ChartKind = "ai" | "manual" | "dataset";
 
-const VALID_KINDS: ChartKind[] = ["ai", "manual"];
+const VALID_KINDS: ChartKind[] = ["ai", "manual", "dataset"];
 
 export const parseChartKind = (token: string): ChartKind | null => {
   const prefix = token.split("-")[0];

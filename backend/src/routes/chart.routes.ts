@@ -29,6 +29,14 @@ const chartRoutes = (fastify: FastifyInstance) => {
     chartController.generate,
   );
 
+  fastify.post(
+    '/generate-from-dataset/:token',
+    {
+      onRequest: [fastify.auth, rateLimitByIp(25, 60 * 1000)],
+    },
+    chartController.generateFromDataset,
+  );
+
   fastify.patch(
     '/rename',
     {

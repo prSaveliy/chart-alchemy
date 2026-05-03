@@ -1,5 +1,6 @@
 import fetchClient from "@/lib/fetchClient";
 import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
+import type { DatasetChartType } from "@/commons/interfaces/chartInterfaces";
 
 export type ManualChartType =
   | "bar"
@@ -10,7 +11,7 @@ export type ManualChartType =
   | "radar";
 
 class ChartService {
-  async init(chartType: "ai" | "manual") {
+  async init(chartType: "ai" | "manual" | "dataset") {
     return await fetchClient.post("chart/init", { chartType });
   }
 
@@ -59,6 +60,25 @@ class ChartService {
       ...(manualType ? { manualType } : {}),
     });
   }
+
+  async generateFromDataset(
+    file: File,
+    token: string,
+    chartType: DatasetChartType,
+    xField?: string,
+    yField?: string,
+  ) {
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("chartType", chartType);
+    if (xField) formData.append("xField", xField);
+    if (yField) formData.append("yField", yField);
+    return await fetchClient.postFormData(
+      `chart/generate-from-dataset/${token}`,
+      formData,
+    );
+  }
+
 }
 
 export default new ChartService();

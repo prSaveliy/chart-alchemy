@@ -117,6 +117,29 @@ class FetchClient {
       return { errorMessage: "Something went wrong" };
     }
   }
+
+  async postFormData(uri: string, formData: FormData): Promise<FetchResult> {
+    try {
+      const accessToken = localStorage.getItem('accessToken');
+      const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/${uri}`, {
+        method: "POST",
+        credentials: "include",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+        },
+        body: formData,
+      });
+
+      const data = await response.json().catch(() => null);
+
+      const error = this.getError(response, data);
+      if (error) return error;
+
+      return { data };
+    } catch {
+      return { errorMessage: "Something went wrong" };
+    }
+  }
 }
 
 export default new FetchClient();
