@@ -129,7 +129,6 @@ export const AIChart = ({
         <div className="w-full max-w-7xl h-[60vh] min-h-[400px] lg:h-[648px] border shadow-sm rounded-3xl overflow-x-auto overflow-y-hidden">
           {mergedOption && (
             <div className="h-full min-w-[640px] lg:min-w-0 w-full">
-              {/* @ts-expect-error - echarts-for-react typings are incompatible with React 19 */}
               <ReactECharts
                 option={mergedOption}
                 style={{ height: "100%", width: "100%" }}

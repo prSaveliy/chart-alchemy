@@ -434,7 +434,6 @@ export const ManualChart = ({
         {/* Right panel — preview */}
         <div className="w-full lg:flex-1 border shadow-sm rounded-3xl h-[80vh] lg:h-full lg:min-h-full overflow-x-auto overflow-y-hidden lg:overflow-hidden">
           <div className="h-full min-w-[640px] lg:min-w-0">
-            {/* @ts-expect-error - echarts-for-react typings are incompatible with React 19 */}
             <ReactECharts
               option={option}
               style={{ height: "100%", width: "100%" }}
