@@ -430,7 +430,6 @@ export const DatasetChart = ({
               </div>
             )}
             {mergedOption ? (
-              /* @ts-expect-error - echarts-for-react typings are incompatible with React 19 */
               <ReactECharts
                 option={mergedOption}
                 style={{ height: "100%", width: "100%" }}
