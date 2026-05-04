@@ -46,6 +46,17 @@ class ChartController {
 
     await chartService.verifyToken(request.server, token, userId);
 
+    if (process.env.NODE_ENV !== 'production') {
+      return await chartService.generate(
+        request.server,
+        prompt,
+        token,
+        userId,
+        memory,
+        useThinkingMode,
+      );
+    }
+
     const stream = new PassThrough();
     reply.type('application/json').send(stream);
     stream.write(' ');

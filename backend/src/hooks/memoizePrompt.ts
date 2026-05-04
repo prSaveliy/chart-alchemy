@@ -32,7 +32,7 @@ const memoizePrompt = (ttlSeconds = 3600) => {
     onSend: async (request: FastifyRequest, reply: FastifyReply, payload: any) => {
       const key = (request as any)._cacheKey;
 
-      if (key && reply.statusCode === 200) {
+      if (key && reply.statusCode === 200 && typeof payload === 'string') {
         cache.set(key, JSON.parse(payload));
       }
 
