@@ -1,31 +1,42 @@
 import { FastifyInstance } from 'fastify';
+import { Readable } from 'node:stream';
 
 import chartService from '../chart.service.js';
 
 import {
   DatasetChartType,
   DatasetGenerationResult,
+  ParsedDataset,
 } from '../../commons/types/dataset.js';
 
 import { parseFile } from './parseFile.js';
 import { buildChartOption } from './buildChartOption.js';
 
 class DatasetService {
-  async generate(
+  async parseUploadedFile(
     fastify: FastifyInstance,
-    fileBuffer: Buffer,
+    fileStream: Readable,
     filename: string,
     mimetype: string,
+  ): Promise<ParsedDataset> {
+    return await parseFile(fastify, fileStream, filename, mimetype);
+  }
+
+  async generate(
+    fastify: FastifyInstance,
+    datasetInput: ParsedDataset | Promise<ParsedDataset>,
     chartType: DatasetChartType,
     token: string,
     userId: number,
     xField: string | undefined,
     yField: string | undefined,
   ): Promise<DatasetGenerationResult> {
-    const dataset = await parseFile(fastify, fileBuffer, filename, mimetype);
+    const dataset = await datasetInput;
 
     if (dataset.fields.length < 2) {
-      throw fastify.httpErrors.badRequest('Dataset must have at least two columns');
+      throw fastify.httpErrors.badRequest(
+        'Dataset must have at least two columns',
+      );
     }
 
     const { option, resolved } = buildChartOption(

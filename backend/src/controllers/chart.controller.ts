@@ -5,6 +5,7 @@ import chartService from '../services/chart.service.js';
 import datasetService from '../services/dataset/index.js';
 
 import validateRequest from '../utils/validateRequest.js';
+import { ParsedDataset } from '../commons/types/dataset.js';
 
 import { chartInitRequestSchema } from '../commons/schemas/chartInitRequest.schema.js';
 import { accountActivationSchema as chartTokenSchema } from '../commons/schemas/accountActivation.schema.js';
@@ -170,15 +171,25 @@ class ChartController {
     await chartService.verifyToken(request.server, token, userId);
 
     const fields: Record<string, string> = {};
-    let fileBuffer: Buffer | null = null;
-    let filename = '';
-    let mimetype = '';
+    let datasetPromise: Promise<ParsedDataset | Error> | null = null;
 
     for await (const part of request.parts()) {
       if (part.type === 'file') {
-        fileBuffer = await part.toBuffer();
-        filename = part.filename;
-        mimetype = part.mimetype;
+        if (datasetPromise) {
+          part.file.destroy();
+          throw request.server.httpErrors.badRequest(
+            'Only one file is allowed',
+          );
+        }
+
+        datasetPromise = datasetService
+          .parseUploadedFile(
+            request.server,
+            part.file,
+            part.filename,
+            part.mimetype,
+          )
+          .catch(err => err as Error);
       } else {
         if (part.fieldname in fields) {
           throw request.server.httpErrors.badRequest(
@@ -194,7 +205,7 @@ class ChartController {
       }
     }
 
-    if (!fileBuffer) {
+    if (!datasetPromise) {
       throw request.server.httpErrors.badRequest('File is required');
     }
 
@@ -205,11 +216,12 @@ class ChartController {
       'Invalid request body',
     );
 
+    const dataset = await datasetPromise;
+    if (dataset instanceof Error) throw dataset;
+
     return await datasetService.generate(
       request.server,
-      fileBuffer,
-      filename,
-      mimetype,
+      dataset,
       chartType,
       token,
       userId,
