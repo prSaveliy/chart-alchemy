@@ -1,6 +1,8 @@
 import type { ManualChartType } from "@/services/chartService";
 import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
 
+export type WorkflowType = "ai" | "dataset" | "manual";
+
 export interface PieEntry {
   name: string;
   value: string;
