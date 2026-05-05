@@ -17,7 +17,7 @@ import chartService from "@/services/chartService";
 
 export const NewChart = () => {
   const navigate = useNavigate();
-  const userPicture = sessionStorage.getItem("picture");
+  const userPicture = localStorage.getItem("picture");
   const retriedRef = useRef(false);
 
   const [badRequestError, setBadRequestError] = useState(false);
