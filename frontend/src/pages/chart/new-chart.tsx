@@ -17,26 +17,35 @@ import chartService from "@/services/chartService";
 
 export const NewChart = () => {
   const navigate = useNavigate();
-  const userPicture = localStorage.getItem("picture");
+  const userPicture = sessionStorage.getItem("picture");
   const retriedRef = useRef(false);
 
   const [badRequestError, setBadRequestError] = useState(false);
   const [networkError, setNetworkError] = useState(false);
   const [serverError, setServerError] = useState(false);
   const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
-  const [lastSelectedWorkflow, setLastSelectedWorkflow] = useState("");
-  const [selectionCount, setSelectionCount] = useState(0);
+  const [lastSelectedWorkflow, setLastSelectedWorkflow] = useState(
+    sessionStorage.getItem("lastSelectedWorkflow") ?? "",
+  );
+  const [selectionCount, setSelectionCount] = useState(
+    Number(sessionStorage.getItem("selectionCount") ?? "0"),
+  );
 
   useEffect(() => {
     const selectionSubscription = onWorkflowSelected(
       "workflow:selected",
       (payload) => {
         setLastSelectedWorkflow(payload.label);
+        sessionStorage.setItem("lastSelectedWorkflow", payload.label);
       },
     );
 
     const countSubscription = onWorkflowSelected("workflow:selected", () => {
-      setSelectionCount((prev) => prev + 1);
+      setSelectionCount((prev) => {
+        const next = prev + 1;
+        sessionStorage.setItem("selectionCount", next.toString());
+        return next;
+      });
     });
 
     // unsubscribe on page unmount
