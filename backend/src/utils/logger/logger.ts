@@ -1,5 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
+import { fileURLToPath } from 'url';
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 type LogLevel = 'INFO' | 'DEBUG' | 'ERROR';
 
@@ -47,10 +50,7 @@ export function log(
         }
 
         if (options.logToFile) {
-          const filePath = path.join(
-            process.cwd(),
-            'src/utils/logger/logs.log',
-          );
+          const filePath = path.join(__dirname, 'logs.log');
           const fileEntry = JSON.stringify(logData) + '\n\n';
 
           fs.appendFile(filePath, fileEntry, err => {
