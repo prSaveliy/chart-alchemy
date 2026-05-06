@@ -22,7 +22,7 @@ export function createApiKeyGitHubService(apiKey: string): GitHubService {
   return new GitHubService(
     new ApiKeyProxy(
       new LoggingProxy(new BaseHttpClient()),
-      { apiKey, headerName: 'Authorization' }
+      { apiKey: `Bearer ${apiKey}`, headerName: 'Authorization' }
     )
   );
 }

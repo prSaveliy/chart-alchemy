@@ -5,6 +5,8 @@ import type {
 } from "../http-client.interface";
 
 export class JwtAuthProxy implements HttpClient {
+  private refreshInProgress: Promise<string | null> | null = null;
+
   constructor(
     private readonly client: HttpClient,
     private readonly getToken: () => string | null,
@@ -18,7 +20,7 @@ export class JwtAuthProxy implements HttpClient {
     const response = await this.client.request<T>(authedReq);
 
     if (response.status === 401 && this.refreshToken) {
-      const newToken = await this.refreshToken();
+      const newToken = await this.ensureRefresh();
       if (newToken) {
         const refreshedReq = this.injectToken(req, newToken);
         return this.client.request<T>(refreshedReq);
@@ -34,5 +36,19 @@ export class JwtAuthProxy implements HttpClient {
       ...req,
       headers: { ...req.headers, Authorization: `Bearer ${token}` },
     };
+  }
+
+  private ensureRefresh(): Promise<string | null> {
+    if (!this.refreshToken) {
+      return Promise.resolve(null);
+    }
+
+    if (!this.refreshInProgress) {
+      this.refreshInProgress = this.refreshToken().finally(() => {
+        this.refreshInProgress = null;
+      });
+    }
+
+    return this.refreshInProgress;
   }
 }
