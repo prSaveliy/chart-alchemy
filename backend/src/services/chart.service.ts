@@ -7,6 +7,8 @@ import { EChartsOption } from '../commons/schemas/chartConfig.schema.js';
 
 import { v4 } from 'uuid';
 
+import { log } from '../utils/logger/logger.js';
+
 class ChartService {
   async init(
     fastify: FastifyInstance,
@@ -87,6 +89,7 @@ class ChartService {
     });
   }
 
+  @log({ level: 'DEBUG', logToConsole: true, logToFile: true })
   async listByUser(fastify: FastifyInstance, userId: number) {
     const charts = await fastify.prisma.chart.findMany({
       where: { userId },
