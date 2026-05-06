@@ -1,12 +1,20 @@
+import { useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { TextEffect } from "@/components/ui/text-effect";
 import { AnimatedGroup } from "@/components/ui/animated-group";
 import { HeroHeader } from "../components/layout/header";
 import Footer from "../components/layout/footer";
 import { FeatureImage } from "@/components/ui/feature-image";
+import { PriorityQueue } from "@/lib/priorityQueue";
 import chartAI from "@/assets/chart-ai.png";
 import chartDataset from "@/assets/chart-dataset.png";
 import chartManual from "@/assets/chart-manual.png";
+
+type WorkflowEntry = {
+  message: string;
+  description: string;
+  picture: string;
+};
 
 const transitionVariants = {
   item: {
@@ -29,6 +37,41 @@ const transitionVariants = {
 };
 
 export const HeroSection = () => {
+  const workflows = useMemo(() => {
+    const q = new PriorityQueue<WorkflowEntry>();
+    q.enqueue(
+      {
+        message: "Generate from a Dataset",
+        picture: chartDataset,
+        description:
+          "Upload a CSV or XLSX file and have the chart built from your data automatically. Switch between bar, line, pie, and scatter and review the detected fields in real time.",
+      },
+      2,
+    );
+    q.enqueue(
+      {
+        message: "Build Manually",
+        picture: chartManual,
+        description:
+          "Configure each chart field by hand. Choose from bar, line, area, pie, scatter, or radar, supply your own data, and watch the chart update live as you edit.",
+      },
+      1,
+    );
+    q.enqueue(
+      {
+        message: "Generate with AI",
+        picture: chartAI,
+        description:
+          "Describe the chart you want in plain language and our advanced AI model will build it for you. Iterate with follow-up prompts, carry context forward with memory, and refine your visualization turn by turn.",
+      },
+      3,
+    );
+
+    const result: WorkflowEntry[] = [];
+    while (!q.isEmpty) result.push(q.dequeue()!);
+    return result;
+  }, []);
+
   return (
     <>
       <HeroHeader />
@@ -149,52 +192,24 @@ export const HeroSection = () => {
                 ...transitionVariants,
               }}
             >
-              <div className="relative mt-16 px-4 sm:px-6 lg:px-8 sm:mt-24 max-w-7xl mx-auto w-full">
-                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
-                  <FeatureImage src={chartAI} />
-                  <div className="flex-1 w-full text-center lg:text-left">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      Generate with AI
-                    </h2>
-                    <p className="text-lg text-gray-600">
-                      Describe the chart you want in plain language and our
-                      advanced AI model will build it for you. Iterate with
-                      follow-up prompts, carry context forward with memory, and
-                      refine your visualization turn by turn.
-                    </p>
+              {workflows.map((entry, i) => (
+                <div
+                  key={entry.message}
+                  className={`relative mt-16 px-4 sm:px-6 lg:px-8 sm:mt-24 max-w-7xl mx-auto w-full${i === workflows.length - 1 ? " mb-24" : ""}`}
+                >
+                  <div
+                    className={`flex flex-col ${i % 2 === 0 ? "lg:flex-row" : "lg:flex-row-reverse"} items-center gap-8 lg:gap-16`}
+                  >
+                    <FeatureImage src={entry.picture} />
+                    <div className="flex-1 w-full text-center lg:text-left">
+                      <h2 className="text-3xl font-bold text-gray-900 mb-4">
+                        {entry.message}
+                      </h2>
+                      <p className="text-lg text-gray-600">{entry.description}</p>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <div className="relative mt-16 px-4 sm:px-6 lg:px-8 sm:mt-24 max-w-7xl mx-auto w-full">
-                <div className="flex flex-col lg:flex-row-reverse items-center gap-8 lg:gap-16">
-                  <FeatureImage src={chartDataset} />
-                  <div className="flex-1 w-full text-center lg:text-left">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      Generate from a Dataset
-                    </h2>
-                    <p className="text-lg text-gray-600">
-                      Upload a CSV or XLSX file and have the chart built from
-                      your data automatically. Switch between bar, line, pie,
-                      and scatter and review the detected fields in real time.
-                    </p>
-                  </div>
-                </div>
-              </div>
-              <div className="relative mt-16 px-4 sm:px-6 lg:px-8 sm:mt-24 mb-24 max-w-7xl mx-auto w-full">
-                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16">
-                  <FeatureImage src={chartManual} />
-                  <div className="flex-1 w-full text-center lg:text-left">
-                    <h2 className="text-3xl font-bold text-gray-900 mb-4">
-                      Build Manually
-                    </h2>
-                    <p className="text-lg text-gray-600">
-                      Configure each chart field by hand. Choose from bar, line,
-                      area, pie, scatter, or radar, supply your own data, and
-                      watch the chart update live as you edit.
-                    </p>
-                  </div>
-                </div>
-              </div>
+              ))}
             </AnimatedGroup>
           </div>
         </section>
