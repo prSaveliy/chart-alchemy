@@ -1,7 +1,10 @@
 import { FastifyInstance, FastifyReply } from 'fastify';
 import { UserDTO } from '../commons/types/user.js';
 
+import { log } from '../utils/logger/logger.js';
+
 class TokenService {
+  @log({ level: 'INFO', logToConsole: true, logToFile: true })
   generateTokens(fastify: FastifyInstance, payload: UserDTO) {
     const accessToken = fastify.jwt.sign(payload, { expiresIn: '30m' });
     const refreshToken = fastify.jwt.sign(
