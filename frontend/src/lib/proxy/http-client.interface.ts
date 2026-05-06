@@ -1,8 +1,9 @@
 export interface HttpRequest {
   url: string;
-  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE';
+  method?: "GET" | "POST" | "PUT" | "PATCH" | "DELETE";
   headers?: Record<string, string>;
   body?: unknown;
+  credentials?: RequestCredentials;
 }
 
 export interface HttpResponse<T = unknown> {

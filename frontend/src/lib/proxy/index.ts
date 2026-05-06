@@ -4,6 +4,7 @@ import { ApiKeyProxy } from './auth/api-key-proxy';
 import { OAuthProxy, type OAuthConfig } from './auth/oauth-proxy';
 import { LoggingProxy } from './logging-proxy';
 import { GitHubService } from './github-service';
+import type { HttpClient } from './http-client.interface';
 
 export function createJwtGitHubService(
   getToken: () => string | null,
@@ -15,6 +16,17 @@ export function createJwtGitHubService(
       getToken,
       refreshFn
     )
+  );
+}
+
+export function createJwtBackendClient(
+  getToken: () => string | null,
+  refreshFn?: () => Promise<string | null>
+): HttpClient {
+  return new JwtAuthProxy(
+    new LoggingProxy(new BaseHttpClient()),
+    getToken,
+    refreshFn
   );
 }
 

@@ -6,6 +6,7 @@ export class BaseHttpClient implements HttpClient {
       method: req.method ?? 'GET',
       headers: req.headers,
       body: req.body != null ? JSON.stringify(req.body) : undefined,
+      credentials: req.credentials,
     });
 
     const data = (await response.json().catch(() => null)) as T;
