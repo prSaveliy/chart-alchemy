@@ -1,13 +1,10 @@
 export function* randomLetterGenerator(): Generator<string> {
-  const LETTERS = [
-    'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j',
-    'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't',
-    'u', 'v', 'w', 'x', 'y', 'z'
-  ]
+  const LETTERS = 'abcdefghijklmnopqrstuvwxyz';
+  const LETTERS_ARRAY = LETTERS.split('');
 
   while (true) {
     const isUpperCase = Math.round(Math.random());
-    const option = LETTERS[Math.floor(Math.random() * 26)];
+    const option = LETTERS_ARRAY[Math.floor(Math.random() * 26)];
     const letter = isUpperCase
       ? option.toUpperCase()
       : option;
