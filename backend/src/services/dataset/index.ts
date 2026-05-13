@@ -1,8 +1,8 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
-import chartService from '../chart.service.js';
+import type { ChartService } from '../chart.service.js';
 
-import {
+import type {
   DatasetChartType,
   DatasetGenerationResult,
 } from '../../commons/types/dataset.js';
@@ -10,7 +10,9 @@ import {
 import { parseFile } from './parseFile.js';
 import { buildChartOption } from './buildChartOption.js';
 
-class DatasetService {
+export class DatasetService {
+  constructor(private readonly chartService: ChartService) {}
+
   async generate(
     fastify: FastifyInstance,
     fileBuffer: Buffer,
@@ -36,7 +38,7 @@ class DatasetService {
     );
     const chartData = { option };
 
-    await chartService.save(fastify, chartData, token);
+    await this.chartService.save(fastify, chartData, token);
 
     return {
       chartData,
@@ -48,5 +50,3 @@ class DatasetService {
     };
   }
 }
-
-export default new DatasetService();

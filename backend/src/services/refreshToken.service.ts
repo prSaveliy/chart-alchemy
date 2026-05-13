@@ -1,12 +1,18 @@
-import { FastifyInstance, FastifyReply } from 'fastify';
-import { UserDTO } from '../commons/types/user.js';
+import type { FastifyInstance, FastifyReply } from 'fastify';
 
-class TokenService {
+import type { UserDTO } from '../commons/types/user.js';
+import type { RefreshTokenRepository } from '../commons/interfaces/repositories/refreshTokenRepository.interface.js';
+
+export class TokenService {
+  constructor(
+    private readonly refreshTokenRepository: RefreshTokenRepository,
+  ) {}
+
   generateTokens(fastify: FastifyInstance, payload: UserDTO) {
     const accessToken = fastify.jwt.sign(payload, { expiresIn: '30m' });
     const refreshToken = fastify.jwt.sign(
       { ...payload, jti: crypto.randomUUID() } as UserDTO,
-      { expiresIn: '30d' }
+      { expiresIn: '30d' },
     );
 
     return {
@@ -14,27 +20,27 @@ class TokenService {
       refreshToken,
     };
   }
-  
-  async saveToken(fastify: FastifyInstance, userId: number, refreshToken: string) {
-    await fastify.prisma.refreshToken.create({
-      data: {
-        userId: userId,
-        token: refreshToken,
-        expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
-      },
-    });
+
+  async saveToken(userId: number, refreshToken: string) {
+    await this.refreshTokenRepository.create(
+      userId,
+      refreshToken,
+      new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+    );
   }
-  
-  async deleteToken(fastify: FastifyInstance, refreshToken: string) {
-    try {
-      await fastify.prisma.refreshToken.delete({
-        where: {
-          token: refreshToken,
-        },
-      });
-    } catch {}
+
+  findToken(refreshToken: string) {
+    return this.refreshTokenRepository.findByToken(refreshToken);
   }
-  
+
+  async deleteToken(refreshToken: string) {
+    await this.refreshTokenRepository.deleteByToken(refreshToken);
+  }
+
+  async deleteTokensByUserId(userId: number) {
+    await this.refreshTokenRepository.deleteByUserId(userId);
+  }
+
   saveToCookie(reply: FastifyReply, refreshToken: string) {
     reply.setCookie('refreshToken', refreshToken, {
       httpOnly: true,
@@ -45,5 +51,3 @@ class TokenService {
     });
   }
 }
-
-export default new TokenService();

@@ -1,4 +1,4 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
 import { writeFile, readFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
@@ -7,9 +7,9 @@ import { join, dirname } from 'node:path';
 import { HarmCategory, HarmBlockThreshold } from '@google/genai';
 
 import {
-  ChartConfig,
   chartConfigSchema,
 } from '../commons/schemas/chartConfig.schema.js';
+import type { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,7 +20,7 @@ const SYSTEM_INSTRUCTION = await readFile(
   'utf8',
 );
 
-class GeminiService {
+export class GeminiService {
   async generate(
     fastify: FastifyInstance,
     prompt: string,
@@ -131,5 +131,3 @@ class GeminiService {
     return chartData;
   }
 }
-
-export default new GeminiService();

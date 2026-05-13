@@ -1,11 +1,18 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
-import { GoogleResponse } from '../commons/types/googleResponse.js';
-import { UserDTO } from '../commons/types/user.js';
+import type { GoogleResponse } from '../commons/types/googleResponse.js';
+import type { UserRepository } from '../commons/interfaces/repositories/userRepository.interface.js';
+import type { ChartRepository } from '../commons/interfaces/repositories/chartRepository.interface.js';
 
-import tokenService from './refreshToken.service.js';
+import type { TokenService } from './refreshToken.service.js';
 
-class OAuthService {
+export class OAuthService {
+  constructor(
+    private readonly userRepository: UserRepository,
+    private readonly chartRepository: ChartRepository,
+    private readonly tokenService: TokenService,
+  ) {}
+
   generateURI(fastify: FastifyInstance) {
     const state = crypto.randomUUID();
     const uri = new URLSearchParams({
@@ -61,16 +68,14 @@ class OAuthService {
       throw new Error();
     }
 
-    const userByEmail = await fastify.prisma.user.findUnique({
-      where: {
-        email: idTokenData.email,
-      },
-    });
-    const userBySub = await fastify.prisma.user.findUnique({
-      where: {
-        sub: idTokenData.sub,
-      },
-    });
+    if (!idTokenData.email || !idTokenData.sub) {
+      throw new Error();
+    }
+
+    const userByEmail = await this.userRepository.findByEmail(
+      idTokenData.email,
+    );
+    const userBySub = await this.userRepository.findBySub(idTokenData.sub);
 
     const picture = idTokenData.picture;
 
@@ -80,24 +85,17 @@ class OAuthService {
     */
     if (!userBySub) {
       if (!userByEmail) {
-        await fastify.prisma.user.create({
-          data: {
-            email: idTokenData.email!,
-            sub: idTokenData.sub,
-            isActivated: false,
-            picture,
-          },
-        });
+        await this.userRepository.createWithSub(
+          idTokenData.email,
+          idTokenData.sub,
+          picture,
+        );
       } else {
-        await fastify.prisma.user.update({
-          where: {
-            email: userByEmail.email,
-          },
-          data: {
-            sub: idTokenData.sub,
-            picture,
-          },
-        });
+        await this.userRepository.linkSub(
+          userByEmail.email,
+          idTokenData.sub,
+          picture,
+        );
       }
     } else if (
       userByEmail &&
@@ -105,67 +103,46 @@ class OAuthService {
     ) {
       // delete the unactivated account and update the original user
       if (!userByEmail.isActivated) {
-        await fastify.prisma.user.delete({
-          where: {
-            email: userByEmail.email,
-          },
-        });
-
-        await fastify.prisma.user.update({
-          where: {
-            sub: idTokenData.sub,
-          },
-          data: {
-            email: idTokenData.email,
-            picture: idTokenData.picture,
-          },
-        });
+        await this.userRepository.deleteByEmail(userByEmail.email);
+        await this.userRepository.updateSubProfile(
+          idTokenData.sub,
+          idTokenData.email,
+          idTokenData.picture,
+        );
       } else {
         // merge two accounts: keep userByEmail (activated, may have password),
         // absorb userBySub's charts, then delete userBySub
-        await fastify.prisma.chart.updateMany({
-          where: { userId: userBySub.id },
-          data: { userId: userByEmail.id },
-        });
-
-        await fastify.prisma.user.delete({
-          where: { sub: idTokenData.sub },
-        });
-
-        await fastify.prisma.user.update({
-          where: { email: userByEmail.email },
-          data: { sub: idTokenData.sub, picture: idTokenData.picture },
-        });
+        await this.chartRepository.reassignUser(userBySub.id, userByEmail.id);
+        await this.userRepository.deleteBySub(idTokenData.sub);
+        await this.userRepository.linkSub(
+          userByEmail.email,
+          idTokenData.sub,
+          idTokenData.picture,
+        );
       }
     } else {
       // just update the existing user
-      await fastify.prisma.user.update({
-        where: {
-          sub: idTokenData.sub,
-        },
-        data: {
-          email: idTokenData.email,
-          picture: idTokenData.picture,
-        },
-      });
+      await this.userRepository.updateSubProfile(
+        idTokenData.sub,
+        idTokenData.email,
+        idTokenData.picture,
+      );
     }
 
-    const user = await fastify.prisma.user.findUnique({
-      where: {
-        sub: idTokenData.sub,
-      },
-    });
+    const user = await this.userRepository.findBySub(idTokenData.sub);
 
-    const userData: UserDTO = {
-      id: user!.id,
-      email: user!.email,
-      isActivated: user!.isActivated,
+    if (!user) {
+      throw new Error();
+    }
+
+    const userData = {
+      id: user.id,
+      email: user.email,
+      isActivated: user.isActivated,
     };
-    const tokens = tokenService.generateTokens(fastify, userData);
-    await tokenService.saveToken(fastify, user!.id, tokens.refreshToken);
+    const tokens = this.tokenService.generateTokens(fastify, userData);
+    await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
     return { ...tokens, picture };
   }
 }
-
-export default new OAuthService();

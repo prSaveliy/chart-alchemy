@@ -15,6 +15,7 @@ import googleAuthPlugin from './plugins/googleAuth.js';
 import authRoutes from './routes/auth.routes.js';
 import oAuthRoutes from './routes/oauth.routes.js';
 import chartRoutes from './routes/chart.routes.js';
+import { buildContainer } from './container.js';
 
 import { envSchema } from './commons/schemas/env.schema.js';
 import { AppError } from './commons/types/error.js';
@@ -68,19 +69,21 @@ const buildApp = async () => {
     },
     throwFileSizeLimit: true,
   });
-  app.register(dbPlugin);
-  app.register(authPlugin);
-  app.register(geminiPlugin);
-  app.register(googleAuthPlugin);
+  await app.register(dbPlugin);
+  await app.register(authPlugin);
+  await app.register(geminiPlugin);
+  await app.register(googleAuthPlugin);
+
+  const { authController, oAuthController, chartController } = buildContainer(app);
 
   // routes
-  app.register(authRoutes, {
+  await app.register(authRoutes(authController), {
     prefix: 'auth',
   });
-  app.register(oAuthRoutes, {
+  await app.register(oAuthRoutes(oAuthController), {
     prefix: 'oauth/google',
   });
-  app.register(chartRoutes, {
+  await app.register(chartRoutes(chartController), {
     prefix: 'chart',
   });
   

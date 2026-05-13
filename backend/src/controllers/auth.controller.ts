@@ -1,6 +1,3 @@
-import authService from '../services/auth.service.js';
-import tokenService from '../services/refreshToken.service.js';
-
 import { FastifyRequest, FastifyReply } from 'fastify';
 
 import validateRequest from '../utils/validateRequest.js';
@@ -10,14 +7,22 @@ import { resetPasswordSchema } from '../commons/schemas/resetPassword.schema.js'
 import { accountActivationSchema } from '../commons/schemas/accountActivation.schema.js';
 import { tokenSchema } from '../commons/schemas/token.schema.js';
 
-class AuthController {
-  async registration(request: FastifyRequest, reply: FastifyReply) {
+import { AuthService } from '../services/auth.service.js';
+import { TokenService } from '../services/refreshToken.service.js';
+
+export class AuthController {
+  constructor(
+    private readonly authService: AuthService,
+    private readonly tokenService: TokenService,
+  ) {}
+
+  async registration(request: FastifyRequest) {
     const { email, password } = validateRequest(
       request,
       registrationSchema,
       'Invalid credentials',
     );
-    await authService.registration(request.server, email, password);
+    await this.authService.registration(request.server, email, password);
   }
 
   async login(request: FastifyRequest, reply: FastifyReply) {
@@ -27,23 +32,23 @@ class AuthController {
       'Invalid credentials',
     );
 
-    const { refreshToken, ...body } = await authService.login(
+    const { refreshToken, ...body } = await this.authService.login(
       request.server,
       email,
       password,
     );
-    tokenService.saveToCookie(reply, refreshToken);
+    this.tokenService.saveToCookie(reply, refreshToken);
 
     return body;
   }
 
-  async activate(request: FastifyRequest, reply: FastifyReply) {
+  async activate(request: FastifyRequest) {
     const { token } = validateRequest(
       request,
       accountActivationSchema,
       'Invalid request body',
     );
-    await authService.activate(request.server, token);
+    await this.authService.activate(request.server, token);
   }
 
   async refresh(request: FastifyRequest, reply: FastifyReply) {
@@ -61,8 +66,8 @@ class AuthController {
       throw request.server.httpErrors.unauthorized('Invalid refresh token');
     }
 
-    const tokens = await authService.refresh(request.server, refreshToken);
-    tokenService.saveToCookie(reply, tokens.refreshToken);
+    const tokens = await this.authService.refresh(request.server, refreshToken);
+    this.tokenService.saveToCookie(reply, tokens.refreshToken);
 
     return { accessToken: tokens.accessToken };
   }
@@ -72,27 +77,27 @@ class AuthController {
     if (!refreshToken) {
       return;
     }
-    await authService.logout(request.server, refreshToken);
+    await this.authService.logout(request.server, refreshToken);
     reply.clearCookie('refreshToken');
   }
 
-  async forgotPassword(request: FastifyRequest, reply: FastifyReply) {
+  async forgotPassword(request: FastifyRequest) {
     const emailSchema = registrationSchema.omit({
       password: true,
     });
 
     const { email } = validateRequest(request, emailSchema, 'Invalid email address');
-    await authService.forgotPassword(request.server, email);
+    await this.authService.forgotPassword(request.server, email);
   }
 
-  async verifyResetToken(request: FastifyRequest, reply: FastifyReply) {
+  async verifyResetToken(request: FastifyRequest) {
     const { token } = validateRequest(
       request,
       tokenSchema,
       'Invalid request body',
       'params',
     );
-    await authService.verifyResetToken(request.server, token);
+    await this.authService.verifyResetToken(request.server, token);
   }
 
   async resetPassword(request: FastifyRequest, reply: FastifyReply) {
@@ -101,9 +106,7 @@ class AuthController {
       resetPasswordSchema,
       'Invalid request body',
     );
-    await authService.resetPassword(request.server, token, password);
+    await this.authService.resetPassword(request.server, token, password);
     reply.code(201);
   }
 }
-
-export default new AuthController();

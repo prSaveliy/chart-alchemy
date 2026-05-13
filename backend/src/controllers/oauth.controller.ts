@@ -1,15 +1,20 @@
 import { FastifyRequest, FastifyReply } from 'fastify';
 
-import oAuthService from '../services/oauth.service.js';
-import tokenService from '../services/refreshToken.service.js';
-
 import validateRequest from '../utils/validateRequest.js';
 
 import { googleRedirectSchema } from '../commons/schemas/googleRedirect.schema.js';
 
-class OAuthController {
+import { OAuthService } from '../services/oauth.service.js';
+import { TokenService } from '../services/refreshToken.service.js';
+
+export class OAuthController {
+  constructor(
+    private readonly oAuthService: OAuthService,
+    private readonly tokenService: TokenService,
+  ) {}
+
   async redirectToURL(request: FastifyRequest, reply: FastifyReply) {
-    const { state, uri } = oAuthService.generateURI(request.server);
+    const { state, uri } = this.oAuthService.generateURI(request.server);
     const baseURL = 'https://accounts.google.com/o/oauth2/v2/auth';
     reply.setCookie('oauth_state', state, {
       httpOnly: true,
@@ -35,14 +40,12 @@ class OAuthController {
 
     reply.clearCookie('oauth_state');
 
-    const { refreshToken, ...body } = await oAuthService.handleCode(
+    const { refreshToken, ...body } = await this.oAuthService.handleCode(
       request.server,
       code,
     );
-    tokenService.saveToCookie(reply, refreshToken);
+    this.tokenService.saveToCookie(reply, refreshToken);
 
     return body;
   }
 }
-
-export default new OAuthController();

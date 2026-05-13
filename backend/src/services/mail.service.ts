@@ -1,7 +1,8 @@
-import nodemailer, { Transporter } from 'nodemailer';
+import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 import "dotenv/config";
 
-class MailService {
+export class MailService {
   private transporter: Transporter;
   constructor() {
     this.transporter = nodemailer.createTransport({
@@ -49,5 +50,3 @@ class MailService {
     });
   }
 }
-
-export default new MailService();

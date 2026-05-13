@@ -1,13 +1,18 @@
-import { FastifyInstance } from 'fastify';
-import { Prisma } from '../generated/prisma/client.js';
+import type { FastifyInstance } from 'fastify';
+import type { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
+import type { EChartsOption } from '../commons/schemas/chartConfig.schema.js';
+import type { ChartRepository } from '../commons/interfaces/repositories/chartRepository.interface.js';
 
-import geminiService from './gemini.service.js';
-import { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
-import { EChartsOption } from '../commons/schemas/chartConfig.schema.js';
+import type { GeminiService } from './gemini.service.js';
 
 import { v4 } from 'uuid';
 
-class ChartService {
+export class ChartService {
+  constructor(
+    private readonly chartRepository: ChartRepository,
+    private readonly geminiService: GeminiService,
+  ) {}
+
   async init(
     fastify: FastifyInstance,
     chartType: 'ai' | 'manual' | 'dataset',
@@ -16,22 +21,13 @@ class ChartService {
     const randomString = v4();
     const token = `${chartType}-${randomString}`;
 
-    await fastify.prisma.chart.create({
-      data: {
-        token,
-        userId,
-      },
-    });
+    await this.chartRepository.create(token, userId);
 
     return { token };
   }
 
   async verifyToken(fastify: FastifyInstance, token: string, userId: number) {
-    const chart = await fastify.prisma.chart.findUnique({
-      where: {
-        token,
-      },
-    });
+    const chart = await this.chartRepository.findByToken(token);
 
     if (!chart) {
       throw fastify.httpErrors.notFound('Chart not found');
@@ -50,7 +46,7 @@ class ChartService {
     memory: ChartConfig | null,
     thinkingMode: boolean,
   ) {
-    const chartData = await geminiService.generate(
+    const chartData = await this.geminiService.generate(
       fastify,
       prompt,
       memory,
@@ -70,35 +66,15 @@ class ChartService {
   ) {
     await this.verifyToken(fastify, token, userId);
 
-    await fastify.prisma.chart.update({
-      where: { token },
-      data: { name },
-    });
+    await this.chartRepository.updateName(token, name);
   }
 
   async save(fastify: FastifyInstance, chartData: ChartConfig, token: string) {
-    await fastify.prisma.chart.update({
-      where: {
-        token,
-      },
-      data: {
-        config: chartData as Prisma.InputJsonValue,
-      },
-    });
+    await this.chartRepository.updateConfig(token, chartData);
   }
 
   async listByUser(fastify: FastifyInstance, userId: number) {
-    const charts = await fastify.prisma.chart.findMany({
-      where: { userId },
-      orderBy: { updatedAt: 'desc' },
-      select: {
-        token: true,
-        name: true,
-        manualType: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
+    const charts = await this.chartRepository.listByUser(userId);
 
     return { charts };
   }
@@ -106,11 +82,7 @@ class ChartService {
   async getByToken(fastify: FastifyInstance, token: string, userId: number) {
     await this.verifyToken(fastify, token, userId);
 
-    const chart = await fastify.prisma.chart.findUnique({
-      where: {
-        token,
-      },
-    });
+    const chart = await this.chartRepository.findByToken(token);
 
     return {
       chartData: chart?.config,
@@ -122,9 +94,7 @@ class ChartService {
   async delete(fastify: FastifyInstance, token: string, userId: number) {
     await this.verifyToken(fastify, token, userId);
 
-    await fastify.prisma.chart.delete({
-      where: { token },
-    });
+    await this.chartRepository.deleteByToken(token);
   }
 
   async saveConfig(
@@ -136,16 +106,6 @@ class ChartService {
   ) {
     await this.verifyToken(fastify, token, userId);
 
-    await fastify.prisma.chart.update({
-      where: {
-        token,
-      },
-      data: {
-        config: chartData as Prisma.InputJsonValue,
-        ...(manualType !== undefined ? { manualType } : {}),
-      },
-    });
+    await this.chartRepository.updateConfig(token, chartData, manualType);
   }
 }
-
-export default new ChartService();
