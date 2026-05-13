@@ -1,17 +1,14 @@
 import { FastifyInstance } from 'fastify';
 import { SimpleIntervalJob, AsyncTask } from 'toad-scheduler';
+import { RefreshTokenRepository } from '../repositories/refreshToken.repository.js';
 
 const createExpiredRefreshTokensJob = (fastify: FastifyInstance) => {
+  const refreshTokenRepository = new RefreshTokenRepository(fastify.prisma);
+
   const task = new AsyncTask(
     'clearExpiredRefreshTokens',
     async () => {
-      await fastify.prisma.refreshToken.deleteMany({
-        where: {
-          expiresAt: {
-            lt: new Date(),
-          },
-        },
-      });
+      await refreshTokenRepository.deleteExpired();
     }
   );
   
