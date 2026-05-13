@@ -4,10 +4,11 @@ import crypto from 'node:crypto';
 import request from 'supertest';
 import { FastifyInstance } from 'fastify';
 import buildApp from '../src/app.js';
-import oauthService from '../src/services/oauth.service.js';
+import { buildContainer } from '../src/container.js';
 
 describe('oauth integration tests', () => {
   let app: FastifyInstance;
+  let oauthService: ReturnType<typeof buildContainer>['oAuthService'];
 
   before(async () => {
     if (process.env.NODE_ENV !== 'test') {
@@ -15,6 +16,7 @@ describe('oauth integration tests', () => {
     }
     app = await buildApp();
     await app.ready();
+    ({ oAuthService: oauthService } = buildContainer(app));
     const { execSync } = await import('node:child_process');
     execSync('npx prisma migrate reset --force');
   });
@@ -157,7 +159,7 @@ describe('oauth integration tests', () => {
       const email = 'new-user@oauth-authorize.test';
       const sub = 'sub-new-user';
 
-      await oauthService.authorize(app, { id_token: makeIdToken(email, sub, 'pic-new') } as any);
+      await oauthService.authorize({ id_token: makeIdToken(email, sub, 'pic-new') } as any);
 
       const user = await (app as any).prisma.user.findUnique({ where: { sub } });
       assert.ok(user);
@@ -173,7 +175,7 @@ describe('oauth integration tests', () => {
         data: { email, password: 'hash', isActivated: true },
       });
 
-      await oauthService.authorize(app, { id_token: makeIdToken(email, sub, 'pic-url') } as any);
+      await oauthService.authorize({ id_token: makeIdToken(email, sub, 'pic-url') } as any);
 
       const user = await (app as any).prisma.user.findUnique({ where: { email } });
       assert.equal(user.sub, sub);
@@ -187,7 +189,7 @@ describe('oauth integration tests', () => {
         data: { email, sub, isActivated: true, picture: 'old-pic' },
       });
 
-      await oauthService.authorize(app, { id_token: makeIdToken(email, sub, 'new-pic') } as any);
+      await oauthService.authorize({ id_token: makeIdToken(email, sub, 'new-pic') } as any);
 
       const user = await (app as any).prisma.user.findUnique({ where: { sub } });
       assert.equal(user.email, email);
@@ -200,10 +202,9 @@ describe('oauth integration tests', () => {
         data: { email: 'old@oauth-authorize.test', sub, isActivated: true, picture: 'old-pic' },
       });
 
-      await oauthService.authorize(
-        app,
-        { id_token: makeIdToken('new@oauth-authorize.test', sub, 'new-pic') } as any,
-      );
+      await oauthService.authorize({
+        id_token: makeIdToken('new@oauth-authorize.test', sub, 'new-pic'),
+      } as any);
 
       const user = await (app as any).prisma.user.findUnique({ where: { sub } });
       assert.equal(user.email, 'new@oauth-authorize.test');
@@ -214,7 +215,7 @@ describe('oauth integration tests', () => {
       const email = 'returns-tokens@oauth-authorize.test';
       const sub = 'sub-returns-tokens';
 
-      const result = await oauthService.authorize(app, { id_token: makeIdToken(email, sub) } as any);
+      const result = await oauthService.authorize({ id_token: makeIdToken(email, sub) } as any);
 
       assert.ok(result.accessToken);
       assert.ok(result.refreshToken);
@@ -224,7 +225,7 @@ describe('oauth integration tests', () => {
       const email = 'saves-refresh@oauth-authorize.test';
       const sub = 'sub-saves-refresh';
 
-      await oauthService.authorize(app, { id_token: makeIdToken(email, sub) } as any);
+      await oauthService.authorize({ id_token: makeIdToken(email, sub) } as any);
 
       const user = await (app as any).prisma.user.findUnique({ where: { sub } });
       const token = await (app as any).prisma.refreshToken.findFirst({
@@ -244,10 +245,9 @@ describe('oauth integration tests', () => {
           data: { email: 'coll-unact-old@oauth-authorize.test', sub, isActivated: true },
         });
 
-        await oauthService.authorize(
-          app,
-          { id_token: makeIdToken('collision-unactivated@oauth-authorize.test', sub) } as any,
-        );
+        await oauthService.authorize({
+          id_token: makeIdToken('collision-unactivated@oauth-authorize.test', sub),
+        } as any);
 
         const deleted = await (app as any).prisma.user.findUnique({ where: { id: collisionId } });
         assert.equal(deleted, null);
@@ -262,10 +262,9 @@ describe('oauth integration tests', () => {
           data: { email: 'coll-email-new@oauth-authorize.test', password: 'hash', isActivated: false },
         });
 
-        await oauthService.authorize(
-          app,
-          { id_token: makeIdToken('coll-email-new@oauth-authorize.test', sub) } as any,
-        );
+        await oauthService.authorize({
+          id_token: makeIdToken('coll-email-new@oauth-authorize.test', sub),
+        } as any);
 
         const user = await (app as any).prisma.user.findUnique({ where: { sub } });
         assert.equal(user.email, 'coll-email-new@oauth-authorize.test');
@@ -288,10 +287,9 @@ describe('oauth integration tests', () => {
           ],
         });
 
-        await oauthService.authorize(
-          app,
-          { id_token: makeIdToken('merge-charts-new@oauth-authorize.test', sub) } as any,
-        );
+        await oauthService.authorize({
+          id_token: makeIdToken('merge-charts-new@oauth-authorize.test', sub),
+        } as any);
 
         const charts = await (app as any).prisma.chart.findMany({
           where: { userId: emailUser.id },
@@ -308,10 +306,9 @@ describe('oauth integration tests', () => {
           data: { email: 'merge-delete-new@oauth-authorize.test', password: 'hash', isActivated: true },
         });
 
-        await oauthService.authorize(
-          app,
-          { id_token: makeIdToken('merge-delete-new@oauth-authorize.test', sub) } as any,
-        );
+        await oauthService.authorize({
+          id_token: makeIdToken('merge-delete-new@oauth-authorize.test', sub),
+        } as any);
 
         const deleted = await (app as any).prisma.user.findUnique({ where: { id: subUser.id } });
         assert.equal(deleted, null);
@@ -326,10 +323,13 @@ describe('oauth integration tests', () => {
           data: { email: 'merge-link-new@oauth-authorize.test', password: 'hash', isActivated: true },
         });
 
-        await oauthService.authorize(
-          app,
-          { id_token: makeIdToken('merge-link-new@oauth-authorize.test', sub, 'merged-pic') } as any,
-        );
+        await oauthService.authorize({
+          id_token: makeIdToken(
+            'merge-link-new@oauth-authorize.test',
+            sub,
+            'merged-pic',
+          ),
+        } as any);
 
         const merged = await (app as any).prisma.user.findUnique({ where: { sub } });
         assert.equal(merged.id, emailUser.id);
@@ -345,10 +345,9 @@ describe('oauth integration tests', () => {
           data: { email: 'merge-tokens-new@oauth-authorize.test', password: 'hash', isActivated: true },
         });
 
-        const result = await oauthService.authorize(
-          app,
-          { id_token: makeIdToken('merge-tokens-new@oauth-authorize.test', sub) } as any,
-        );
+        const result = await oauthService.authorize({
+          id_token: makeIdToken('merge-tokens-new@oauth-authorize.test', sub),
+        } as any);
 
         assert.ok(result.accessToken);
         const decoded = app.jwt.decode<{ id: number; email: string }>(result.accessToken);

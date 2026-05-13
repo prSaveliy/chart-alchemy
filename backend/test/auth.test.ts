@@ -6,8 +6,7 @@ import crypto from 'node:crypto';
 import { FastifyInstance } from 'fastify';
 
 import buildApp from '../src/app.js';
-
-import mailService from '../src/services/mail.service.js';
+import { MailService } from '../src/services/mail.service.js';
 
 describe('auth integration tests', () => {
   let app: FastifyInstance;
@@ -17,8 +16,8 @@ describe('auth integration tests', () => {
       throw new Error('Refusing to wipe database: NODE_ENV is not "test"');
     }
 
-    mock.method(mailService, 'sendActivationLink', async () => {});
-    mock.method(mailService, 'sendPasswordResetLink', async () => {});
+    mock.method(MailService.prototype, 'sendActivationLink', async () => {});
+    mock.method(MailService.prototype, 'sendPasswordResetLink', async () => {});
 
     app = await buildApp();
     await app.ready();
