@@ -1,6 +1,6 @@
 import type { ChartSummary } from '@/commons/interfaces/chartInterfaces';
 import type { FetchResult } from '@/commons/interfaces/fetchInterfaces';
-import { createJwtBackendClient } from '@/lib/proxy';
+import { type HttpClient } from '@/lib/proxy/http-client.interface';
 
 type ChartListResponse = {
   charts: ChartSummary[];
@@ -8,30 +8,8 @@ type ChartListResponse = {
   message?: string;
 };
 
-const refreshAccessToken = async (): Promise<string | null> => {
-  try {
-    const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/auth/refresh`, {
-      method: 'POST',
-      credentials: 'include',
-    });
-
-    if (!response.ok) {
-      return null;
-    }
-
-    const data = (await response.json()) as { accessToken: string };
-    localStorage.setItem('accessToken', data.accessToken);
-    return data.accessToken;
-  } catch {
-    return null;
-  }
-};
-
-class ProxyChartService {
-  private readonly client = createJwtBackendClient(
-    () => localStorage.getItem('accessToken'),
-    refreshAccessToken
-  );
+export class ProxyChartService {
+  constructor(private readonly client: HttpClient) {}
 
   async list(): Promise<FetchResult> {
     try {
@@ -53,5 +31,3 @@ class ProxyChartService {
     }
   }
 }
-
-export default new ProxyChartService();

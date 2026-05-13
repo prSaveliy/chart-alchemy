@@ -14,6 +14,7 @@ import { Error } from "./error";
 
 import { handleUnauthorized } from "@/lib/handleUnauthorized";
 import chartService from "@/services/chartService";
+import { proxyChartService } from "@/services/registry";
 
 import defaultUserPicture from "@/assets/user.png";
 
@@ -36,7 +37,7 @@ export const Dashboard = () => {
   const [deleteError, setDeleteError] = useState("");
 
   const fetchCharts = async () => {
-    const fetchResult = await chartService.list();
+    const fetchResult = await proxyChartService.list();
 
     if (fetchResult.errorMessage) {
       if (!retriedRef.current && fetchResult.statusCode === 401) {

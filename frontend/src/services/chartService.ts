@@ -1,7 +1,6 @@
 import fetchClient from "@/lib/fetchClient";
 import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
 import type { DatasetChartType } from "@/commons/interfaces/chartInterfaces";
-import proxyChartService from "@/services/proxyChartService";
 
 export type ManualChartType =
   | "bar"
@@ -17,7 +16,7 @@ class ChartService {
   }
 
   async list() {
-    return await proxyChartService.list();
+    return await fetchClient.get("chart");
   }
 
   async verifyToken(token: string) {
