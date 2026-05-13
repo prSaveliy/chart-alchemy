@@ -35,16 +35,17 @@ export const buildContainer = (app: FastifyInstance) => {
 
   // services
   const mailService = new MailService();
-  const tokenService = new TokenService(refreshTokenRepository);
+  const tokenService = new TokenService(app, refreshTokenRepository);
   const activationTokenService = new ActivationTokenService(
     accountActivationTokenRepository,
     userRepository,
     pendingUserRepository,
   );
-  const geminiService = new GeminiService();
-  const chartService = new ChartService(chartRepository, geminiService);
-  const datasetService = new DatasetService(chartService);
+  const geminiService = new GeminiService(app);
+  const chartService = new ChartService(app, chartRepository, geminiService);
+  const datasetService = new DatasetService(app, chartService);
   const authService = new AuthService(
+    app,
     userRepository,
     pendingUserRepository,
     resetPasswordTokenRepository,
@@ -53,6 +54,7 @@ export const buildContainer = (app: FastifyInstance) => {
     mailService,
   );
   const oAuthService = new OAuthService(
+    app,
     userRepository,
     chartRepository,
     tokenService,

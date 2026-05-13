@@ -11,10 +11,12 @@ import { parseFile } from './parseFile.js';
 import { buildChartOption } from './buildChartOption.js';
 
 export class DatasetService {
-  constructor(private readonly chartService: ChartService) {}
+  constructor(
+    private readonly app: FastifyInstance,
+    private readonly chartService: ChartService,
+  ) {}
 
   async generate(
-    fastify: FastifyInstance,
     fileBuffer: Buffer,
     filename: string,
     mimetype: string,
@@ -24,10 +26,10 @@ export class DatasetService {
     xField: string | undefined,
     yField: string | undefined,
   ): Promise<DatasetGenerationResult> {
-    const dataset = await parseFile(fastify, fileBuffer, filename, mimetype);
+    const dataset = await parseFile(this.app, fileBuffer, filename, mimetype);
 
     if (dataset.fields.length < 2) {
-      throw fastify.httpErrors.badRequest('Dataset must have at least two columns');
+      throw this.app.httpErrors.badRequest('Dataset must have at least two columns');
     }
 
     const { option, resolved } = buildChartOption(
@@ -38,7 +40,7 @@ export class DatasetService {
     );
     const chartData = { option };
 
-    await this.chartService.save(fastify, chartData, token);
+    await this.chartService.save(chartData, token);
 
     return {
       chartData,

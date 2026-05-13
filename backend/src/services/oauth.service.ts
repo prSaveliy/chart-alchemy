@@ -8,16 +8,17 @@ import type { TokenService } from './refreshToken.service.js';
 
 export class OAuthService {
   constructor(
+    private readonly app: FastifyInstance,
     private readonly userRepository: UserRepository,
     private readonly chartRepository: ChartRepository,
     private readonly tokenService: TokenService,
   ) {}
 
-  generateURI(fastify: FastifyInstance) {
+  generateURI() {
     const state = crypto.randomUUID();
     const uri = new URLSearchParams({
-      client_id: fastify.config.OAUTH_GOOGLE_CLIENT_ID,
-      redirect_uri: `${fastify.config.CLIENT_API_URL}/auth/google`,
+      client_id: this.app.config.OAUTH_GOOGLE_CLIENT_ID,
+      redirect_uri: `${this.app.config.CLIENT_API_URL}/auth/google`,
       response_type: 'code',
       scope: ['email', 'openid', 'profile'].join(' '),
       prompt: 'consent',
@@ -27,7 +28,7 @@ export class OAuthService {
     return { state, uri };
   }
 
-  async handleCode(fastify: FastifyInstance, code: string) {
+  async handleCode(code: string) {
     try {
       const response = await fetch('https://oauth2.googleapis.com/token', {
         method: 'POST',
@@ -36,9 +37,9 @@ export class OAuthService {
         },
         body: new URLSearchParams({
           code,
-          client_id: fastify.config.OAUTH_GOOGLE_CLIENT_ID,
-          client_secret: fastify.config.OAUTH_GOOGLE_CLIENT_SECRET,
-          redirect_uri: `${fastify.config.CLIENT_API_URL}/auth/google`,
+          client_id: this.app.config.OAUTH_GOOGLE_CLIENT_ID,
+          client_secret: this.app.config.OAUTH_GOOGLE_CLIENT_SECRET,
+          redirect_uri: `${this.app.config.CLIENT_API_URL}/auth/google`,
           grant_type: 'authorization_code',
         }).toString(),
       });
@@ -48,18 +49,18 @@ export class OAuthService {
       }
 
       const data = (await response.json()) as GoogleResponse;
-      const user = await this.authorize(fastify, data);
+      const user = await this.authorize(data);
 
       return user;
     } catch {
-      throw fastify.httpErrors.badRequest();
+      throw this.app.httpErrors.badRequest();
     }
   }
 
-  async authorize(fastify: FastifyInstance, data: GoogleResponse) {
-    const ticket = await fastify.googleAuthClient.verifyIdToken({
+  async authorize(data: GoogleResponse) {
+    const ticket = await this.app.googleAuthClient.verifyIdToken({
       idToken: data.id_token,
-      audience: fastify.config.OAUTH_GOOGLE_CLIENT_ID,
+      audience: this.app.config.OAUTH_GOOGLE_CLIENT_ID,
     });
     const idTokenData = ticket.getPayload();
 
@@ -140,7 +141,7 @@ export class OAuthService {
       email: user.email,
       isActivated: user.isActivated,
     };
-    const tokens = this.tokenService.generateTokens(fastify, userData);
+    const tokens = this.tokenService.generateTokens(userData);
     await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
     return { ...tokens, picture };

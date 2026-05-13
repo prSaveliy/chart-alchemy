@@ -27,7 +27,7 @@ export class ChartController {
       'Invalid request body',
     );
     const userId = request.user.id;
-    return await this.chartService.init(request.server, chartType, userId);
+    return await this.chartService.init(chartType, userId);
   }
 
   async verifyToken(request: FastifyRequest) {
@@ -37,7 +37,7 @@ export class ChartController {
       'Invalid request body',
     );
     const userId = request.user.id;
-    return await this.chartService.verifyToken(request.server, token, userId);
+    return await this.chartService.verifyToken(token, userId);
   }
 
   async generate(request: FastifyRequest, reply: FastifyReply) {
@@ -49,7 +49,7 @@ export class ChartController {
     const userId = request.user.id;
     const useThinkingMode = thinkingMode === 'true';
 
-    await this.chartService.verifyToken(request.server, token, userId);
+    await this.chartService.verifyToken(token, userId);
 
     const stream = new PassThrough();
     reply.type('application/json').send(stream);
@@ -68,7 +68,7 @@ export class ChartController {
     });
 
     this.chartService
-      .generate(request.server, prompt, token, userId, memory, useThinkingMode)
+      .generate(prompt, token, userId, memory, useThinkingMode)
       .then(result => {
         if (aborted) return;
         clearInterval(keepAlive);
@@ -100,7 +100,7 @@ export class ChartController {
 
   async list(request: FastifyRequest) {
     const userId = request.user.id;
-    return await this.chartService.listByUser(request.server, userId);
+    return await this.chartService.listByUser(userId);
   }
 
   async getByToken(request: FastifyRequest) {
@@ -112,7 +112,7 @@ export class ChartController {
     );
     const userId = request.user.id;
 
-    return await this.chartService.getByToken(request.server, token, userId);
+    return await this.chartService.getByToken(token, userId);
   }
 
   async rename(request: FastifyRequest) {
@@ -122,7 +122,7 @@ export class ChartController {
       'Invalid request body',
     );
     const userId = request.user.id;
-    return await this.chartService.rename(request.server, name, token, userId);
+    return await this.chartService.rename(name, token, userId);
   }
 
   async delete(request: FastifyRequest, reply: FastifyReply) {
@@ -133,7 +133,7 @@ export class ChartController {
       'params',
     );
     const userId = request.user.id;
-    await this.chartService.delete(request.server, token, userId);
+    await this.chartService.delete(token, userId);
     return reply.code(204).send();
   }
 
@@ -144,13 +144,7 @@ export class ChartController {
       'Invalid request body',
     );
     const userId = request.user.id;
-    return await this.chartService.saveConfig(
-      request.server,
-      token,
-      chartData,
-      userId,
-      manualType,
-    );
+    return await this.chartService.saveConfig(token, chartData, userId, manualType);
   }
 
   async generateFromDataset(request: FastifyRequest) {
@@ -161,7 +155,7 @@ export class ChartController {
       'params',
     );
     const userId = request.user.id;
-    await this.chartService.verifyToken(request.server, token, userId);
+    await this.chartService.verifyToken(token, userId);
 
     const fields: Record<string, string> = {};
     let fileBuffer: Buffer | null = null;
@@ -200,7 +194,6 @@ export class ChartController {
     );
 
     return await this.datasetService.generate(
-      request.server,
       fileBuffer,
       filename,
       mimetype,

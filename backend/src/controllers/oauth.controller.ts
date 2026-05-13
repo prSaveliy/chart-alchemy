@@ -14,7 +14,7 @@ export class OAuthController {
   ) {}
 
   async redirectToURL(request: FastifyRequest, reply: FastifyReply) {
-    const { state, uri } = this.oAuthService.generateURI(request.server);
+    const { state, uri } = this.oAuthService.generateURI();
     const baseURL = 'https://accounts.google.com/o/oauth2/v2/auth';
     reply.setCookie('oauth_state', state, {
       httpOnly: true,
@@ -40,10 +40,7 @@ export class OAuthController {
 
     reply.clearCookie('oauth_state');
 
-    const { refreshToken, ...body } = await this.oAuthService.handleCode(
-      request.server,
-      code,
-    );
+    const { refreshToken, ...body } = await this.oAuthService.handleCode(code);
     this.tokenService.saveToCookie(reply, refreshToken);
 
     return body;

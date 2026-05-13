@@ -22,7 +22,7 @@ export class AuthController {
       registrationSchema,
       'Invalid credentials',
     );
-    await this.authService.registration(request.server, email, password);
+    await this.authService.registration(email, password);
   }
 
   async login(request: FastifyRequest, reply: FastifyReply) {
@@ -32,11 +32,7 @@ export class AuthController {
       'Invalid credentials',
     );
 
-    const { refreshToken, ...body } = await this.authService.login(
-      request.server,
-      email,
-      password,
-    );
+    const { refreshToken, ...body } = await this.authService.login(email, password);
     this.tokenService.saveToCookie(reply, refreshToken);
 
     return body;
@@ -48,7 +44,7 @@ export class AuthController {
       accountActivationSchema,
       'Invalid request body',
     );
-    await this.authService.activate(request.server, token);
+    await this.authService.activate(token);
   }
 
   async refresh(request: FastifyRequest, reply: FastifyReply) {
@@ -66,7 +62,7 @@ export class AuthController {
       throw request.server.httpErrors.unauthorized('Invalid refresh token');
     }
 
-    const tokens = await this.authService.refresh(request.server, refreshToken);
+    const tokens = await this.authService.refresh(refreshToken);
     this.tokenService.saveToCookie(reply, tokens.refreshToken);
 
     return { accessToken: tokens.accessToken };
@@ -77,7 +73,7 @@ export class AuthController {
     if (!refreshToken) {
       return;
     }
-    await this.authService.logout(request.server, refreshToken);
+    await this.authService.logout(refreshToken);
     reply.clearCookie('refreshToken');
   }
 
@@ -87,7 +83,7 @@ export class AuthController {
     });
 
     const { email } = validateRequest(request, emailSchema, 'Invalid email address');
-    await this.authService.forgotPassword(request.server, email);
+    await this.authService.forgotPassword(email);
   }
 
   async verifyResetToken(request: FastifyRequest) {
@@ -97,7 +93,7 @@ export class AuthController {
       'Invalid request body',
       'params',
     );
-    await this.authService.verifyResetToken(request.server, token);
+    await this.authService.verifyResetToken(token);
   }
 
   async resetPassword(request: FastifyRequest, reply: FastifyReply) {
@@ -106,7 +102,7 @@ export class AuthController {
       resetPasswordSchema,
       'Invalid request body',
     );
-    await this.authService.resetPassword(request.server, token, password);
+    await this.authService.resetPassword(token, password);
     reply.code(201);
   }
 }

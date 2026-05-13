@@ -14,6 +14,7 @@ import type { ActivationTokenService } from './activationToken.service.js';
 
 export class AuthService {
   constructor(
+    private readonly app: FastifyInstance,
     private readonly userRepository: UserRepository,
     private readonly pendingUserRepository: PendingUserRepository,
     private readonly resetPasswordTokenRepository: ResetPasswordTokenRepository,
@@ -22,11 +23,7 @@ export class AuthService {
     private readonly mailService: MailService,
   ) {}
 
-  async registration(
-    fastify: FastifyInstance,
-    email: string,
-    password: string,
-  ) {
+  async registration(email: string, password: string) {
     const existingUser = await this.userRepository.findByEmail(email);
     const pendingUser = await this.pendingUserRepository.findByEmail(email);
 
@@ -38,14 +35,14 @@ export class AuthService {
         });
 
         if (!token && existingUser.isActivated) {
-          throw fastify.httpErrors.conflict(
+          throw this.app.httpErrors.conflict(
             'User with this email already exists',
           );
         }
 
         if (!existingUser.isActivated) {
           if (token && token.expiresAt > new Date()) {
-            throw fastify.httpErrors.badRequest(
+            throw this.app.httpErrors.badRequest(
               'This email has already been registered and is awaiting activation. Please check your inbox for the confirmation email',
             );
           }
@@ -62,7 +59,7 @@ export class AuthService {
 
           await this.mailService.sendActivationLink(
             email,
-            `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
+            `${this.app.config.CLIENT_API_URL}/activate/${activationToken.token}`,
           );
         }
 
@@ -88,10 +85,10 @@ export class AuthService {
 
           await this.mailService.sendActivationLink(
             email,
-            `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
+            `${this.app.config.CLIENT_API_URL}/activate/${activationToken.token}`,
           );
         } else {
-          throw fastify.httpErrors.badRequest(
+          throw this.app.httpErrors.badRequest(
             'This email has already been registered and is awaiting activation. Please check your inbox for the confirmation email',
           );
         }
@@ -111,7 +108,7 @@ export class AuthService {
 
       await this.mailService.sendActivationLink(
         email,
-        `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
+        `${this.app.config.CLIENT_API_URL}/activate/${activationToken.token}`,
       );
 
       return;
@@ -129,20 +126,20 @@ export class AuthService {
 
     await this.mailService.sendActivationLink(
       email,
-      `${fastify.config.CLIENT_API_URL}/activate/${activationToken.token}`,
+      `${this.app.config.CLIENT_API_URL}/activate/${activationToken.token}`,
     );
   }
 
-  async login(fastify: FastifyInstance, email: string, password: string) {
+  async login(email: string, password: string) {
     const user = await this.userRepository.findByEmail(email);
 
     if (!user || !user.isActivated || !user.password) {
-      throw fastify.httpErrors.unauthorized('Invalid credentials');
+      throw this.app.httpErrors.unauthorized('Invalid credentials');
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
-      throw fastify.httpErrors.unauthorized('Invalid credentials');
+      throw this.app.httpErrors.unauthorized('Invalid credentials');
     }
 
     const userData = {
@@ -150,19 +147,19 @@ export class AuthService {
       email: user.email,
       isActivated: user.isActivated,
     };
-    const tokens = this.tokenService.generateTokens(fastify, userData);
+    const tokens = this.tokenService.generateTokens(userData);
     await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
     return { ...tokens, picture: user.picture };
   }
 
-  async activate(fastify: FastifyInstance, token: string) {
+  async activate(token: string) {
     const user = await this.activationTokenService.findMainUserByToken(token);
     const pendingUser =
       await this.activationTokenService.findPendingUserByToken(token);
 
     if (!user && !pendingUser) {
-      throw fastify.httpErrors.badRequest('Incorrect activation link');
+      throw this.app.httpErrors.badRequest('Incorrect activation link');
     }
 
     if (user && !pendingUser) {
@@ -195,17 +192,17 @@ export class AuthService {
     }
   }
 
-  async refresh(fastify: FastifyInstance, refreshToken: string) {
+  async refresh(refreshToken: string) {
     const token = await this.tokenService.findToken(refreshToken);
 
     if (!token) {
-      throw fastify.httpErrors.unauthorized('Invalid refresh token');
+      throw this.app.httpErrors.unauthorized('Invalid refresh token');
     }
 
     const user = await this.userRepository.findById(token.userId);
 
     if (!user) {
-      throw fastify.httpErrors.unauthorized('Invalid refresh token');
+      throw this.app.httpErrors.unauthorized('Invalid refresh token');
     }
 
     const userData = {
@@ -214,18 +211,18 @@ export class AuthService {
       isActivated: user.isActivated,
     };
 
-    const tokens = this.tokenService.generateTokens(fastify, userData);
+    const tokens = this.tokenService.generateTokens(userData);
     await this.tokenService.deleteToken(token.token);
     await this.tokenService.saveToken(user.id, tokens.refreshToken);
 
     return tokens;
   }
 
-  async logout(fastify: FastifyInstance, refreshToken: string) {
+  async logout(refreshToken: string) {
     await this.tokenService.deleteToken(refreshToken);
   }
 
-  async forgotPassword(fastify: FastifyInstance, email: string) {
+  async forgotPassword(email: string) {
     const user = await this.userRepository.findByEmail(email);
     const pendingUser = await this.pendingUserRepository.findByEmail(email);
 
@@ -246,11 +243,11 @@ export class AuthService {
 
     await this.mailService.sendPasswordResetLink(
       email,
-      `${fastify.config.CLIENT_API_URL}/password-reset/${token}`,
+      `${this.app.config.CLIENT_API_URL}/password-reset/${token}`,
     );
   }
 
-  async verifyResetToken(fastify: FastifyInstance, token: string) {
+  async verifyResetToken(token: string) {
     const hashedIncomingToken = crypto
       .createHash('sha256')
       .update(token)
@@ -260,18 +257,17 @@ export class AuthService {
       await this.resetPasswordTokenRepository.findByToken(hashedIncomingToken);
 
     if (!resetToken || resetToken.expiresAt < new Date()) {
-      throw fastify.httpErrors.badRequest('Invalid password reset token');
+      throw this.app.httpErrors.badRequest('Invalid password reset token');
     }
 
     return resetToken;
   }
 
   async resetPassword(
-    fastify: FastifyInstance,
     token: string,
     password: string,
   ) {
-    const resetToken = await this.verifyResetToken(fastify, token);
+    const resetToken = await this.verifyResetToken(token);
     const hashedPassword = await bcrypt.hash(password, 10);
 
     let pendingUser: PendingUser | null = null;

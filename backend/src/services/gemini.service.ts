@@ -21,8 +21,9 @@ const SYSTEM_INSTRUCTION = await readFile(
 );
 
 export class GeminiService {
+  constructor(private readonly app: FastifyInstance) {}
+
   async generate(
-    fastify: FastifyInstance,
     prompt: string,
     memory: ChartConfig | null,
     thinkingMode: boolean,
@@ -56,7 +57,7 @@ export class GeminiService {
       },
     ];
 
-    const response = await fastify.gemini.models
+    const response = await this.app.gemini.models
       .generateContent({
         model,
         config: {
@@ -74,12 +75,12 @@ export class GeminiService {
       })
       .catch((error) => {
         if (error.status === 429) {
-          throw fastify.httpErrors.tooManyRequests(
+          throw this.app.httpErrors.tooManyRequests(
             'The AI Chart Generator is currently experiencing high demand. Please wait a moment and try again.',
           );
         }
-        fastify.log.error({ err: error }, 'gemini generateContent failed');
-        throw fastify.httpErrors.badGateway(
+        this.app.log.error({ err: error }, 'gemini generateContent failed');
+        throw this.app.httpErrors.badGateway(
           'Unable to generate chart. Please try again.',
         );
       });
@@ -93,7 +94,7 @@ export class GeminiService {
         JSON.stringify(response.candidates[0]),
         'utf8',
       );
-      throw fastify.httpErrors.badRequest(
+      throw this.app.httpErrors.badRequest(
         'Unable to generate chart: The request violates content safety guidelines.',
       );
     }
@@ -106,7 +107,7 @@ export class GeminiService {
     try {
       rawJson = JSON.parse(cleaned);
     } catch {
-      throw fastify.httpErrors.badGateway(
+      throw this.app.httpErrors.badGateway(
         'The AI generated invalid syntax. Please try again.',
       );
     }
@@ -114,7 +115,7 @@ export class GeminiService {
     const validationResult = chartConfigSchema.safeParse(rawJson);
 
     if (!validationResult.success) {
-      throw fastify.httpErrors.badGateway(
+      throw this.app.httpErrors.badGateway(
         'The AI generated an invalid chart configuration. Please try again.',
       );
     }

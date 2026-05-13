@@ -5,12 +5,13 @@ import type { RefreshTokenRepository } from '../commons/interfaces/repositories/
 
 export class TokenService {
   constructor(
+    private readonly app: FastifyInstance,
     private readonly refreshTokenRepository: RefreshTokenRepository,
   ) {}
 
-  generateTokens(fastify: FastifyInstance, payload: UserDTO) {
-    const accessToken = fastify.jwt.sign(payload, { expiresIn: '30m' });
-    const refreshToken = fastify.jwt.sign(
+  generateTokens(payload: UserDTO) {
+    const accessToken = this.app.jwt.sign(payload, { expiresIn: '30m' });
+    const refreshToken = this.app.jwt.sign(
       { ...payload, jti: crypto.randomUUID() } as UserDTO,
       { expiresIn: '30d' },
     );
