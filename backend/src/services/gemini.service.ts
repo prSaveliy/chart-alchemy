@@ -6,6 +6,7 @@ import { join, dirname } from 'node:path';
 
 import { HarmCategory, HarmBlockThreshold } from '@google/genai';
 
+import type { AIService } from '../commons/interfaces/services/AIService.interface.js';
 import {
   chartConfigSchema,
 } from '../commons/schemas/chartConfig.schema.js';
@@ -20,7 +21,7 @@ const SYSTEM_INSTRUCTION = await readFile(
   'utf8',
 );
 
-export class GeminiService {
+export class GeminiService implements AIService {
   constructor(private readonly app: FastifyInstance) {}
 
   async generate(

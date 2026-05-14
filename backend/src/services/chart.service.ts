@@ -2,8 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
 import type { EChartsOption } from '../commons/schemas/chartConfig.schema.js';
 import type { ChartRepository } from '../commons/interfaces/repositories/chartRepository.interface.js';
-
-import type { GeminiService } from './gemini.service.js';
+import type { AIService } from '../commons/interfaces/services/AIService.interface.js';
 
 import { v4 } from 'uuid';
 
@@ -11,7 +10,7 @@ export class ChartService {
   constructor(
     private readonly app: FastifyInstance,
     private readonly chartRepository: ChartRepository,
-    private readonly geminiService: GeminiService,
+    private readonly aiService: AIService,
   ) {}
 
   async init(chartType: 'ai' | 'manual' | 'dataset', userId: number) {
@@ -42,7 +41,7 @@ export class ChartService {
     memory: ChartConfig | null,
     thinkingMode: boolean,
   ) {
-    const chartData = await this.geminiService.generate(prompt, memory, thinkingMode);
+    const chartData = await this.aiService.generate(prompt, memory, thinkingMode);
 
     await this.save(chartData, token);
 
