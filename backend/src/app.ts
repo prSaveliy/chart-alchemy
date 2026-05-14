@@ -18,7 +18,7 @@ import chartRoutes from './routes/chart.routes.js';
 import { buildContainer } from './container.js';
 
 import { envSchema } from './commons/schemas/env.schema.js';
-import { AppError } from './commons/types/error.js';
+import type { AppError } from './commons/interfaces/errors/appError.interface.js';
 
 import createPasswordResetTokenJob from './jobs/clearPasswordResetTokens.job.js';
 import createExpiredRefreshTokensJob from './jobs/clearExpiredRefreshTokens.job.js';

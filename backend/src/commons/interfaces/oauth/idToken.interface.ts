@@ -1,4 +1,4 @@
-export type IDToken = {
+export interface IDToken {
   iss: string;
   azp: string;
   aud: string;
@@ -12,4 +12,4 @@ export type IDToken = {
   family_name: string;
   iat: number;
   exp: number;
-};
+}

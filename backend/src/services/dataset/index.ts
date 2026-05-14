@@ -5,7 +5,7 @@ import type { ChartService } from '../chart.service.js';
 import type {
   DatasetChartType,
   DatasetGenerationResult,
-} from '../../commons/types/dataset.js';
+} from '../../commons/interfaces/dataset/dataset.interface.js';
 
 import { parseFile } from './parseFile.js';
 import { buildChartOption } from './buildChartOption.js';

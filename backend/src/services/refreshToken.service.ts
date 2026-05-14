@@ -1,6 +1,6 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 
-import type { UserDTO } from '../commons/types/user.js';
+import type { UserPayload } from '../commons/interfaces/auth/userPayload.interface.js';
 import type { RefreshTokenRepository } from '../commons/interfaces/repositories/refreshTokenRepository.interface.js';
 
 export class TokenService {
@@ -9,10 +9,10 @@ export class TokenService {
     private readonly refreshTokenRepository: RefreshTokenRepository,
   ) {}
 
-  generateTokens(payload: UserDTO) {
+  generateTokens(payload: UserPayload) {
     const accessToken = this.app.jwt.sign(payload, { expiresIn: '30m' });
     const refreshToken = this.app.jwt.sign(
-      { ...payload, jti: crypto.randomUUID() } as UserDTO,
+      { ...payload, jti: crypto.randomUUID() } as UserPayload,
       { expiresIn: '30d' },
     );
 

@@ -1,6 +1,6 @@
 import type { FastifyInstance } from 'fastify';
 
-import type { GoogleResponse } from '../commons/types/googleResponse.js';
+import type { GoogleResponse } from '../commons/interfaces/oauth/googleResponse.interface.js';
 import type { UserRepository } from '../commons/interfaces/repositories/userRepository.interface.js';
 import type { ChartRepository } from '../commons/interfaces/repositories/chartRepository.interface.js';
 

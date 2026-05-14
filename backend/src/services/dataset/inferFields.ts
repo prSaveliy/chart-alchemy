@@ -1,4 +1,7 @@
-import { DatasetField, DatasetFieldType } from '../../commons/types/dataset.js';
+import type {
+  DatasetField,
+  DatasetFieldType,
+} from '../../commons/interfaces/dataset/dataset.interface.js';
 
 const ISO_DATE_RE = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}(:\d{2}(\.\d+)?)?(Z|[+-]\d{2}:?\d{2})?)?$/;
 

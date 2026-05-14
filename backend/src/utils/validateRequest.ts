@@ -1,7 +1,7 @@
 import { ZodType } from 'zod';
 
-import { FastifyRequest } from 'fastify';
-import { AppError } from '../commons/types/error.js';
+import type { FastifyRequest } from 'fastify';
+import type { AppError } from '../commons/interfaces/errors/appError.interface.js';
 
 type RequestSource = 'body' | 'params' | 'query';
 

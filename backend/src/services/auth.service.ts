@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify';
 import bcrypt from 'bcrypt';
 import crypto from 'node:crypto';
 
-import type { PendingUser } from '../commons/types/pendingUser.js';
+import type { PendingUser } from '../commons/interfaces/auth/pendingUser.interface.js';
 import type { UserRepository } from '../commons/interfaces/repositories/userRepository.interface.js';
 import type { PendingUserRepository } from '../commons/interfaces/repositories/pendingUserRepository.interface.js';
 import type { ResetPasswordTokenRepository } from '../commons/interfaces/repositories/resetPasswordTokenRepository.interface.js';

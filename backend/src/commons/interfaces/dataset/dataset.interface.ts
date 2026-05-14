@@ -1,4 +1,4 @@
-import { ChartConfig } from '../schemas/chartConfig.schema.js';
+import type { ChartConfig } from '../../schemas/chartConfig.schema.js';
 
 export type DatasetChartType = 'bar' | 'line' | 'pie' | 'scatter';
 

@@ -1,14 +1,13 @@
 import 'fastify';
 import '@fastify/jwt';
 
-import { FastifyRequest, FastifyReply } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { Multipart } from '@fastify/multipart';
+import type { GoogleGenAI } from '@google/genai';
+import type { OAuth2Client } from 'google-auth-library';
 
-import { PrismaClient } from '../../generated/prisma/client.ts';
-import { GoogleGenAI } from '@google/genai';
-import { OAuth2Client } from 'google-auth-library';
-
-import { UserDTO } from './user.js';
+import type { PrismaClient } from '../../../generated/prisma/client.ts';
+import type { UserPayload } from '../auth/userPayload.interface.ts';
 
 declare module 'fastify' {
   interface FastifyInstance {
@@ -40,7 +39,7 @@ declare module 'fastify' {
 
 declare module '@fastify/jwt' {
   interface FastifyJWT {
-    payload: UserDTO;
-    user: UserDTO;
+    payload: UserPayload;
+    user: UserPayload;
   }
 }

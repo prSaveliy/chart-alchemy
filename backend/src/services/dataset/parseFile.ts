@@ -1,6 +1,6 @@
-import { FastifyInstance } from 'fastify';
+import type { FastifyInstance } from 'fastify';
 
-import { ParsedDataset } from '../../commons/types/dataset.js';
+import type { ParsedDataset } from '../../commons/interfaces/dataset/dataset.interface.js';
 
 import { parseCsv } from './parsers/csv.js';
 import { parseXlsx } from './parsers/xlsx.js';

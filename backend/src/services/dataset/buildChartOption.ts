@@ -1,9 +1,9 @@
-import { EChartsOption } from '../../commons/schemas/chartConfig.schema.js';
-import {
+import type { EChartsOption } from '../../commons/schemas/chartConfig.schema.js';
+import type {
   DatasetChartType,
   DatasetField,
   ParsedDataset,
-} from '../../commons/types/dataset.js';
+} from '../../commons/interfaces/dataset/dataset.interface.js';
 
 export interface ResolvedFields {
   xField: string;
