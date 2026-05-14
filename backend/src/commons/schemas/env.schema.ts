@@ -13,6 +13,7 @@ export const envSchema = {
     'OAUTH_GOOGLE_CLIENT_ID',
     'OAUTH_GOOGLE_CLIENT_SECRET',
     'GEMINI_API_KEY',
+    'GEMINI_MODELS',
     'CORS_ORIGIN',
     'GOOGLE_CLOUD_PROJECT',
     'GOOGLE_CLOUD_LOCATION',
@@ -55,6 +56,9 @@ export const envSchema = {
     },
     GEMINI_API_KEY: {
       type: 'string',
+    },
+    GEMINI_MODELS: {
+      type: 'string'
     },
     GOOGLE_CLOUD_PROJECT: {
       type: 'string',
