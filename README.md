@@ -14,21 +14,45 @@
 
 Authentication supports email/password (with email confirmation) and Google sign-in.
 
-## Environment variables
+## Installation
 
-Each package has an `.env.example` file listing the required variables:
+### Prerequisites
+
+- Node.js 20+
+- npm 10+
+- Docker and Docker Compose
+
+### Install dependencies
+
+Install all workspace dependencies from the repository root:
+
+```bash
+npm install
+```
+
+### Configure environment variables
+
+Each package has an example env file listing the required variables:
 
 - `backend/.env.example` — server config (database, JWT, SMTP, OAuth credentials, AI API key)
 - `backend/.env.test.example` — test database config
 - `frontend/.env.example` — API URLs for the Vite dev server
 
-Copy each example to a `.env` file in the same directory and fill in the values before running.
+Create the env files before running the app:
+
+```bash
+cp backend/.env.example backend/.env
+cp backend/.env.test.example backend/.env.test
+cp frontend/.env.example frontend/.env
+```
+
+Then fill in the values before running.
 
 ## Running locally
 
 **Option 1 — npm (recommended for development)**
 
-Requires Node.js and a running PostgreSQL instance. Start Postgres and run migrations first:
+Start Postgres and run backend migrations:
 
 ```bash
 npm run db:up
@@ -41,6 +65,18 @@ npm run dev
 ```
 
 Frontend will be available at `http://localhost:5173`.
+The backend API will be available at `http://localhost:3000`.
+
+### Running tests
+
+Start the test database and make sure `backend/.env.test` points to it:
+
+```bash
+npm run db:up
+npm test
+```
+
+Tests run against the backend workspace only.
 
 **Option 2 — Docker Compose**
 
@@ -49,6 +85,12 @@ Starts the full stack (database, backend, frontend, and Adminer) in containers:
 ```bash
 docker compose up -d
 ```
+
+This exposes:
+
+- frontend: `http://localhost:5173`
+- backend: `http://localhost:3000`
+- Adminer: `http://localhost:8080`
 
 ## License
 
