@@ -59,6 +59,12 @@ model PendingUser {
   accountActivationToken AccountActivationToken?
 }
 
+// for tracking ai chart generation state
+enum GenState {
+  idle
+  in_progress
+}
+
 model Chart {
   id          Int @id @default(autoincrement())
   name        String @db.VarChar(255) @default("Untitled chart")
@@ -70,6 +76,8 @@ model Chart {
   config      Json @default("{}")
   manualType  String?
   datasetMeta Json?
+
+  genState    GenState @default(idle) 
 
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int

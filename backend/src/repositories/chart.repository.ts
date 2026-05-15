@@ -37,6 +37,29 @@ export class ChartRepository implements ChartRepositoryContract {
     });
   }
 
+  async acquireGenerationLock(token: string) {
+    const result = await this.prisma.chart.updateMany({
+      where: {
+        token,
+        genState: 'idle',
+      },
+      data: {
+        genState: 'in_progress',
+      },
+    });
+
+    return result.count === 1;
+  }
+
+  async releaseGenerationLock(token: string) {
+    await this.prisma.chart.update({
+      where: { token },
+      data: {
+        genState: 'idle',
+      },
+    });
+  }
+
   listByUser(userId: number) {
     return this.prisma.chart.findMany({
       where: { userId },

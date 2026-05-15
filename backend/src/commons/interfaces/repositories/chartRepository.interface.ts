@@ -7,6 +7,7 @@ export interface ChartRecord {
   config: unknown;
   manualType: string | null;
   datasetMeta: unknown;
+  genState: 'idle' | 'in_progress';
   userId: number;
 }
 
@@ -31,6 +32,12 @@ export interface ChartRepository {
     config: unknown,
     manualType?: string
   ): Promise<ChartRecord>;
+
+  // Used to lock the chart generation to prevent race condition
+  acquireGenerationLock(token: string): Promise<boolean>;
+
+  // Used to release the chart generation lock
+  releaseGenerationLock(token: string): Promise<void>;
 
   listByUser(userId: number): Promise<ChartListItem[]>;
 

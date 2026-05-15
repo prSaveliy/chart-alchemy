@@ -37,22 +37,32 @@ export class ChartService {
   async generate(
     prompt: string,
     token: string,
-    userId: number,
     memory: ChartConfig | null,
     thinkingMode: boolean,
   ) {
-    const chartData = await this.aiService.generate(prompt, memory, thinkingMode);
+    const isLocked = await this.chartRepository.acquireGenerationLock(token);
+    if (!isLocked) {
+      throw this.app.httpErrors.conflict(
+        'Cannot satisfy the request: Generation is already in progress.',
+      );
+    }
 
-    await this.save(chartData, token);
+    try {
+      const chartData = await this.aiService.generate(
+        prompt,
+        memory,
+        thinkingMode,
+      );
 
-    return { chartData };
+      await this.save(chartData, token);
+
+      return { chartData };
+    } finally {
+      await this.chartRepository.releaseGenerationLock(token);
+    }
   }
 
-  async rename(
-    name: string,
-    token: string,
-    userId: number,
-  ) {
+  async rename(name: string, token: string, userId: number) {
     await this.verifyToken(token, userId);
 
     await this.chartRepository.updateName(token, name);
