@@ -68,7 +68,7 @@ export class ChartController {
     });
 
     this.chartService
-      .generate(prompt, token, userId, memory, useThinkingMode)
+      .generate(prompt, token, memory, useThinkingMode)
       .then(result => {
         if (aborted) return;
         clearInterval(keepAlive);
