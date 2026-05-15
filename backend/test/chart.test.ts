@@ -216,6 +216,52 @@ describe('chart integration tests', () => {
       assert.deepEqual(chart.config, response.body.chartData);
     });
 
+    test('returns a streaming conflict error when generation is already in progress', async () => {
+      const accessToken = await makeUser(
+        app,
+        'gen-locked@qwertyuiop1234.com',
+      );
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'ai' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+
+      await (app as any).prisma.chart.update({
+        where: { token: chartToken },
+        data: { genState: 'in_progress' },
+      });
+
+      const response = await request(app.server)
+        .post('/chart/generate')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({
+          prompt: 'A bar chart showing monthly sales for January through March',
+          token: chartToken,
+          memory: null,
+          thinkingMode: 'false',
+        })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 200);
+
+      const streamedError = JSON.parse(response.text.trim());
+      assert.deepEqual(streamedError, {
+        isStreamingError: true,
+        errorMessage:
+          'Cannot satisfy the request: Generation is already in progress.',
+        statusCode: 409,
+      });
+
+      const chart = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      assert.equal(chart.genState, 'in_progress');
+    });
+
     test('returns 403 when chart belongs to another user', async () => {
       const ownerToken = await makeUser(app, 'gen-owner@qwertyuiop1234.com');
       const otherToken = await makeUser(app, 'gen-other@qwertyuiop1234.com');
