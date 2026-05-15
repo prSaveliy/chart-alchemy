@@ -33,6 +33,8 @@ model AccountActivationToken {
   pendingUserId Int? @unique
   token         String @unique
   expiresAt     DateTime
+
+  @@index([expiresAt])
 }
 
 model RefreshToken {
@@ -41,6 +43,9 @@ model RefreshToken {
   userId    Int
   token     String @unique
   expiresAt DateTime
+
+  @@index([userId])
+  @@index([expiresAt])
 }
 
 model ResetPasswordToken {
@@ -48,6 +53,9 @@ model ResetPasswordToken {
   email     String
   token     String @unique
   expiresAt DateTime
+
+  @@index([email])
+  @@index([expiresAt])
 }
 
 // used as a temporary user until email confirmation in case the user
@@ -74,11 +82,13 @@ model Chart {
   updatedAt   DateTime @updatedAt
 
   config      Json @default("{}")
-  manualType  String?
-  datasetMeta Json?
 
   genState    GenState @default(idle) 
+  datasetMeta Json?
+  manualType  String?
 
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
+
+  @@index([userId, updatedAt(sort: Desc)])
 }
