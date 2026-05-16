@@ -10,7 +10,7 @@ import multipart from '@fastify/multipart';
 import authPlugin from './plugins/auth.plugin.js';
 import dbPlugin from './plugins/db.plugin.js';
 import geminiPlugin from './plugins/gemini.plugin.js';
-import googleAuthPlugin from './plugins/googleAuth.js';
+import googleAuthPlugin from './plugins/googleAuth.plugin.js';
 
 import authRoutes from './routes/auth.routes.js';
 import oAuthRoutes from './routes/oauth.routes.js';
