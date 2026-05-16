@@ -148,6 +148,7 @@ export class ChartController {
   }
 
   async generateFromDataset(request: FastifyRequest) {
+    const startedAt = performance.now();
     const { token } = validateRequest(
       request,
       tokenSchema,
@@ -193,7 +194,7 @@ export class ChartController {
       'Invalid request body',
     );
 
-    return await this.datasetService.generate(
+    const result = await this.datasetService.generate(
       fileBuffer,
       filename,
       mimetype,
@@ -202,5 +203,15 @@ export class ChartController {
       xField,
       yField,
     );
+    request.log.info(
+      {
+        token,
+        chartType,
+        backendDurationMs: Math.round(performance.now() - startedAt),
+      },
+      'dataset request completed',
+    );
+
+    return result;
   }
 }
