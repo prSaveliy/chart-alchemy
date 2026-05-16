@@ -23,6 +23,7 @@ jobs:
       PORT: 3000
       JWT_SECRET: jwt-secret-test
       DATABASE_URL: postgresql://user:password@localhost:5432/testdb?schema=public
+      REDIS_URL: redis://localhost:6379
       API_URL: http://localhost:3000
       CLIENT_API_URL: http://localhost:5173
       SMTP_HOST: smtp.example.com
@@ -54,6 +55,7 @@ jobs:
           PORT=$PORT
           JWT_SECRET=$JWT_SECRET
           DATABASE_URL=$DATABASE_URL
+          REDIS_URL=$REDIS_URL
           API_URL=$API_URL
           CLIENT_API_URL=$CLIENT_API_URL
           SMTP_HOST=$SMTP_HOST
