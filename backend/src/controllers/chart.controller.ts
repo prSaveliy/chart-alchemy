@@ -199,7 +199,6 @@ export class ChartController {
       mimetype,
       chartType,
       token,
-      userId,
       xField,
       yField,
     );

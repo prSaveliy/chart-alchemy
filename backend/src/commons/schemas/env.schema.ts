@@ -4,6 +4,7 @@ export const envSchema = {
     'PORT',
     'JWT_SECRET',
     'DATABASE_URL',
+    'REDIS_URL',
     'SMTP_HOST',
     'SMTP_PORT',
     'SMTP_USER',
@@ -28,6 +29,9 @@ export const envSchema = {
       type: 'string',
     },
     DATABASE_URL: {
+      type: 'string',
+    },
+    REDIS_URL: {
       type: 'string',
     },
     SMTP_HOST: {
@@ -58,7 +62,7 @@ export const envSchema = {
       type: 'string',
     },
     GEMINI_MODELS: {
-      type: 'string'
+      type: 'string',
     },
     GOOGLE_CLOUD_PROJECT: {
       type: 'string',

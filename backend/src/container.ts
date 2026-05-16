@@ -14,6 +14,7 @@ import { ActivationTokenService } from './services/activationToken.service.js';
 import { GeminiService } from './services/gemini.service.js';
 import { ChartService } from './services/chart.service.js';
 import { DatasetService } from './services/dataset/index.js';
+import { RedisService } from './services/redis.service.js';
 import { AuthService } from './services/auth.service.js';
 import { OAuthService } from './services/oauth.service.js';
 import { AuthController } from './controllers/auth.controller.js';
@@ -42,8 +43,9 @@ export const buildContainer = (app: FastifyInstance) => {
     pendingUserRepository,
   );
   const geminiService = new GeminiService(app);
+  const cacheService = new RedisService(app.redis);
   const chartService = new ChartService(app, chartRepository, geminiService);
-  const datasetService = new DatasetService(app, chartService);
+  const datasetService = new DatasetService(app, chartService, cacheService);
   const authService = new AuthService(
     app,
     userRepository,
@@ -76,6 +78,7 @@ export const buildContainer = (app: FastifyInstance) => {
     tokenService,
     activationTokenService,
     geminiService,
+    cacheService,
     chartService,
     datasetService,
     authService,

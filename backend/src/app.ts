@@ -11,6 +11,7 @@ import authPlugin from './plugins/auth.plugin.js';
 import dbPlugin from './plugins/db.plugin.js';
 import geminiPlugin from './plugins/gemini.plugin.js';
 import googleAuthPlugin from './plugins/googleAuth.plugin.js';
+import redisPlugin from './plugins/redis.plugin.js';
 
 import authRoutes from './routes/auth.routes.js';
 import oAuthRoutes from './routes/oauth.routes.js';
@@ -73,6 +74,7 @@ const buildApp = async () => {
   await app.register(authPlugin);
   await app.register(geminiPlugin);
   await app.register(googleAuthPlugin);
+  await app.register(redisPlugin);
 
   const { authController, oAuthController, chartController } = buildContainer(app);
 

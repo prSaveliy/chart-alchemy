@@ -3,6 +3,7 @@ import '@fastify/jwt';
 
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import type { Multipart } from '@fastify/multipart';
+import type { FastifyRedis } from '@fastify/redis';
 import type { GoogleGenAI } from '@google/genai';
 import type { OAuth2Client } from 'google-auth-library';
 
@@ -15,6 +16,7 @@ declare module 'fastify' {
       PORT: number;
       JWT_SECRET: string;
       DATABASE_URL: string;
+      REDIS_URL: string;
       API_URL: string;
       CLIENT_API_URL: string;
       OAUTH_GOOGLE_CLIENT_ID: string;
@@ -30,6 +32,7 @@ declare module 'fastify' {
     auth: (request: FastifyRequest, reply: FastifyReply) => void;
     gemini: GoogleGenAI;
     googleAuthClient: OAuth2Client;
+    redis: FastifyRedis;
   }
 
   interface FastifyRequest {
