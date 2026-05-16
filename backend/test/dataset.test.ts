@@ -1,4 +1,4 @@
-import { describe, test, before, after } from 'node:test';
+import { describe, test, before, beforeEach, after } from 'node:test';
 import assert from 'node:assert/strict';
 import request from 'supertest';
 import { FastifyInstance } from 'fastify';
@@ -53,6 +53,7 @@ const ONE_COLUMN_CSV = csvBuffer([['name'], ['Jan'], ['Feb']]);
 
 describe('dataset chart generation integration tests', () => {
   let app: FastifyInstance;
+  let redis: any;
 
   before(async () => {
     if (process.env.NODE_ENV !== 'test') {
@@ -60,8 +61,13 @@ describe('dataset chart generation integration tests', () => {
     }
     app = await buildApp();
     await app.ready();
+    redis = (app as any).redis;
     const { execSync } = await import('node:child_process');
     execSync('npx prisma migrate reset --force');
+  });
+
+  beforeEach(async () => {
+    await redis.flushdb();
   });
 
   after(async () => {
@@ -86,6 +92,49 @@ describe('dataset chart generation integration tests', () => {
       assert.ok(response.body.selectedXField);
       assert.ok(response.body.selectedYField);
       assert.equal(typeof response.body.truncated, 'boolean');
+    });
+
+    test('reuses parsed dataset cache for a different chart combination', async () => {
+      const accessToken = await makeUser(app, 'ds-cache-multi@qwertyuiop1234.com');
+      const firstChartToken = await makeDatasetChart(app, accessToken);
+      const secondChartToken = await makeDatasetChart(app, accessToken);
+
+      const firstResponse = await request(app.server)
+        .post(`/chart/generate-from-dataset/${firstChartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
+        .field('chartType', 'bar');
+
+      assert.equal(firstResponse.status, 200);
+
+      const parsedDatasetEntriesAfterFirst = await redis.keys('dataset-parse:*');
+      const chartEntriesAfterFirst = await redis.keys('dataset-chart:*');
+
+      assert.equal(parsedDatasetEntriesAfterFirst.length, 1);
+      assert.equal(chartEntriesAfterFirst.length, 1);
+
+      const cachedParsedDatasetValue = await redis.get(
+        parsedDatasetEntriesAfterFirst[0],
+      );
+
+      const secondResponse = await request(app.server)
+        .post(`/chart/generate-from-dataset/${secondChartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
+        .field('chartType', 'line');
+
+      assert.equal(secondResponse.status, 200);
+      assert.equal(secondResponse.body.selectedType, 'line');
+
+      const parsedDatasetEntriesAfterSecond = await redis.keys('dataset-parse:*');
+      const chartEntriesAfterSecond = await redis.keys('dataset-chart:*');
+      const cachedParsedDatasetAfterSecond = await redis.get(
+        parsedDatasetEntriesAfterSecond[0],
+      );
+
+      assert.equal(parsedDatasetEntriesAfterSecond.length, 1);
+      assert.equal(cachedParsedDatasetAfterSecond, cachedParsedDatasetValue);
+      assert.equal(chartEntriesAfterSecond.length, 2);
     });
 
     test('saves generated config to the chart record in DB', async () => {
