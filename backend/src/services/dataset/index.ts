@@ -7,15 +7,16 @@ import type { CacheService } from '../../commons/interfaces/services/cacheServic
 import type {
   DatasetChartType,
   DatasetGenerationResult,
+  ParsedDataset,
 } from '../../commons/interfaces/dataset/dataset.interface.js';
 
 import { parseFile } from './parseFile.js';
 import { buildChartOption } from './buildChartOption.js';
 
 const DATASET_CHART_CACHE_TTL_SECONDS = 10 * 60;
+const DATASET_PARSE_CACHE_TTL_SECONDS = 30 * 60;
 
-const cacheKeyPart = (value: string | undefined): string =>
-  value === undefined ? '_auto' : encodeURIComponent(value);
+
 
 export class DatasetService {
   constructor(
@@ -24,38 +25,57 @@ export class DatasetService {
     private readonly cacheService: CacheService,
   ) {}
 
-  private buildCacheKey(
-    fileBuffer: Buffer,
+  private getFileHash(fileBuffer: Buffer): string {
+    return createHash('sha256').update(fileBuffer).digest('hex');
+  }
+
+  private buildParsedDatasetCacheKey(fileHash: string): string {
+    return ['dataset-parse', fileHash].join(':');
+  }
+
+  private cacheKeyPart = (value: string | undefined): string =>
+    value === undefined ? '_auto' : encodeURIComponent(value);
+
+  private buildChartCacheKey(
+    fileHash: string,
     mimetype: string,
     chartType: DatasetChartType,
     xField: string | undefined,
     yField: string | undefined,
   ): string {
-    const fileHash = createHash('sha256').update(fileBuffer).digest('hex');
-
     return [
       'dataset-chart',
       mimetype,
       fileHash,
       chartType,
-      cacheKeyPart(xField),
-      cacheKeyPart(yField),
+      this.cacheKeyPart(xField),
+      this.cacheKeyPart(yField),
     ].join(':');
   }
 
   private async getCachedResult(
     key: string,
-    token: string,
   ): Promise<DatasetGenerationResult | null> {
     try {
       const cached = await this.cacheService.get(key);
       if (!cached) return null;
 
       const result = JSON.parse(cached) as DatasetGenerationResult;
-      await this.chartService.save(result.chartData, token);
       return result;
     } catch (error) {
       this.app.log.warn({ err: error, key }, 'dataset chart cache read failed');
+      return null;
+    }
+  }
+
+  private async getCachedParsedDataset(key: string): Promise<ParsedDataset | null> {
+    try {
+      const cached = await this.cacheService.get(key);
+      if (!cached) return null;
+
+      return JSON.parse(cached) as ParsedDataset;
+    } catch (error) {
+      this.app.log.warn({ err: error, key }, 'dataset parse cache read failed');
       return null;
     }
   }
@@ -75,6 +95,21 @@ export class DatasetService {
     }
   }
 
+  private async cacheParsedDataset(
+    key: string,
+    dataset: ParsedDataset,
+  ): Promise<void> {
+    try {
+      await this.cacheService.set(
+        key,
+        JSON.stringify(dataset),
+        DATASET_PARSE_CACHE_TTL_SECONDS,
+      );
+    } catch (error) {
+      this.app.log.warn({ err: error, key }, 'dataset parse cache write failed');
+    }
+  }
+
   async generate(
     fileBuffer: Buffer,
     filename: string,
@@ -84,19 +119,26 @@ export class DatasetService {
     xField: string | undefined,
     yField: string | undefined,
   ): Promise<DatasetGenerationResult> {
-    const cacheKey = this.buildCacheKey(
-      fileBuffer,
+    const fileHash = this.getFileHash(fileBuffer);
+    const chartCacheKey = this.buildChartCacheKey(
+      fileHash,
       mimetype,
       chartType,
       xField,
       yField,
     );
-    const cachedResult = await this.getCachedResult(cacheKey, token);
+    const cachedResult = await this.getCachedResult(chartCacheKey);
     if (cachedResult) {
+      await this.chartService.save(cachedResult.chartData, token);
       return cachedResult;
     }
 
-    const dataset = await parseFile(this.app, fileBuffer, filename, mimetype);
+    const parsedDatasetCacheKey = this.buildParsedDatasetCacheKey(fileHash);
+    let dataset = await this.getCachedParsedDataset(parsedDatasetCacheKey);
+    if (!dataset) {
+      dataset = await parseFile(this.app, fileBuffer, filename, mimetype);
+      await this.cacheParsedDataset(parsedDatasetCacheKey, dataset);
+    }
 
     if (dataset.fields.length < 2) {
       throw this.app.httpErrors.badRequest('Dataset must have at least two columns');
@@ -120,7 +162,7 @@ export class DatasetService {
     };
 
     await this.chartService.save(chartData, token);
-    await this.cacheResult(cacheKey, result);
+    await this.cacheResult(chartCacheKey, result);
 
     return result;
   }
