@@ -59,9 +59,22 @@ export interface DatasetGenerationResult {
   selectedXField: string;
   selectedYField: string;
   truncated: boolean;
+  datasetInfo: DatasetInfo;
+}
+
+export interface DatasetInfo {
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
 }
 
 export interface DatasetChartProps {
   initialName?: string;
   initialData?: ChartConfig | null;
+  initialFields?: DatasetField[];
+  initialType?: DatasetChartType | null;
+  initialXField?: string | null;
+  initialYField?: string | null;
+  initialTruncated?: boolean;
+  initialDatasetInfo?: DatasetInfo | null;
 }

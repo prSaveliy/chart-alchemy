@@ -61,7 +61,7 @@ class ChartService {
     });
   }
 
-  async generateFromDataset(
+  async uploadAndGenerateFromDataset(
     file: File,
     token: string,
     chartType: DatasetChartType,
@@ -74,8 +74,24 @@ class ChartService {
     if (xField) formData.append("xField", xField);
     if (yField) formData.append("yField", yField);
     return await fetchClient.postFormData(
-      `chart/generate-from-dataset/${token}`,
+      `chart/upload-and-generate-from-dataset/${token}`,
       formData,
+    );
+  }
+
+  async regenerateFromDataset(
+    token: string,
+    chartType: DatasetChartType,
+    xField?: string,
+    yField?: string,
+  ) {
+    return await fetchClient.post(
+      `chart/regenerate-from-dataset/${token}`,
+      {
+        chartType,
+        xField,
+        yField,
+      }
     );
   }
 

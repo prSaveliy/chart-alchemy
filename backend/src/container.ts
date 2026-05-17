@@ -45,7 +45,12 @@ export const buildContainer = (app: FastifyInstance) => {
   const geminiService = new GeminiService(app);
   const cacheService = new RedisService(app.redis);
   const chartService = new ChartService(app, chartRepository, geminiService);
-  const datasetService = new DatasetService(app, chartService, cacheService);
+  const datasetService = new DatasetService(
+    app,
+    chartService,
+    chartRepository,
+    cacheService,
+  );
   const authService = new AuthService(
     app,
     userRepository,

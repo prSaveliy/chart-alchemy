@@ -9,6 +9,7 @@ import type {
   DatasetGenerationResult,
   ParsedDataset,
 } from '../../commons/interfaces/dataset/dataset.interface.js';
+import type { ChartRepository } from '../../repositories/chart.repository.js';
 
 import { parseFile } from './parseFile.js';
 import { buildChartOption } from './buildChartOption.js';
@@ -16,12 +17,11 @@ import { buildChartOption } from './buildChartOption.js';
 const DATASET_CHART_CACHE_TTL_SECONDS = 10 * 60;
 const DATASET_PARSE_CACHE_TTL_SECONDS = 30 * 60;
 
-
-
 export class DatasetService {
   constructor(
     private readonly app: FastifyInstance,
     private readonly chartService: ChartService,
+    private readonly chartRepository: ChartRepository,
     private readonly cacheService: CacheService,
   ) {}
 
@@ -68,7 +68,9 @@ export class DatasetService {
     }
   }
 
-  private async getCachedParsedDataset(key: string): Promise<ParsedDataset | null> {
+  private async getCachedParsedDataset(
+    key: string,
+  ): Promise<ParsedDataset | null> {
     try {
       const cached = await this.cacheService.get(key);
       if (!cached) return null;
@@ -91,7 +93,10 @@ export class DatasetService {
         DATASET_CHART_CACHE_TTL_SECONDS,
       );
     } catch (error) {
-      this.app.log.warn({ err: error, key }, 'dataset chart cache write failed');
+      this.app.log.warn(
+        { err: error, key },
+        'dataset chart cache write failed',
+      );
     }
   }
 
@@ -106,7 +111,10 @@ export class DatasetService {
         DATASET_PARSE_CACHE_TTL_SECONDS,
       );
     } catch (error) {
-      this.app.log.warn({ err: error, key }, 'dataset parse cache write failed');
+      this.app.log.warn(
+        { err: error, key },
+        'dataset parse cache write failed',
+      );
     }
   }
 
@@ -127,11 +135,11 @@ export class DatasetService {
       xField,
       yField,
     );
-    const cachedResult = await this.getCachedResult(chartCacheKey);
-    if (cachedResult) {
-      await this.chartService.save(cachedResult.chartData, token);
-      return cachedResult;
-    }
+    // const cachedResult = await this.getCachedResult(chartCacheKey);
+    // if (cachedResult) {
+    //   await this.chartService.save(cachedResult.chartData, token);
+    //   return cachedResult;
+    // }
 
     const parsedDatasetCacheKey = this.buildParsedDatasetCacheKey(fileHash);
     let dataset = await this.getCachedParsedDataset(parsedDatasetCacheKey);
@@ -152,6 +160,25 @@ export class DatasetService {
     );
     const chartData = { option };
 
+    const datasetSource = await this.chartRepository.createDatasetSource(
+      filename,
+      mimetype,
+      fileBuffer.length,
+      fileHash,
+      dataset.fields,
+      dataset.rows,
+      dataset.truncated,
+      dataset.rows.length,
+    );
+
+    await this.chartRepository.assignDatasetSource(
+      token,
+      datasetSource.id,
+      chartType,
+      resolved.xField,
+      resolved.yField,
+    );
+
     const result = {
       chartData,
       fields: dataset.fields,
@@ -159,10 +186,73 @@ export class DatasetService {
       selectedXField: resolved.xField,
       selectedYField: resolved.yField,
       truncated: dataset.truncated,
+      datasetInfo: {
+        fileName: datasetSource.fileName,
+        mimeType: datasetSource.mimeType,
+        fileSize: datasetSource.fileSize,
+      },
     };
 
     await this.chartService.save(chartData, token);
     await this.cacheResult(chartCacheKey, result);
+
+    return result;
+  }
+
+  async regenerate(
+    token: string,
+    chartType: DatasetChartType,
+    xField: string,
+    yField: string,
+  ): Promise<DatasetGenerationResult> {
+    const chart = await this.chartRepository.findByToken(token);
+
+    if (!chart?.datasetSource) {
+      throw this.app.httpErrors.notFound('Dataset source not found');
+    }
+
+    const dataset = {
+      fields: chart.datasetSource.fields as unknown as ParsedDataset['fields'],
+      rows: chart.datasetSource.rows as unknown as ParsedDataset['rows'],
+      truncated: chart.datasetSource.truncated,
+    };
+
+    if (dataset.fields.length < 2) {
+      throw this.app.httpErrors.badRequest(
+        'Dataset must have at least two columns',
+      );
+    }
+
+    const { option, resolved } = buildChartOption(
+      dataset,
+      chartType,
+      xField,
+      yField,
+    );
+    const chartData = { option };
+
+    const result = {
+      chartData,
+      fields: dataset.fields,
+      selectedType: chartType,
+      selectedXField: resolved.xField,
+      selectedYField: resolved.yField,
+      truncated: dataset.truncated,
+      datasetInfo: {
+        fileName: chart.datasetSource.fileName,
+        mimeType: chart.datasetSource.mimeType,
+        fileSize: chart.datasetSource.fileSize,
+      },
+    };
+
+    await this.chartRepository.assignDatasetSource(
+      token,
+      chart.datasetSource.id,
+      chartType,
+      resolved.xField,
+      resolved.yField,
+    );
+    await this.chartService.save(chartData, token);
 
     return result;
   }

@@ -84,11 +84,33 @@ model Chart {
   config      Json @default("{}")
 
   genState    GenState @default(idle) 
-  datasetMeta Json?
   manualType  String?
+
+  datasetSourceId Int?
+  datasetSource   DatasetSource? @relation(fields: [datasetSourceId], references: [id], onDelete: SetNull)
+
+  // dataset specific
+  selectedType    String?
+  selectedXField  String?
+  selectedYField  String?
 
   user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId      Int
 
   @@index([userId, updatedAt(sort: Desc)])
+}
+
+model DatasetSource {
+  id          Int      @id @default(autoincrement())
+  fileName    String
+  mimeType    String
+  fileSize    Int
+  fileHash    String
+  fields      Json
+  rows        Json
+  truncated   Boolean
+  rowCount    Int
+  createdAt   DateTime @default(now())
+
+  charts      Chart[]
 }

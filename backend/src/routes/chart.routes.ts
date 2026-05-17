@@ -30,11 +30,19 @@ const chartRoutes = (chartController: ChartController) => {
     );
 
     fastify.post(
-      '/generate-from-dataset/:token',
+      '/upload-and-generate-from-dataset/:token',
+      {
+        onRequest: [fastify.auth, rateLimitByIp(5, 60 * 1000)],
+      },
+      chartController.uploadAndGenerateFromDataset.bind(chartController),
+    );
+
+    fastify.post(
+      '/regenerate-from-dataset/:token',
       {
         onRequest: [fastify.auth, rateLimitByIp(25, 60 * 1000)],
       },
-      chartController.generateFromDataset.bind(chartController),
+      chartController.regenerateFromDataset.bind(chartController),
     );
 
     fastify.patch(

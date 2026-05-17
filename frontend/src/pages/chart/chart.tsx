@@ -14,6 +14,7 @@ import chartService from "@/services/chartService";
 import type { ManualChartType } from "@/services/chartService";
 
 import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
+import type { DatasetField, DatasetChartType, DatasetInfo } from "@/commons/interfaces/chartInterfaces";
 
 export const Chart = () => {
   const { token } = useParams();
@@ -30,6 +31,13 @@ export const Chart = () => {
   const [chartData, setChartData] = useState<ChartConfig | null>(null);
   const [chartName, setChartName] = useState("");
   const [manualType, setManualType] = useState<ManualChartType | null>(null);
+
+  const [datasetFields, setDatasetFields] = useState<DatasetField[]>([]);
+  const [selectedType, setSelectedType] = useState<DatasetChartType | null>(null);
+  const [selectedXField, setSelectedXField] = useState<string | null>(null);
+  const [selectedYField, setSelectedYField] = useState<string | null>(null);
+  const [truncated, setTruncated] = useState(false);
+  const [datasetInfo, setDatasetInfo] = useState<DatasetInfo | null>(null);
 
   const kind = token ? parseChartKind(token) : null;
 
@@ -67,6 +75,14 @@ export const Chart = () => {
       setChartData(fetchResult.data.chartData);
       setChartName(fetchResult.data.chartName);
       setManualType(fetchResult.data.manualType ?? null);
+
+      setDatasetFields(fetchResult.data.datasetFields ?? []);
+      setSelectedType(fetchResult.data.selectedType ?? null);
+      setSelectedXField(fetchResult.data.selectedXField ?? null);
+      setSelectedYField(fetchResult.data.selectedYField ?? null);
+      setTruncated(fetchResult.data.truncated ?? false);
+      setDatasetInfo(fetchResult.data.datasetInfo ?? null);
+
       setVerified(true);
     };
 
@@ -123,7 +139,18 @@ export const Chart = () => {
       case "ai":
         return <AIChart initialData={chartData} initialName={chartName} />;
       case "dataset":
-        return <DatasetChart initialName={chartName} initialData={chartData} />;
+        return (
+          <DatasetChart
+            initialName={chartName}
+            initialData={chartData}
+            initialFields={datasetFields}
+            initialType={selectedType}
+            initialXField={selectedXField}
+            initialYField={selectedYField}
+            initialTruncated={truncated}
+            initialDatasetInfo={datasetInfo}
+          />
+        );
       case "manual":
         return (
           <ManualChart

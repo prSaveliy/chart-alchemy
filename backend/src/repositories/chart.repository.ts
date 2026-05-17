@@ -1,4 +1,5 @@
 import { Prisma, type PrismaClient } from '../generated/prisma/client.js';
+import type { DatasetField } from '../commons/interfaces/dataset/dataset.interface.js';
 
 export class ChartRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -15,6 +16,9 @@ export class ChartRepository {
   findByToken(token: string) {
     return this.prisma.chart.findUnique({
       where: { token },
+      include: {
+        datasetSource: true,
+      },
     });
   }
 
@@ -85,5 +89,47 @@ export class ChartRepository {
     });
 
     return result.count;
+  }
+
+  createDatasetSource(
+    fileName: string,
+    mimeType: string,
+    fileSize: number,
+    fileHash: string,
+    fields: DatasetField[],
+    rows: Record<string, unknown>[],
+    truncated: boolean,
+    rowCount: number,
+  ) {
+    return this.prisma.datasetSource.create({
+      data: {
+        fileName,
+        mimeType,
+        fileSize,
+        fileHash,
+        fields: fields as unknown as Prisma.InputJsonValue,
+        rows: rows as unknown as Prisma.InputJsonValue,
+        truncated,
+        rowCount,
+      },
+    });
+  }
+
+  assignDatasetSource(
+    token: string,
+    datasetSourceId: number,
+    selectedType: string,
+    selectedXField: string,
+    selectedYField: string,
+  ) {
+    return this.prisma.chart.update({
+      where: { token },
+      data: {
+        datasetSourceId,
+        selectedType,
+        selectedXField,
+        selectedYField,
+      },
+    });
   }
 }

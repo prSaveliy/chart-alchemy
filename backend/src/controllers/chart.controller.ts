@@ -147,7 +147,7 @@ export class ChartController {
     return await this.chartService.saveConfig(token, chartData, userId, manualType);
   }
 
-  async generateFromDataset(request: FastifyRequest) {
+  async uploadAndGenerateFromDataset(request: FastifyRequest) {
     const startedAt = performance.now();
     const { token } = validateRequest(
       request,
@@ -213,5 +213,29 @@ export class ChartController {
     );
 
     return result;
+  }
+
+  async regenerateFromDataset(request: FastifyRequest) {
+    const { token } = validateRequest(
+      request,
+      tokenSchema,
+      'Invalid token',
+      'params',
+    );
+    const userId = request.user.id;
+    await this.chartService.verifyToken(token, userId);
+
+    const { chartType, xField, yField } = validateRequest(
+      request,
+      datasetGenerationRequestSchema,
+      'Invalid request body',
+    );
+
+    return await this.datasetService.regenerate(
+      token,
+      chartType,
+      xField!,
+      yField!,
+    );
   }
 }

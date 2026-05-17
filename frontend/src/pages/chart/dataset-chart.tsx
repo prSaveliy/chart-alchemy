@@ -27,6 +27,7 @@ import type {
   DatasetChartType,
   DatasetField,
   DatasetGenerationResult,
+  DatasetInfo,
 } from "@/commons/interfaces/chartInterfaces";
 
 const CHART_TYPES: {
@@ -86,6 +87,12 @@ const yAxisLabel = (chartType: DatasetChartType) => {
 export const DatasetChart = ({
   initialName,
   initialData,
+  initialFields,
+  initialType,
+  initialXField,
+  initialYField,
+  initialTruncated,
+  initialDatasetInfo,
 }: DatasetChartProps) => {
   const { token } = useParams();
   const navigate = useNavigate();
@@ -96,11 +103,16 @@ export const DatasetChart = ({
   const [savedName, setSavedName] = useState(initialName ?? "");
 
   const [file, setFile] = useState<File | null>(null);
-  const [chartType, setChartType] = useState<DatasetChartType>("bar");
-  const [fields, setFields] = useState<DatasetField[]>([]);
-  const [xField, setXField] = useState<string>("");
-  const [yField, setYField] = useState<string>("");
-  const [truncated, setTruncated] = useState(false);
+  const [datasetInfo, setDatasetInfo] = useState<DatasetInfo | null>(
+    initialDatasetInfo ?? null
+  );
+  const [chartType, setChartType] = useState<DatasetChartType>(
+    initialType ?? "bar"
+  );
+  const [fields, setFields] = useState<DatasetField[]>(initialFields ?? []);
+  const [xField, setXField] = useState<string>(initialXField ?? "");
+  const [yField, setYField] = useState<string>(initialYField ?? "");
+  const [truncated, setTruncated] = useState(initialTruncated ?? false);
   const [isDragging, setIsDragging] = useState(false);
 
   const [chartData, setChartData] = useState<ChartConfig | null>(
@@ -158,27 +170,39 @@ export const DatasetChart = ({
   };
 
   const generate = async (
-    fileArg?: File,
+    fileArg?: File | null,
     chartTypeArg?: DatasetChartType,
     xFieldArg?: string,
     yFieldArg?: string,
   ) => {
-    const f = fileArg ?? file;
+    const f = fileArg !== undefined ? fileArg : file;
     const ct = chartTypeArg ?? chartType;
     const xf = xFieldArg !== undefined ? xFieldArg : xField;
     const yf = yFieldArg !== undefined ? yFieldArg : yField;
-    if (!f) return;
+    
+    if (!f && !datasetInfo) return;
     setGenerateError("");
     setGenerating(true);
 
     try {
-      const fetchResult = await chartService.generateFromDataset(
-        f,
-        token!,
-        ct,
-        xf || undefined,
-        yf || undefined,
-      );
+      let fetchResult;
+      const isNewUpload = fileArg !== undefined && fileArg !== null;
+      if (isNewUpload) {
+        fetchResult = await chartService.uploadAndGenerateFromDataset(
+          fileArg as File,
+          token!,
+          ct,
+          xf || undefined,
+          yf || undefined,
+        );
+      } else {
+        fetchResult = await chartService.regenerateFromDataset(
+          token!,
+          ct,
+          xf || undefined,
+          yf || undefined,
+        );
+      }
 
       if (fetchResult.errorMessage) {
         if (!retriedRef.current && fetchResult.statusCode === 401) {
@@ -195,6 +219,9 @@ export const DatasetChart = ({
       setXField(result.selectedXField);
       setYField(result.selectedYField);
       setTruncated(result.truncated);
+      if (result.datasetInfo) {
+        setDatasetInfo(result.datasetInfo);
+      }
     } finally {
       setGenerating(false);
     }
@@ -241,7 +268,7 @@ export const DatasetChart = ({
             <p className="text-xs font-medium text-gray-500 uppercase tracking-wide mb-2">
               Dataset file
             </p>
-            {!file ? (
+            {!file && !datasetInfo ? (
               <div
                 role="button"
                 tabIndex={0}
@@ -289,15 +316,24 @@ export const DatasetChart = ({
                   />
                   <div className="flex flex-col min-w-0">
                     <span className="text-sm text-gray-800 truncate">
-                      {file.name}
+                      {file ? file.name : datasetInfo?.fileName}
                     </span>
                     <span className="text-xs text-gray-400">
-                      {fileExtension(file.name)} · {formatFileSize(file.size)}
+                      {fileExtension(file ? file.name : datasetInfo?.fileName ?? "")} ·{" "}
+                      {formatFileSize(file ? file.size : datasetInfo?.fileSize ?? 0)}
                     </span>
                   </div>
                 </div>
                 <button
-                  onClick={() => onPickFile(null)}
+                  onClick={() => {
+                    setFile(null);
+                    setDatasetInfo(null);
+                    setChartData(null);
+                    setFields([]);
+                    setXField("");
+                    setYField("");
+                    setTruncated(false);
+                  }}
                   disabled={generating}
                   title="Remove file"
                   className="text-gray-400 hover:text-red-500 transition-colors cursor-pointer shrink-0 disabled:opacity-40 disabled:pointer-events-none"
@@ -322,7 +358,7 @@ export const DatasetChart = ({
                   key={type}
                   onClick={() => {
                     setChartType(type);
-                    if (file) generate(file, type, xField, yField);
+                    if (file || datasetInfo) generate(undefined, type, xField, yField);
                   }}
                   disabled={generating}
                   className={`flex flex-col items-center justify-center gap-1.5 h-16 rounded-xl border-2 cursor-pointer transition-colors disabled:opacity-40 disabled:pointer-events-none ${
@@ -352,7 +388,9 @@ export const DatasetChart = ({
                   value={xField}
                   onChange={(e) => {
                     setXField(e.target.value);
-                    generate(undefined, undefined, e.target.value, yField);
+                    if (file || datasetInfo) {
+                      generate(undefined, undefined, e.target.value, yField);
+                    }
                   }}
                   disabled={generating}
                   className="w-full h-9 rounded-md border bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1px] cursor-pointer disabled:opacity-40"
@@ -372,7 +410,9 @@ export const DatasetChart = ({
                   value={yField}
                   onChange={(e) => {
                     setYField(e.target.value);
-                    generate(undefined, undefined, xField, e.target.value);
+                    if (file || datasetInfo) {
+                      generate(undefined, undefined, xField, e.target.value);
+                    }
                   }}
                   disabled={generating}
                   className="w-full h-9 rounded-md border bg-transparent px-3 text-sm outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[1px] cursor-pointer disabled:opacity-40"

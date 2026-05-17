@@ -2,6 +2,7 @@ import type { FastifyInstance } from 'fastify';
 import type { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
 import type { EChartsOption } from '../commons/schemas/chartConfig.schema.js';
 import type { AIService } from '../commons/interfaces/services/AIService.interface.js';
+import type { DatasetField } from '../commons/interfaces/dataset/dataset.interface.js';
 import type { ChartRepository } from '../repositories/chart.repository.js';
 
 import { v4 } from 'uuid';
@@ -87,6 +88,21 @@ export class ChartService {
       chartData: chart?.config,
       chartName: chart?.name,
       manualType: chart?.manualType ?? null,
+      datasetFields:
+        (chart?.datasetSource?.fields as unknown as
+          | DatasetField[]
+          | undefined) ?? [],
+      selectedType: chart?.selectedType ?? null,
+      selectedXField: chart?.selectedXField ?? null,
+      selectedYField: chart?.selectedYField ?? null,
+      truncated: chart?.datasetSource?.truncated ?? false,
+      datasetInfo: chart?.datasetSource
+        ? {
+            fileName: chart.datasetSource.fileName,
+            mimeType: chart.datasetSource.mimeType,
+            fileSize: chart.datasetSource.fileSize,
+          }
+        : null,
     };
   }
 

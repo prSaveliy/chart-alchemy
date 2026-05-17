@@ -20,6 +20,12 @@ export interface ParsedDataset {
   truncated: boolean;
 }
 
+export interface DatasetSourceInfo {
+  fileName: string;
+  mimeType: string;
+  fileSize: number;
+}
+
 export interface DatasetGenerationResult {
   chartData: ChartConfig;
   fields: DatasetField[];
@@ -27,4 +33,5 @@ export interface DatasetGenerationResult {
   selectedXField: string;
   selectedYField: string;
   truncated: boolean;
+  datasetInfo: DatasetSourceInfo;
 }
