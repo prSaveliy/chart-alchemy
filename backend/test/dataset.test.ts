@@ -74,13 +74,13 @@ describe('dataset chart generation integration tests', () => {
     await app.close();
   });
 
-  describe('POST /chart/generate-from-dataset/:token', () => {
+  describe('POST /chart/upload-and-generate-from-dataset/:token', () => {
     test('returns expected response shape for a CSV file', async () => {
       const accessToken = await makeUser(app, 'ds-shape@qwertyuiop1234.com');
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -100,7 +100,7 @@ describe('dataset chart generation integration tests', () => {
       const secondChartToken = await makeDatasetChart(app, accessToken);
 
       const firstResponse = await request(app.server)
-        .post(`/chart/generate-from-dataset/${firstChartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${firstChartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -118,7 +118,7 @@ describe('dataset chart generation integration tests', () => {
       );
 
       const secondResponse = await request(app.server)
-        .post(`/chart/generate-from-dataset/${secondChartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${secondChartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'line');
@@ -142,7 +142,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -160,7 +160,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -179,7 +179,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -195,7 +195,7 @@ describe('dataset chart generation integration tests', () => {
       ]);
 
       await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', secondCsv, { filename: 'data2.csv', contentType: 'text/csv' })
         .field('chartType', 'line');
@@ -212,7 +212,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -226,7 +226,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'line');
@@ -240,7 +240,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'pie');
@@ -254,7 +254,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SCATTER_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'scatter');
@@ -268,7 +268,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' });
 
@@ -281,7 +281,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar')
@@ -298,7 +298,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -319,7 +319,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -344,7 +344,7 @@ describe('dataset chart generation integration tests', () => {
       );
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', xlsxBuffer, {
           filename: 'data.xlsx',
@@ -359,7 +359,7 @@ describe('dataset chart generation integration tests', () => {
 
     test('returns 401 without auth', async () => {
       const response = await request(app.server)
-        .post('/chart/generate-from-dataset/dataset-some-token')
+        .post('/chart/upload-and-generate-from-dataset/dataset-some-token')
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
 
@@ -372,7 +372,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, ownerToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${otherToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -384,7 +384,7 @@ describe('dataset chart generation integration tests', () => {
       const accessToken = await makeUser(app, 'ds-notfound@qwertyuiop1234.com');
 
       const response = await request(app.server)
-        .post('/chart/generate-from-dataset/dataset-00000000-0000-0000-0000-000000000000')
+        .post('/chart/upload-and-generate-from-dataset/dataset-00000000-0000-0000-0000-000000000000')
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -397,7 +397,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .field('chartType', 'bar');
 
@@ -409,7 +409,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', Buffer.from('hello world'), {
           filename: 'data.txt',
@@ -425,7 +425,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', EMPTY_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -438,7 +438,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', ONE_COLUMN_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'bar');
@@ -451,7 +451,7 @@ describe('dataset chart generation integration tests', () => {
       const chartToken = await makeDatasetChart(app, accessToken);
 
       const response = await request(app.server)
-        .post(`/chart/generate-from-dataset/${chartToken}`)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
         .set('Authorization', `Bearer ${accessToken}`)
         .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
         .field('chartType', 'radar');
