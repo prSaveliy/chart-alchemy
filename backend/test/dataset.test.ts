@@ -459,4 +459,49 @@ describe('dataset chart generation integration tests', () => {
       assert.equal(response.status, 400);
     });
   });
+
+  describe('POST /chart/regenerate-from-dataset/:token', () => {
+    test('returns 404 if dataset source is not found', async () => {
+      const accessToken = await makeUser(app, 'regen-notfound@qwertyuiop1234.com');
+      const chartToken = await makeDatasetChart(app, accessToken);
+
+      const response = await request(app.server)
+        .post(`/chart/regenerate-from-dataset/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'bar' });
+
+      assert.equal(response.status, 404);
+    });
+
+    test('regenerates chart using db persistence without a file', async () => {
+      const accessToken = await makeUser(app, 'regen-success@qwertyuiop1234.com');
+      const chartToken = await makeDatasetChart(app, accessToken);
+
+      await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', SIMPLE_CSV, { filename: 'data.csv', contentType: 'text/csv' })
+        .field('chartType', 'bar');
+
+      const response = await request(app.server)
+        .post(`/chart/regenerate-from-dataset/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'pie' });
+
+      assert.equal(response.status, 200);
+      assert.equal(response.body.selectedType, 'pie');
+      assert.ok(response.body.datasetInfo);
+      assert.equal(response.body.datasetInfo.fileName, 'data.csv');
+      assert.equal(response.body.datasetInfo.mimeType, 'text/csv');
+      
+      const chart = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+        include: { datasetSource: true },
+      });
+      assert.deepEqual(chart.config, response.body.chartData);
+      assert.ok(chart.datasetSource);
+      assert.equal(chart.datasetSource.fileName, 'data.csv');
+      assert.equal(chart.datasetSource.mimeType, 'text/csv');
+    });
+  });
 });
