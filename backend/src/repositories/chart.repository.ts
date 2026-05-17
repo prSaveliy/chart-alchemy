@@ -1,8 +1,6 @@
 import { Prisma, type PrismaClient } from '../generated/prisma/client.js';
 
-import type { ChartRepository as ChartRepositoryContract } from '../commons/interfaces/repositories/chartRepository.interface.js';
-
-export class ChartRepository implements ChartRepositoryContract {
+export class ChartRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   create(token: string, userId: number) {

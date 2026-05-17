@@ -1,8 +1,6 @@
 import type { PrismaClient } from '../generated/prisma/client.js';
 
-import type { RefreshTokenRepository as RefreshTokenRepositoryContract } from '../commons/interfaces/repositories/refreshTokenRepository.interface.js';
-
-export class RefreshTokenRepository implements RefreshTokenRepositoryContract {
+export class RefreshTokenRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   findByToken(token: string) {

@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 import type { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
 import type { EChartsOption } from '../commons/schemas/chartConfig.schema.js';
-import type { ChartRepository } from '../commons/interfaces/repositories/chartRepository.interface.js';
 import type { AIService } from '../commons/interfaces/services/AIService.interface.js';
+import type { ChartRepository } from '../repositories/chart.repository.js';
 
 import { v4 } from 'uuid';
 

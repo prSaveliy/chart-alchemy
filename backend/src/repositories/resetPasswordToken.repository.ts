@@ -1,8 +1,6 @@
 import type { PrismaClient } from '../generated/prisma/client.js';
 
-import type { ResetPasswordTokenRepository as ResetPasswordTokenRepositoryContract } from '../commons/interfaces/repositories/resetPasswordTokenRepository.interface.js';
-
-export class ResetPasswordTokenRepository implements ResetPasswordTokenRepositoryContract {
+export class ResetPasswordTokenRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   findByToken(token: string) {

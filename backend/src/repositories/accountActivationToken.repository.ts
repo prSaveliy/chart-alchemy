@@ -1,11 +1,11 @@
 import type { PrismaClient } from '../generated/prisma/client.js';
 
-import type {
-  AccountActivationTokenRepository as AccountActivationTokenRepositoryContract,
-  ActivationTokenOwner,
-} from '../commons/interfaces/repositories/accountActivationTokenRepository.interface.js';
+export interface ActivationTokenOwner {
+  type: 'main' | 'pending';
+  id: number;
+}
 
-export class AccountActivationTokenRepository implements AccountActivationTokenRepositoryContract {
+export class AccountActivationTokenRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   create(owner: ActivationTokenOwner, token: string, expiresAt: Date) {

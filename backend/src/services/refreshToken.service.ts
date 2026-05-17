@@ -1,7 +1,7 @@
 import type { FastifyInstance, FastifyReply } from 'fastify';
 
 import type { UserPayload } from '../commons/interfaces/auth/userPayload.interface.js';
-import type { RefreshTokenRepository } from '../commons/interfaces/repositories/refreshTokenRepository.interface.js';
+import type { RefreshTokenRepository } from '../repositories/refreshToken.repository.js';
 
 export class TokenService {
   constructor(

@@ -4,9 +4,9 @@ import bcrypt from 'bcrypt';
 import crypto from 'node:crypto';
 
 import type { PendingUser } from '../commons/interfaces/auth/pendingUser.interface.js';
-import type { UserRepository } from '../commons/interfaces/repositories/userRepository.interface.js';
-import type { PendingUserRepository } from '../commons/interfaces/repositories/pendingUserRepository.interface.js';
-import type { ResetPasswordTokenRepository } from '../commons/interfaces/repositories/resetPasswordTokenRepository.interface.js';
+import type { UserRepository } from '../repositories/user.repository.js';
+import type { PendingUserRepository } from '../repositories/pendingUser.repository.js';
+import type { ResetPasswordTokenRepository } from '../repositories/resetPasswordToken.repository.js';
 
 import type { MailService } from './mail.service.js';
 import type { TokenService } from './refreshToken.service.js';

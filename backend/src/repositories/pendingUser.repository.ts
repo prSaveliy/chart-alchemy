@@ -1,8 +1,6 @@
 import type { PrismaClient } from '../generated/prisma/client.js';
 
-import type { PendingUserRepository as PendingUserRepositoryContract } from '../commons/interfaces/repositories/pendingUserRepository.interface.js';
-
-export class PendingUserRepository implements PendingUserRepositoryContract {
+export class PendingUserRepository {
   constructor(private readonly prisma: PrismaClient) {}
 
   findByEmail(email: string) {

@@ -1,11 +1,11 @@
 import { v4 } from 'uuid';
 
 import type {
-  AccountActivationTokenRepository,
   ActivationTokenOwner,
-} from '../commons/interfaces/repositories/accountActivationTokenRepository.interface.js';
-import type { UserRepository } from '../commons/interfaces/repositories/userRepository.interface.js';
-import type { PendingUserRepository } from '../commons/interfaces/repositories/pendingUserRepository.interface.js';
+  AccountActivationTokenRepository,
+} from '../repositories/accountActivationToken.repository.js';
+import type { UserRepository } from '../repositories/user.repository.js';
+import type { PendingUserRepository } from '../repositories/pendingUser.repository.js';
 
 export class ActivationTokenService {
   constructor(

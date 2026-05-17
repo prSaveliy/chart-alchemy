@@ -1,8 +1,8 @@
 import type { FastifyInstance } from 'fastify';
 
 import type { GoogleResponse } from '../commons/interfaces/oauth/googleResponse.interface.js';
-import type { UserRepository } from '../commons/interfaces/repositories/userRepository.interface.js';
-import type { ChartRepository } from '../commons/interfaces/repositories/chartRepository.interface.js';
+import type { UserRepository } from '../repositories/user.repository.js';
+import type { ChartRepository } from '../repositories/chart.repository.js';
 
 import type { TokenService } from './refreshToken.service.js';
 
