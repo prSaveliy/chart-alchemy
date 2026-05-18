@@ -34,8 +34,8 @@ npm install
 
 Each package has an example env file listing the required variables:
 
-- `backend/.env.example` — server config (database, JWT, SMTP, OAuth credentials, AI API key)
-- `backend/.env.test.example` — test database config
+- `backend/.env.example` — server config (Postgres, Redis, JWT, SMTP, OAuth credentials, AI API key)
+- `backend/.env.test.example` — test Postgres/Redis config
 - `frontend/.env.example` — API URLs for the Vite dev server
 
 Create the env files before running the app:
@@ -52,7 +52,7 @@ Then fill in the values before running.
 
 **Option 1 — npm (recommended for development)**
 
-Start Postgres and run backend migrations:
+Start Postgres and Redis, then run backend migrations:
 
 ```bash
 npm run db:up
@@ -69,7 +69,7 @@ The backend API will be available at `http://localhost:3000`.
 
 ### Running tests
 
-Start the test database and make sure `backend/.env.test` points to it:
+Start the local Postgres and Redis containers and make sure `backend/.env.test` points to them:
 
 ```bash
 npm run db:up
@@ -80,7 +80,7 @@ Tests run against the backend workspace only.
 
 **Option 2 — Docker Compose**
 
-Starts the full stack (database, backend, frontend, and Adminer) in containers:
+Starts the full stack (database, Redis, backend, frontend, and Adminer) in containers:
 
 ```bash
 docker compose up -d
