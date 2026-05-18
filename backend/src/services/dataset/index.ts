@@ -128,18 +128,6 @@ export class DatasetService {
     yField: string | undefined,
   ): Promise<DatasetGenerationResult> {
     const fileHash = this.getFileHash(fileBuffer);
-    const chartCacheKey = this.buildChartCacheKey(
-      fileHash,
-      mimetype,
-      chartType,
-      xField,
-      yField,
-    );
-    // const cachedResult = await this.getCachedResult(chartCacheKey);
-    // if (cachedResult) {
-    //   await this.chartService.save(cachedResult.chartData, token);
-    //   return cachedResult;
-    // }
 
     const parsedDatasetCacheKey = this.buildParsedDatasetCacheKey(fileHash);
     let dataset = await this.getCachedParsedDataset(parsedDatasetCacheKey);
@@ -193,6 +181,14 @@ export class DatasetService {
       },
     };
 
+    const chartCacheKey = this.buildChartCacheKey(
+      fileHash,
+      mimetype,
+      chartType,
+      resolved.xField,
+      resolved.yField,
+    );
+
     await this.chartService.save(chartData, token);
     await this.cacheResult(chartCacheKey, result);
 
@@ -202,13 +198,33 @@ export class DatasetService {
   async regenerate(
     token: string,
     chartType: DatasetChartType,
-    xField: string,
-    yField: string,
+    xField: string | undefined,
+    yField: string | undefined,
   ): Promise<DatasetGenerationResult> {
     const chart = await this.chartRepository.findByToken(token);
 
     if (!chart?.datasetSource) {
       throw this.app.httpErrors.notFound('Dataset source not found');
+    }
+
+    const chartCacheKey = this.buildChartCacheKey(
+      chart.datasetSource.fileHash,
+      chart.datasetSource.mimeType,
+      chartType,
+      xField,
+      yField,
+    );
+    const cachedResult = await this.getCachedResult(chartCacheKey);
+    if (cachedResult) {
+      await this.chartRepository.assignDatasetSource(
+        token,
+        chart.datasetSource.id,
+        cachedResult.selectedType,
+        cachedResult.selectedXField,
+        cachedResult.selectedYField,
+      );
+      await this.chartService.save(cachedResult.chartData, token);
+      return cachedResult;
     }
 
     const dataset = {
@@ -253,6 +269,15 @@ export class DatasetService {
       resolved.yField,
     );
     await this.chartService.save(chartData, token);
+
+    const resolvedChartCacheKey = this.buildChartCacheKey(
+      chart.datasetSource.fileHash,
+      chart.datasetSource.mimeType,
+      chartType,
+      resolved.xField,
+      resolved.yField,
+    );
+    await this.cacheResult(resolvedChartCacheKey, result);
 
     return result;
   }
