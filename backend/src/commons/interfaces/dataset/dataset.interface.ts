@@ -35,3 +35,5 @@ export interface DatasetGenerationResult {
   truncated: boolean;
   datasetInfo: DatasetSourceInfo;
 }
+
+export type CachedDatasetGenerationResult = Omit<DatasetGenerationResult, 'datasetInfo'>;

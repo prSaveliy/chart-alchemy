@@ -7,6 +7,7 @@ import type { CacheService } from '../../commons/interfaces/services/cacheServic
 import type {
   DatasetChartType,
   DatasetGenerationResult,
+  CachedDatasetGenerationResult,
   ParsedDataset,
 } from '../../commons/interfaces/dataset/dataset.interface.js';
 import type { ChartRepository } from '../../repositories/chart.repository.js';
@@ -55,12 +56,12 @@ export class DatasetService {
 
   private async getCachedResult(
     key: string,
-  ): Promise<DatasetGenerationResult | null> {
+  ): Promise<CachedDatasetGenerationResult | null> {
     try {
       const cached = await this.cacheService.get(key);
       if (!cached) return null;
 
-      const result = JSON.parse(cached) as DatasetGenerationResult;
+      const result = JSON.parse(cached) as CachedDatasetGenerationResult;
       return result;
     } catch (error) {
       this.app.log.warn({ err: error, key }, 'dataset chart cache read failed');
@@ -84,7 +85,7 @@ export class DatasetService {
 
   private async cacheResult(
     key: string,
-    result: DatasetGenerationResult,
+    result: CachedDatasetGenerationResult,
   ): Promise<void> {
     try {
       await this.cacheService.set(
@@ -148,7 +149,7 @@ export class DatasetService {
     );
     const chartData = { option };
 
-    const datasetSource = await this.chartRepository.createDatasetSource(
+    const datasetSource = await this.chartRepository.findOrCreateDatasetSource(
       filename,
       mimetype,
       fileBuffer.length,
@@ -167,13 +168,17 @@ export class DatasetService {
       resolved.yField,
     );
 
-    const result = {
+    const cacheData: CachedDatasetGenerationResult = {
       chartData,
       fields: dataset.fields,
       selectedType: chartType,
       selectedXField: resolved.xField,
       selectedYField: resolved.yField,
       truncated: dataset.truncated,
+    };
+
+    const result: DatasetGenerationResult = {
+      ...cacheData,
       datasetInfo: {
         fileName: datasetSource.fileName,
         mimeType: datasetSource.mimeType,
@@ -190,7 +195,7 @@ export class DatasetService {
     );
 
     await this.chartService.save(chartData, token);
-    await this.cacheResult(chartCacheKey, result);
+    await this.cacheResult(chartCacheKey, cacheData);
 
     return result;
   }
@@ -224,7 +229,15 @@ export class DatasetService {
         cachedResult.selectedYField,
       );
       await this.chartService.save(cachedResult.chartData, token);
-      return cachedResult;
+
+      return {
+        ...cachedResult,
+        datasetInfo: {
+          fileName: chart.datasetSource.fileName,
+          mimeType: chart.datasetSource.mimeType,
+          fileSize: chart.datasetSource.fileSize,
+        },
+      };
     }
 
     const dataset = {
@@ -247,13 +260,17 @@ export class DatasetService {
     );
     const chartData = { option };
 
-    const result = {
+    const cacheData: CachedDatasetGenerationResult = {
       chartData,
       fields: dataset.fields,
       selectedType: chartType,
       selectedXField: resolved.xField,
       selectedYField: resolved.yField,
       truncated: dataset.truncated,
+    };
+
+    const result: DatasetGenerationResult = {
+      ...cacheData,
       datasetInfo: {
         fileName: chart.datasetSource.fileName,
         mimeType: chart.datasetSource.mimeType,
@@ -277,7 +294,7 @@ export class DatasetService {
       resolved.xField,
       resolved.yField,
     );
-    await this.cacheResult(resolvedChartCacheKey, result);
+    await this.cacheResult(resolvedChartCacheKey, cacheData);
 
     return result;
   }

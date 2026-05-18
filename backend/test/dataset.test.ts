@@ -458,6 +458,39 @@ describe('dataset chart generation integration tests', () => {
 
       assert.equal(response.status, 400);
     });
+
+    test('links identical dataset uploads to the same DatasetSource', async () => {
+      const accessToken = await makeUser(app, 'ds-link-same@qwertyuiop1234.com');
+      const chartToken1 = await makeDatasetChart(app, accessToken);
+      const chartToken2 = await makeDatasetChart(app, accessToken);
+
+      await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken1}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', SIMPLE_CSV, { filename: 'identical.csv', contentType: 'text/csv' })
+        .field('chartType', 'bar');
+
+      await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken2}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', SIMPLE_CSV, { filename: 'identical.csv', contentType: 'text/csv' })
+        .field('chartType', 'line');
+
+      const chart1 = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken1 },
+      });
+      const chart2 = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken2 },
+      });
+
+      assert.ok(chart1.datasetSourceId);
+      assert.ok(chart2.datasetSourceId);
+      assert.equal(
+        chart1.datasetSourceId,
+        chart2.datasetSourceId,
+        'both charts should link to the same DatasetSource to avoid duplicates'
+      );
+    });
   });
 
   describe('POST /chart/regenerate-from-dataset/:token', () => {
@@ -502,6 +535,60 @@ describe('dataset chart generation integration tests', () => {
       assert.ok(chart.datasetSource);
       assert.equal(chart.datasetSource.fileName, 'data.csv');
       assert.equal(chart.datasetSource.mimeType, 'text/csv');
+    });
+
+    test('prevents metadata leakage on cache hit for identical datasets with different names', async () => {
+      const accessToken = await makeUser(app, 'regen-leak-meta@qwertyuiop1234.com');
+      const chartToken1 = await makeDatasetChart(app, accessToken);
+      const chartToken2 = await makeDatasetChart(app, accessToken);
+
+      // 1. Upload first file (fileA.csv)
+      const res1 = await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken1}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', SIMPLE_CSV, { filename: 'fileA.csv', contentType: 'text/csv' })
+        .field('chartType', 'bar');
+        
+      assert.equal(res1.status, 200);
+
+      // 2. Upload identical content but different filename (fileB.csv)
+      const res2 = await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken2}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', SIMPLE_CSV, { filename: 'fileB.csv', contentType: 'text/csv' })
+        .field('chartType', 'bar');
+        
+      assert.equal(res2.status, 200);
+
+      const chart1 = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken1 },
+      });
+      const chart2 = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken2 },
+      });
+
+      assert.ok(chart1.datasetSourceId);
+      assert.ok(chart2.datasetSourceId);
+      assert.notEqual(
+        chart1.datasetSourceId, 
+        chart2.datasetSourceId,
+        'Files with different metadata should create different DatasetSource records'
+      );
+
+      // 3. Regenerate FIRST chart (chartToken1).
+      // Even though the shared cache was overwritten by chart 2, chart 1 should
+      // still correctly receive its own metadata (fileA.csv) without pollution.
+      const regenRes1 = await request(app.server)
+        .post(`/chart/regenerate-from-dataset/${chartToken1}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'bar' });
+
+      assert.equal(regenRes1.status, 200);
+      assert.equal(
+        regenRes1.body.datasetInfo.fileName, 
+        'fileA.csv',
+        'Regenerated chart 1 should return fileA.csv metadata, not fileB.csv'
+      );
     });
   });
 });

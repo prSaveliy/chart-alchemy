@@ -91,7 +91,7 @@ export class ChartRepository {
     return result.count;
   }
 
-  createDatasetSource(
+  async findOrCreateDatasetSource(
     fileName: string,
     mimeType: string,
     fileSize: number,
@@ -101,18 +101,26 @@ export class ChartRepository {
     truncated: boolean,
     rowCount: number,
   ) {
-    return this.prisma.datasetSource.create({
-      data: {
-        fileName,
-        mimeType,
-        fileSize,
-        fileHash,
-        fields: fields as unknown as Prisma.InputJsonValue,
-        rows: rows as unknown as Prisma.InputJsonValue,
-        truncated,
-        rowCount,
-      },
+    let source = await this.prisma.datasetSource.findFirst({
+      where: { fileHash, fileName, mimeType, fileSize },
     });
+
+    if (!source) {
+      source = await this.prisma.datasetSource.create({
+        data: {
+          fileName,
+          mimeType,
+          fileSize,
+          fileHash,
+          fields: fields as unknown as Prisma.InputJsonValue,
+          rows: rows as unknown as Prisma.InputJsonValue,
+          truncated,
+          rowCount,
+        },
+      });
+    }
+
+    return source;
   }
 
   assignDatasetSource(
