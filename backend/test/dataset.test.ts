@@ -591,4 +591,127 @@ describe('dataset chart generation integration tests', () => {
       );
     });
   });
+
+  describe('DatasetSource Lifecycle and Cleanup', () => {
+    const UNIQUE_CSV_1 = csvBuffer([['unique', 'val'], ['A', '1']]);
+    const UNIQUE_CSV_2 = csvBuffer([['unique', 'val'], ['B', '2']]);
+    const UNIQUE_CSV_3 = csvBuffer([['unique', 'val'], ['C', '3']]);
+
+    test('deletes orphaned DatasetSource when a chart is deleted', async () => {
+      const accessToken = await makeUser(app, 'cleanup-del@qwertyuiop1234.com');
+      const chartToken = await makeDatasetChart(app, accessToken);
+
+      await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', UNIQUE_CSV_1, { filename: 'data.csv', contentType: 'text/csv' })
+        .field('chartType', 'bar');
+
+      const chartBefore = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      assert.ok(chartBefore.datasetSourceId);
+      
+      const sourceBefore = await (app as any).prisma.datasetSource.findUnique({
+        where: { id: chartBefore.datasetSourceId },
+      });
+      assert.ok(sourceBefore);
+
+      // Delete the chart using chart delete endpoint
+      const delResponse = await request(app.server)
+        .delete(`/chart/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+      
+      assert.equal(delResponse.status, 204);
+
+      const sourceAfter = await (app as any).prisma.datasetSource.findUnique({
+        where: { id: chartBefore.datasetSourceId },
+      });
+      assert.equal(sourceAfter, null, 'DatasetSource should be deleted when its last chart is deleted');
+    });
+
+    test('deletes orphaned DatasetSource when a chart dataset is overwritten', async () => {
+      const accessToken = await makeUser(app, 'cleanup-overwrite@qwertyuiop1234.com');
+      const chartToken = await makeDatasetChart(app, accessToken);
+
+      // Upload first file
+      await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', UNIQUE_CSV_2, { filename: 'first.csv', contentType: 'text/csv' })
+        .field('chartType', 'bar');
+
+      const chartFirst = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      const firstSourceId = chartFirst.datasetSourceId;
+      assert.ok(firstSourceId);
+
+      // Upload second file
+      await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', SCATTER_CSV, { filename: 'second.csv', contentType: 'text/csv' })
+        .field('chartType', 'scatter');
+
+      const chartSecond = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      const secondSourceId = chartSecond.datasetSourceId;
+      assert.ok(secondSourceId);
+      assert.notEqual(firstSourceId, secondSourceId);
+
+      const firstSourceAfter = await (app as any).prisma.datasetSource.findUnique({
+        where: { id: firstSourceId },
+      });
+      assert.equal(firstSourceAfter, null, 'The first DatasetSource should be deleted because it is no longer referenced');
+
+      const secondSourceAfter = await (app as any).prisma.datasetSource.findUnique({
+        where: { id: secondSourceId },
+      });
+      assert.ok(secondSourceAfter, 'The second DatasetSource should exist');
+    });
+
+    test('does not delete DatasetSource if another chart still references it', async () => {
+      const accessToken = await makeUser(app, 'cleanup-keep@qwertyuiop1234.com');
+      const chartToken1 = await makeDatasetChart(app, accessToken);
+      const chartToken2 = await makeDatasetChart(app, accessToken);
+
+      // Upload same file to both charts (links to same DatasetSource)
+      await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken1}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', UNIQUE_CSV_3, { filename: 'shared.csv', contentType: 'text/csv' })
+        .field('chartType', 'bar');
+
+      await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken2}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', UNIQUE_CSV_3, { filename: 'shared.csv', contentType: 'text/csv' })
+        .field('chartType', 'line');
+
+      const chart1 = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken1 },
+      });
+      const chart2 = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken2 },
+      });
+      
+      assert.equal(chart1.datasetSourceId, chart2.datasetSourceId);
+      const sharedSourceId = chart1.datasetSourceId;
+
+      // Overwrite chart1's dataset
+      await request(app.server)
+        .post(`/chart/upload-and-generate-from-dataset/${chartToken1}`)
+        .set('Authorization', `Bearer ${accessToken}`)
+        .attach('file', SCATTER_CSV, { filename: 'new.csv', contentType: 'text/csv' })
+        .field('chartType', 'scatter');
+
+      // The original dataset source should still exist because chart2 still references it
+      const sharedSourceAfter = await (app as any).prisma.datasetSource.findUnique({
+        where: { id: sharedSourceId },
+      });
+      assert.ok(sharedSourceAfter, 'The shared DatasetSource should not be deleted because chart2 still references it');
+    });
+  });
 });

@@ -76,10 +76,29 @@ export class ChartRepository {
     });
   }
 
-  deleteByToken(token: string) {
-    return this.prisma.chart.delete({
+  async deleteByToken(token: string) {
+    const chart = await this.prisma.chart.findUnique({
+      where: { token },
+      select: { datasetSourceId: true },
+    });
+
+    const deletedChart = await this.prisma.chart.delete({
       where: { token },
     });
+
+    if (chart?.datasetSourceId) {
+      const remainingChartsCount = await this.prisma.chart.count({
+        where: { datasetSourceId: chart.datasetSourceId },
+      });
+
+      if (remainingChartsCount === 0) {
+        await this.prisma.datasetSource.delete({
+          where: { id: chart.datasetSourceId },
+        });
+      }
+    }
+
+    return deletedChart;
   }
 
   async reassignUser(fromUserId: number, toUserId: number) {
@@ -123,14 +142,19 @@ export class ChartRepository {
     return source;
   }
 
-  assignDatasetSource(
+  async assignDatasetSource(
     token: string,
     datasetSourceId: number,
     selectedType: string,
     selectedXField: string,
     selectedYField: string,
   ) {
-    return this.prisma.chart.update({
+    const chart = await this.prisma.chart.findUnique({
+      where: { token },
+      select: { datasetSourceId: true },
+    });
+
+    const updatedChart = await this.prisma.chart.update({
       where: { token },
       data: {
         datasetSourceId,
@@ -139,5 +163,19 @@ export class ChartRepository {
         selectedYField,
       },
     });
+
+    if (chart?.datasetSourceId && chart.datasetSourceId !== datasetSourceId) {
+      const remainingChartsCount = await this.prisma.chart.count({
+        where: { datasetSourceId: chart.datasetSourceId },
+      });
+
+      if (remainingChartsCount === 0) {
+        await this.prisma.datasetSource.delete({
+          where: { id: chart.datasetSourceId },
+        });
+      }
+    }
+
+    return updatedChart;
   }
 }
