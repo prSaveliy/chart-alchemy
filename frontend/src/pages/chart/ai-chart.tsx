@@ -302,6 +302,9 @@ export const AIChart = ({
                     </button>
                   ))}
                 </div>
+                {switchError && (
+                  <span className="text-xs text-red-500">{switchError}</span>
+                )}
               </div>
             )}
 
