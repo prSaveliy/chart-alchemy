@@ -76,6 +76,8 @@ export const AIChart = ({
   const [useMemory, setUseMemory] = useState(false);
   const [thinkingMode, setThinkingMode] = useState(false);
   const retriedRef = useRef(false);
+  const retriedSwitchRef = useRef(false);
+
 
   const mergedOption = useMemo(
     () =>
@@ -127,14 +129,26 @@ export const AIChart = ({
   const switchVersion = async (versionId: number) => {
     if (versionId === activeVersionId) return;
     setSwitching(true);
-    setSwitchError("");
+
     const result = await chartService.switchActiveVersion(token!, versionId);
-    if (!result.errorMessage && result.data.chartData) {
-      setChartData(result.data.chartData);
-      setActiveVersionId(versionId);
-    } else if (result.errorMessage) {
-      setSwitchError(result.errorMessage);
+
+    if (result.errorMessage) {
+      if (!retriedSwitchRef.current && result.statusCode === 401) {
+        await handleUnauthorized(retriedSwitchRef, navigate, () =>
+          switchVersion(versionId)
+        );
+        return;
+      } else {
+        setSwitchError(result.errorMessage);
+      }
+    } else {
+      if (result.data.chartData) {
+        setSwitchError("");
+        setChartData(result.data.chartData);
+        setActiveVersionId(versionId);
+      }
     }
+
     setSwitching(false);
   };
 
