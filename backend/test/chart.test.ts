@@ -944,6 +944,200 @@ describe('chart integration tests', () => {
 
       assert.equal(response.status, 401);
     });
+
+    test('returns empty aiVersions and null activeAiVersionId for a new ai chart', async () => {
+      const accessToken = await makeUser(app, 'hist-empty@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'ai' })
+        .set('Content-Type', 'application/json');
+
+      const response = await request(app.server)
+        .get(`/chart/${initRes.body.token}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(response.status, 200);
+      assert.deepEqual(response.body.aiVersions, []);
+      assert.equal(response.body.activeAiVersionId, null);
+    });
+
+    test('creates one AiChartVersion per generate call and returns versionId', async () => {
+      const accessToken = await makeUser(app, 'hist-create@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'ai' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+      const genPayload = { token: chartToken, memory: null, thinkingMode: 'false' };
+
+      const gen1 = await request(app.server)
+        .post('/chart/generate')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ ...genPayload, prompt: 'First chart' })
+        .set('Content-Type', 'application/json');
+
+      const gen2 = await request(app.server)
+        .post('/chart/generate')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ ...genPayload, prompt: 'Second chart' })
+        .set('Content-Type', 'application/json');
+
+      assert.ok(gen1.body.versionId, 'first generate should return a versionId');
+      assert.ok(gen2.body.versionId, 'second generate should return a versionId');
+      assert.notEqual(gen1.body.versionId, gen2.body.versionId, 'each generate should produce a unique versionId');
+
+      const count = await (app as any).prisma.aiChartVersion.count({
+        where: { chart: { token: chartToken } },
+      });
+      assert.equal(count, 2);
+    });
+
+    test('getByToken returns all aiVersions with correct shape and prompts', async () => {
+      const accessToken = await makeUser(app, 'hist-shape@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'ai' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+
+      await request(app.server)
+        .post('/chart/generate')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ prompt: 'Version A', token: chartToken, memory: null, thinkingMode: 'false' })
+        .set('Content-Type', 'application/json');
+
+      await request(app.server)
+        .post('/chart/generate')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ prompt: 'Version B', token: chartToken, memory: null, thinkingMode: 'false' })
+        .set('Content-Type', 'application/json');
+
+      const response = await request(app.server)
+        .get(`/chart/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(response.status, 200);
+      const versions = response.body.aiVersions as any[];
+      assert.equal(versions.length, 2);
+
+      const prompts = versions.map((v: any) => v.prompt);
+      assert.ok(prompts.includes('Version A'));
+      assert.ok(prompts.includes('Version B'));
+
+      for (const v of versions) {
+        assert.ok('id' in v, 'each version should have an id');
+        assert.ok('prompt' in v, 'each version should have a prompt');
+        assert.ok('config' in v, 'each version should have a config');
+        assert.ok('createdAt' in v, 'each version should have a createdAt');
+      }
+    });
+
+    test('activeAiVersionId updates to the latest generated version', async () => {
+      const accessToken = await makeUser(app, 'hist-active@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'ai' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+
+      const gen1 = await request(app.server)
+        .post('/chart/generate')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ prompt: 'V1', token: chartToken, memory: null, thinkingMode: 'false' })
+        .set('Content-Type', 'application/json');
+
+      const afterFirst = await request(app.server)
+        .get(`/chart/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(afterFirst.body.activeAiVersionId, gen1.body.versionId);
+
+      const gen2 = await request(app.server)
+        .post('/chart/generate')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ prompt: 'V2', token: chartToken, memory: null, thinkingMode: 'false' })
+        .set('Content-Type', 'application/json');
+
+      const afterSecond = await request(app.server)
+        .get(`/chart/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(afterSecond.body.activeAiVersionId, gen2.body.versionId);
+    });
+
+    test('each version config matches the generated chartData', async () => {
+      const accessToken = await makeUser(app, 'hist-config@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'ai' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+
+      const genRes = await request(app.server)
+        .post('/chart/generate')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ prompt: 'Config check', token: chartToken, memory: null, thinkingMode: 'false' })
+        .set('Content-Type', 'application/json');
+
+      const response = await request(app.server)
+        .get(`/chart/${chartToken}`)
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      const version = response.body.aiVersions.find((v: any) => v.id === genRes.body.versionId);
+      assert.ok(version, 'version should be in the aiVersions list');
+      assert.deepEqual(version.config, genRes.body.chartData);
+    });
+
+    test('prunes oldest versions when count exceeds 10', async () => {
+      const accessToken = await makeUser(app, 'hist-prune@qwertyuiop1234.com');
+
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'ai' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token;
+      const versionIds: number[] = [];
+
+      for (let i = 1; i <= 12; i++) {
+        const gen = await request(app.server)
+          .post('/chart/generate')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ prompt: `Version ${i}`, token: chartToken, memory: null, thinkingMode: 'false' })
+          .set('Content-Type', 'application/json');
+        versionIds.push(gen.body.versionId as number);
+      }
+
+      const count = await (app as any).prisma.aiChartVersion.count({
+        where: { chart: { token: chartToken } },
+      });
+      assert.equal(count, 10, 'should retain at most 10 versions');
+
+      // The 2 oldest (first two generated) should have been pruned
+      const pruned1 = await (app as any).prisma.aiChartVersion.findUnique({ where: { id: versionIds[0] } });
+      const pruned2 = await (app as any).prisma.aiChartVersion.findUnique({ where: { id: versionIds[1] } });
+      assert.equal(pruned1, null, 'oldest version should be deleted');
+      assert.equal(pruned2, null, 'second oldest version should be deleted');
+
+      // The most recent 10 should still exist
+      const newest = await (app as any).prisma.aiChartVersion.findUnique({ where: { id: versionIds[11] } });
+      assert.ok(newest, 'most recent version should still exist');
+    });
   });
 
   describe('DELETE /chart/:token', () => {
@@ -1006,6 +1200,99 @@ describe('chart integration tests', () => {
       const response = await request(app.server).delete('/chart/ai-some-token');
 
       assert.equal(response.status, 401);
+    });
+  });
+
+  describe('PATCH /chart/switch-active-version', () => {
+    // Helper: init a chart, generate two versions, return token + version ids
+    const setupChartWithVersions = async (accessToken: string) => {
+      const initRes = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'ai' })
+        .set('Content-Type', 'application/json');
+
+      const chartToken = initRes.body.token as string;
+
+      const gen1 = await request(app.server)
+        .post('/chart/generate')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ prompt: 'Version 1', token: chartToken, memory: null, thinkingMode: 'false' })
+        .set('Content-Type', 'application/json');
+
+      const gen2 = await request(app.server)
+        .post('/chart/generate')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ prompt: 'Version 2', token: chartToken, memory: null, thinkingMode: 'false' })
+        .set('Content-Type', 'application/json');
+
+      return {
+        chartToken,
+        versionId1: gen1.body.versionId as number,
+        versionId2: gen2.body.versionId as number,
+      };
+    };
+
+    test('updates the active chart version in DB and returns chartData', async () => {
+      const accessToken = await makeUser(app, 'switch-ok@qwertyuiop1234.com');
+      const { chartToken, versionId1 } = await setupChartWithVersions(accessToken);
+
+      const response = await request(app.server)
+        .patch('/chart/switch-active-version')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ token: chartToken, versionId: versionId1 })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 200);
+      assert.ok(response.body.chartData, 'response should include chartData');
+
+      const chart = await (app as any).prisma.chart.findUnique({
+        where: { token: chartToken },
+      });
+      assert.equal(chart.activeAiVersionId, versionId1);
+    });
+
+    test('returned chartData matches the config of the switched-to version', async () => {
+      const accessToken = await makeUser(app, 'switch-config@qwertyuiop1234.com');
+      const { chartToken, versionId1 } = await setupChartWithVersions(accessToken);
+
+      const version = await (app as any).prisma.aiChartVersion.findUnique({
+        where: { id: versionId1 },
+      });
+
+      const response = await request(app.server)
+        .patch('/chart/switch-active-version')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ token: chartToken, versionId: versionId1 })
+        .set('Content-Type', 'application/json');
+
+      assert.deepEqual(response.body.chartData, version.config);
+    });
+
+    test('returns 404 for a versionId that does not belong to the chart', async () => {
+      const accessToken = await makeUser(app, 'switch-badversion@qwertyuiop1234.com');
+      const { chartToken } = await setupChartWithVersions(accessToken);
+
+      const response = await request(app.server)
+        .patch('/chart/switch-active-version')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ token: chartToken, versionId: 999999 })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 404);
+    });
+
+    test('returns 400 when versionId is not a positive integer', async () => {
+      const accessToken = await makeUser(app, 'switch-bad-vid@qwertyuiop1234.com');
+      const { chartToken } = await setupChartWithVersions(accessToken);
+
+      const response = await request(app.server)
+        .patch('/chart/switch-active-version')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ token: chartToken, versionId: -5 })
+        .set('Content-Type', 'application/json');
+
+      assert.equal(response.status, 400);
     });
   });
 });
