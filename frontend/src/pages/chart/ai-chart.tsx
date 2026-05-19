@@ -49,7 +49,12 @@ export const AIChart = ({
 }: {
   initialData: ChartConfig | null;
   initialName?: string;
-  initialVersions?: any[];
+  initialVersions?: {
+    id: number;
+    prompt: string | null;
+    config: ChartConfig | null;
+    createdAt: string;
+  }[];
   initialActiveVersionId?: number | null;
 }) => {
   const { token } = useParams();
@@ -58,7 +63,9 @@ export const AIChart = ({
   const [chartName, setChartName] = useState(initialName ?? "");
   const [savedName, setSavedName] = useState(initialName ?? "");
   const [awaiting, setAwaiting] = useState(false);
+  const [switching, setSwitching] = useState(false);
   const [fetchError, setFetchError] = useState("");
+  const [switchError, setSwitchError] = useState("");
   const [chartData, setChartData] = useState<ChartConfig | null>(
     initialData ?? null,
   );
@@ -119,13 +126,16 @@ export const AIChart = ({
 
   const switchVersion = async (versionId: number) => {
     if (versionId === activeVersionId) return;
-    setAwaiting(true);
+    setSwitching(true);
+    setSwitchError("");
     const result = await chartService.switchActiveVersion(token!, versionId);
     if (!result.errorMessage && result.data.chartData) {
       setChartData(result.data.chartData);
       setActiveVersionId(versionId);
+    } else if (result.errorMessage) {
+      setSwitchError(result.errorMessage);
     }
-    setAwaiting(false);
+    setSwitching(false);
   };
 
   const saveName = async () => {
@@ -135,30 +145,42 @@ export const AIChart = ({
     }
   };
 
-  const canSubmit = !!prompt.trim() && !awaiting;
+  const canSubmit = !!prompt.trim() && !awaiting && !switching;
 
   return (
     <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50/40">
       <Header2 userPicture={userPicture || defaultUserPicture} />
 
       <div className="flex flex-1">
-        
-        <div className="w-64 bg-white/50 border-r hidden md:flex flex-col shrink-0 p-4 z-10 backdrop-blur-sm">
-          <div className="flex items-center gap-2 mb-4 text-gray-700 font-semibold shrink-0">
+        <div className="w-72 bg-white/60 border-r hidden md:flex flex-col shrink-0 z-10 backdrop-blur-sm">
+          <div className="flex items-center gap-2 px-4 py-3.5 text-gray-700 font-semibold border-b bg-white/80 shrink-0">
             <Clock className="w-4 h-4" />
-            <h2>History</h2>
+            <h2 className="text-sm">History</h2>
+            {versions.length > 0 && (
+              <span className="ml-auto text-xs text-gray-400 font-normal">
+                {versions.length} version{versions.length !== 1 ? "s" : ""}
+              </span>
+            )}
           </div>
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-2 p-3 overflow-y-auto flex-1">
+            {switchError && (
+              <span className="text-xs text-red-500">{switchError}</span>
+            )}
+            {versions.length === 0 && (
+              <p className="text-xs text-gray-400 text-center mt-6 px-2">
+                No versions yet. Generate a chart to get started.
+              </p>
+            )}
             {versions.map((v) => (
               <button
                 key={v.id}
                 onClick={() => switchVersion(v.id)}
-                disabled={awaiting}
+                disabled={awaiting || switching}
                 className={`flex flex-col text-left p-3 rounded-xl border text-sm transition-all duration-200 cursor-pointer ${
                   v.id === activeVersionId
                     ? "border-blue-500 bg-blue-50/80 shadow-sm"
                     : "border-gray-200 bg-white hover:border-blue-300 hover:shadow-sm"
-                } ${awaiting ? "opacity-60 cursor-not-allowed" : ""}`}
+                } ${awaiting || switching ? "opacity-60 cursor-not-allowed" : ""}`}
               >
                 <span className="font-medium text-gray-800 line-clamp-2 w-full break-words">
                   {v.prompt || "Initial Generation"}
@@ -176,7 +198,6 @@ export const AIChart = ({
 
         <div className="flex flex-col flex-1 overflow-x-hidden">
           <div className="flex flex-col flex-1 items-center px-4 sm:px-6 lg:px-8 pb-4 pt-2 sm:pt-3 lg:pt-4 min-h-0">
-            
             <div className="flex w-full max-w-7xl flex-col mb-2 items-start shrink-0">
               <div className="flex items-center gap-2 w-full sm:w-auto">
                 <input
@@ -235,14 +256,14 @@ export const AIChart = ({
                   )
                 )}
               </div>
-              {awaiting && (
+              {(awaiting || switching) && (
                 <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/70 backdrop-blur-[1px] rounded-3xl pointer-events-none">
                   <Loader2
                     strokeWidth={1.5}
                     className="w-8 h-8 animate-spin text-gray-500"
                   />
                   <span className="mt-3 text-sm text-gray-500">
-                    Generating your chart...
+                    {switching ? "Loading version..." : "Generating your chart..."}
                   </span>
                 </div>
               )}
