@@ -244,6 +244,7 @@ export const AIChart = ({
                   <div className="h-full min-w-[640px] lg:min-w-0 w-full">
                     {/* @ts-expect-error - echarts-for-react typings are incompatible with React 19 */}
                     <ReactECharts
+                      key={activeVersionId ?? "initial"}
                       option={mergedOption}
                       style={{ height: "100%", width: "100%" }}
                       notMerge={true}
