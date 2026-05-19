@@ -39,6 +39,9 @@ export const Chart = () => {
   const [truncated, setTruncated] = useState(false);
   const [datasetInfo, setDatasetInfo] = useState<DatasetInfo | null>(null);
 
+  const [aiVersions, setAiVersions] = useState<any[]>([]);
+  const [activeAiVersionId, setActiveAiVersionId] = useState<number | null>(null);
+
   const kind = token ? parseChartKind(token) : null;
 
   useEffect(() => {
@@ -75,6 +78,9 @@ export const Chart = () => {
       setChartData(fetchResult.data.chartData);
       setChartName(fetchResult.data.chartName);
       setManualType(fetchResult.data.manualType ?? null);
+
+      setAiVersions(fetchResult.data.aiVersions ?? []);
+      setActiveAiVersionId(fetchResult.data.activeAiVersionId ?? null);
 
       setDatasetFields(fetchResult.data.datasetFields ?? []);
       setSelectedType(fetchResult.data.selectedType ?? null);
@@ -137,7 +143,14 @@ export const Chart = () => {
   if (verified) {
     switch (kind) {
       case "ai":
-        return <AIChart initialData={chartData} initialName={chartName} />;
+        return (
+          <AIChart
+            initialData={chartData}
+            initialName={chartName}
+            initialVersions={aiVersions}
+            initialActiveVersionId={activeAiVersionId}
+          />
+        );
       case "dataset":
         return (
           <DatasetChart

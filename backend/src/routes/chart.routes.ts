@@ -84,6 +84,14 @@ const chartRoutes = (chartController: ChartController) => {
       },
       chartController.delete.bind(chartController),
     );
+
+    fastify.patch(
+      '/switch-active-version',
+      {
+        onRequest: [fastify.auth, rateLimitByIp(30, 60 * 1000)],
+      },
+      chartController.switchActiveVersion.bind(chartController),
+    );
   };
 };
 

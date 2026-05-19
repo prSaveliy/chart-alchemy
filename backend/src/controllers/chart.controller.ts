@@ -9,6 +9,7 @@ import { chartGenerationRequestSchema } from '../commons/schemas/chartGeneration
 import { datasetGenerationRequestSchema } from '../commons/schemas/datasetGenerationRequest.schema.js';
 import { chartRenameRequestSchema } from '../commons/schemas/chartRenameRequest.schema.js';
 import { saveConfigRequestSchema } from '../commons/schemas/saveConfigRequestSchema.js';
+import { switchActiveVersionRequestSchema } from '../commons/schemas/switchActiveVersionRequest.schema.js';
 import { tokenSchema } from '../commons/schemas/token.schema.js';
 
 import { ChartService } from '../services/chart.service.js';
@@ -145,6 +146,16 @@ export class ChartController {
     );
     const userId = request.user.id;
     return await this.chartService.saveConfig(token, chartData, userId, manualType);
+  }
+
+  async switchActiveVersion(request: FastifyRequest) {
+    const { token, versionId } = validateRequest(
+      request,
+      switchActiveVersionRequestSchema,
+      'Invalid request body',
+    );
+    const userId = request.user.id;
+    return await this.chartService.switchActiveVersion(token, versionId, userId);
   }
 
   async uploadAndGenerateFromDataset(request: FastifyRequest) {

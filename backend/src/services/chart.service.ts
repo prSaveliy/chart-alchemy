@@ -55,9 +55,14 @@ export class ChartService {
         thinkingMode,
       );
 
-      await this.save(chartData, token);
+      const version = await this.chartRepository.addAiVersion(token, chartData, prompt);
+      if (version) {
+        await this.chartRepository.updateConfig(token, chartData, undefined, version.id);
+      } else {
+        await this.save(chartData, token);
+      }
 
-      return { chartData };
+      return { chartData, versionId: version?.id ?? null, prompt };
     } finally {
       await this.chartRepository.releaseGenerationLock(token);
     }
@@ -88,6 +93,8 @@ export class ChartService {
       chartData: chart?.config,
       chartName: chart?.name,
       manualType: chart?.manualType ?? null,
+      aiVersions: chart?.aiChartVersions ?? [],
+      activeAiVersionId: chart?.activeAiVersionId ?? null,
       datasetFields:
         (chart?.datasetSource?.fields as unknown as
           | DatasetField[]
@@ -121,5 +128,16 @@ export class ChartService {
     await this.verifyToken(token, userId);
 
     await this.chartRepository.updateConfig(token, chartData, manualType);
+  }
+
+  async switchActiveVersion(token: string, versionId: number, userId: number) {
+    await this.verifyToken(token, userId);
+    
+    const updated = await this.chartRepository.setActiveAiVersion(token, versionId);
+    if (!updated) {
+      throw this.app.httpErrors.notFound('Version not found');
+    }
+
+    return { chartData: updated.config };
   }
 }

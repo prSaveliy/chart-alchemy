@@ -95,6 +95,12 @@ class ChartService {
     );
   }
 
+  async switchActiveVersion(token: string, versionId: number) {
+    return await fetchClient.patch("chart/switch-active-version", {
+      token,
+      versionId,
+    });
+  }
 }
 
 export default new ChartService();

@@ -74,28 +74,33 @@ enum GenState {
 }
 
 model Chart {
-  id          Int @id @default(autoincrement())
-  name        String @db.VarChar(255) @default("Untitled chart")
-  token       String @unique
+  id                Int @id @default(autoincrement())
+  name              String @db.VarChar(255) @default("Untitled chart")
+  token             String @unique
 
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
-  config      Json @default("{}")
+  config            Json @default("{}")
 
-  genState    GenState @default(idle) 
-  manualType  String?
-
-  datasetSourceId Int?
-  datasetSource   DatasetSource? @relation(fields: [datasetSourceId], references: [id], onDelete: SetNull)
-
+  // ai specific
+  genState          GenState @default(idle)
+  aiChartVersions   AiChartVersion[]
+  activeAiVersionId Int?
+  
   // dataset specific
-  selectedType    String?
-  selectedXField  String?
-  selectedYField  String?
+  datasetSourceId   Int?
+  datasetSource     DatasetSource? @relation(fields: [datasetSourceId], references: [id], onDelete: SetNull)
 
-  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  userId      Int
+  selectedType      String?
+  selectedXField    String?
+  selectedYField    String?
+
+  // manual specific
+  manualType        String?
+
+  user              User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId            Int
 
   @@index([userId, updatedAt(sort: Desc)])
 }
@@ -113,4 +118,15 @@ model DatasetSource {
   createdAt   DateTime @default(now())
 
   charts      Chart[]
+}
+
+model AiChartVersion {
+  id        Int      @id @default(autoincrement())
+  chartId   Int
+  chart     Chart    @relation(fields: [chartId], references: [id], onDelete: Cascade)
+  config    Json
+  prompt    String?  @db.VarChar(5000)
+  createdAt DateTime @default(now())
+
+  @@index([chartId, createdAt(sort: Desc)])
 }
