@@ -263,11 +263,47 @@ export const AIChart = ({
                     className="w-8 h-8 animate-spin text-gray-500"
                   />
                   <span className="mt-3 text-sm text-gray-500">
-                    {switching ? "Loading version..." : "Generating your chart..."}
+                    {switching
+                      ? "Loading version..."
+                      : "Generating your chart..."}
                   </span>
                 </div>
               )}
             </div>
+
+            {/* Mobile version strip — hidden on md+ where sidebar is visible */}
+            {versions.length > 0 && (
+              <div className="md:hidden flex flex-col w-full max-w-7xl mt-3 shrink-0 gap-2">
+                <div className="flex items-center gap-1.5 text-gray-500">
+                  <Clock className="w-3.5 h-3.5" />
+                  <span className="text-xs font-semibold">History</span>
+                </div>
+                <div className="flex gap-2 overflow-x-auto pb-1 w-full scrollbar-none">
+                  {versions.map((v) => (
+                    <button
+                      key={v.id}
+                      onClick={() => switchVersion(v.id)}
+                      disabled={awaiting || switching}
+                      className={`flex flex-col shrink-0 text-left px-3.5 py-2.5 rounded-xl border transition-all duration-200 cursor-pointer w-36 h-16 ${
+                        v.id === activeVersionId
+                          ? "border-blue-500 bg-blue-50/80 shadow-sm"
+                          : "border-gray-200 bg-white hover:border-blue-300"
+                      } ${awaiting || switching ? "opacity-60 cursor-not-allowed" : ""}`}
+                    >
+                      <span className="font-medium text-gray-800 line-clamp-1 w-full text-xs leading-snug">
+                        {v.prompt || "Initial Generation"}
+                      </span>
+                      <span className="text-[11px] text-gray-400 mt-1 font-medium">
+                        {new Date(v.createdAt).toLocaleTimeString([], {
+                          hour: "2-digit",
+                          minute: "2-digit",
+                        })}
+                      </span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             <div className="flex w-full max-w-3xl mt-6 mb-3 shrink-0">
               <div className="flex flex-col w-full rounded-3xl border bg-white shadow-sm px-4 pt-3 pb-2.5 gap-2 transition-colors focus-within:border-gray-300 focus-within:shadow-md">
