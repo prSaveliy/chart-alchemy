@@ -23,6 +23,7 @@ const SYSTEM_INSTRUCTION = await readFile(
   'utf8',
 );
 const DEFAULT_GEMINI_MODEL = 'gemini-3-flash-preview';
+const budgetKey = 'billing:tokens:daily_pool';
 
 interface SafetySetting {
   category: HarmCategory;
@@ -39,25 +40,70 @@ export class GeminiService implements AIService {
   ): Promise<ChartConfig> {
     const promptText = this.buildPromptText(prompt, memory);
 
+    const currentPoolUsage = await this.app.redis.get(budgetKey);
+    if (
+      currentPoolUsage &&
+      Number(currentPoolUsage) >= this.app.config.GEMINI_DAILY_TOKEN_LIMIT
+    ) {
+      throw this.app.httpErrors.tooManyRequests(
+        'Service temporarily unavailable due to high volume. Please try again later.',
+      );
+    }
+
+    // Note: The model is intentionally hardcoded to 'gemini-3.1-pro' to count tokens
+    // under a worst-case scenario. This represents the most expensive billing model,
+    // ensuring the token limit budget aligns with the actual financial limit of the application.
+    const tokenInfo = await this.app.gemini.models.countTokens({
+      model: 'gemini-3.1-pro-preview',
+      contents: promptText,
+    });
+
+    const worstCaseCost =
+      tokenInfo.totalTokens! + this.app.config.GEMINI_MAX_OUTPUT_TOKENS;
+    const totalProjected = await this.app.redis.incrby(
+      budgetKey,
+      worstCaseCost,
+    );
+
+    await this.app.redis.expire(budgetKey, 86400, 'NX');
+
+    if (totalProjected > this.app.config.GEMINI_DAILY_TOKEN_LIMIT) {
+      await this.app.redis.decrby(budgetKey, worstCaseCost);
+      throw this.app.httpErrors.tooManyRequests(
+        'Service temporarily unavailable due to high volume. Please try again later.',
+      );
+    }
+
     const [thinkingModel, standardModel] = this.getModels();
     const model = thinkingMode ? thinkingModel : standardModel;
 
     const safetySettings = this.buildSafetySettings();
 
-    const response = await this.requestAPI(model, safetySettings, promptText);
+    let actualTokensUsed: number | null = null;
+    try {
+      const response = await this.requestAPI(model, safetySettings, promptText);
+      actualTokensUsed = response.usageMetadata?.totalTokenCount ?? null;
 
-    await this.validateResponse(response);
+      const raw = response.text ?? '';
+      const cleaned = raw.replace(/```json|```/g, '').trim();
 
-    const raw = response.text ?? '';
-    const cleaned = raw.replace(/```json|```/g, '').trim();
+      await this.log('geminiResponse.json', cleaned);
+      await this.log(
+        'metadata.txt',
+        JSON.stringify(response.usageMetadata ?? null, null, 2),
+      );
 
-    const chartData = this.validateChartConfig(cleaned);
+      await this.validateResponse(response);
 
-    const usage = response.usageMetadata;
-    await this.log('geminiResponse.json', cleaned);
-    await this.log('metadata.txt', JSON.stringify(usage ?? null, null, 2));
+      const chartData = this.validateChartConfig(cleaned);
 
-    return chartData;
+      return chartData;
+    } finally {
+      const overestimationRefund = worstCaseCost - (actualTokensUsed ?? 0);
+      if (overestimationRefund > 0) {
+        await this.app.redis.decrby(budgetKey, overestimationRefund);
+      }
+    }
   }
 
   private buildPromptText(
@@ -128,6 +174,7 @@ export class GeminiService implements AIService {
           systemInstruction: SYSTEM_INSTRUCTION,
           responseMimeType: 'application/json',
           safetySettings: safetySettings,
+          maxOutputTokens: this.app.config.GEMINI_MAX_OUTPUT_TOKENS,
         },
         contents: [
           {

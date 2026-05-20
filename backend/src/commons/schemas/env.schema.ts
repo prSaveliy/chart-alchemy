@@ -64,6 +64,14 @@ export const envSchema = {
     GEMINI_MODELS: {
       type: 'string',
     },
+    GEMINI_DAILY_TOKEN_LIMIT: {
+      type: 'number',
+      default: 3_000_000,
+    },
+    GEMINI_MAX_OUTPUT_TOKENS: {
+      type: 'number',
+      default: 50_000,
+    },
     GOOGLE_CLOUD_PROJECT: {
       type: 'string',
     },
