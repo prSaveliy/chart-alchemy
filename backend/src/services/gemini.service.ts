@@ -97,18 +97,14 @@ export class GeminiService implements AIService {
       Input tokens are calculated for the most expensive model
       to account for worst-case scenario
     */
-    const userInputTokenInfo = await this.app.gemini.models.countTokens({
+    const tokenInfo = await this.app.gemini.models.countTokens({
       model: thinkingModel,
       contents: promptText,
+      config: {
+        systemInstruction: SYSTEM_INSTRUCTION,
+      },
     });
-    const systemInstructionInputTokenInfo =
-      await this.app.gemini.models.countTokens({
-        model: thinkingModel,
-        contents: SYSTEM_INSTRUCTION,
-      });
-    const inputTokens =
-      userInputTokenInfo.totalTokens! +
-      systemInstructionInputTokenInfo.totalTokens!;
+    const inputTokens = tokenInfo.totalTokens ?? 0;
 
     const worstCaseCost =
       inputTokens + this.app.config.GEMINI_MAX_OUTPUT_TOKENS;
