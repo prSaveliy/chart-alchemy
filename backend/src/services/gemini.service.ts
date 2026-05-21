@@ -24,7 +24,7 @@ const SYSTEM_INSTRUCTION = await readFile(
   'utf8',
 );
 const DEFAULT_GEMINI_MODEL = 'gemini-3-flash-preview';
-const budgetKey = 'billing:tokens:daily_pool';
+const BUDGET_KEY = 'billing:tokens:daily_pool';
 
 interface SafetySetting {
   category: HarmCategory;
@@ -78,7 +78,7 @@ export class GeminiService implements AIService {
   }
 
   private async checkDailyLimit(): Promise<void> {
-    const currentPoolUsage = await this.cacheService.get(budgetKey);
+    const currentPoolUsage = await this.cacheService.get(BUDGET_KEY);
     if (
       currentPoolUsage &&
       Number(currentPoolUsage) >= this.app.config.GEMINI_DAILY_TOKEN_LIMIT
@@ -97,22 +97,30 @@ export class GeminiService implements AIService {
       Input tokens are calculated for the most expensive model
       to account for worst-case scenario
     */
-    const tokenInfo = await this.app.gemini.models.countTokens({
+    const userInputTokenInfo = await this.app.gemini.models.countTokens({
       model: thinkingModel,
       contents: promptText,
     });
+    const systemInstructionInputTokenInfo =
+      await this.app.gemini.models.countTokens({
+        model: thinkingModel,
+        contents: SYSTEM_INSTRUCTION,
+      });
+    const inputTokens =
+      userInputTokenInfo.totalTokens! +
+      systemInstructionInputTokenInfo.totalTokens!;
 
     const worstCaseCost =
-      tokenInfo.totalTokens! + this.app.config.GEMINI_MAX_OUTPUT_TOKENS;
+      inputTokens + this.app.config.GEMINI_MAX_OUTPUT_TOKENS;
     const totalProjected = await this.cacheService.incrby(
-      budgetKey,
+      BUDGET_KEY,
       worstCaseCost,
     );
 
-    await this.cacheService.expire(budgetKey, 86400, 'NX');
+    await this.cacheService.expire(BUDGET_KEY, 86400, 'NX');
 
     if (totalProjected > this.app.config.GEMINI_DAILY_TOKEN_LIMIT) {
-      await this.cacheService.decrby(budgetKey, worstCaseCost);
+      await this.cacheService.decrby(BUDGET_KEY, worstCaseCost);
       throw this.app.httpErrors.tooManyRequests(
         'Service temporarily unavailable due to high volume. Please try again later.',
       );
@@ -127,7 +135,7 @@ export class GeminiService implements AIService {
   ): Promise<void> {
     const overestimationRefund = worstCaseCost - (actualTokensUsed ?? 0);
     if (overestimationRefund > 0) {
-      await this.cacheService.decrby(budgetKey, overestimationRefund);
+      await this.cacheService.decrby(BUDGET_KEY, overestimationRefund);
     }
   }
 
