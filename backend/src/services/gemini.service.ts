@@ -50,11 +50,14 @@ export class GeminiService implements AIService {
       );
     }
 
-    // Note: The model is intentionally hardcoded to 'gemini-3.1-pro' to count tokens
-    // under a worst-case scenario. This represents the most expensive billing model,
-    // ensuring the token limit budget aligns with the actual financial limit of the application.
+    const [thinkingModel, standardModel] = this.getModels();
+
+    /*
+      Input tokens are calculated for the most expensive model
+      to account for worst-case scenario
+    */
     const tokenInfo = await this.app.gemini.models.countTokens({
-      model: 'gemini-3.1-pro-preview',
+      model: thinkingModel,
       contents: promptText,
     });
 
@@ -74,9 +77,7 @@ export class GeminiService implements AIService {
       );
     }
 
-    const [thinkingModel, standardModel] = this.getModels();
     const model = thinkingMode ? thinkingModel : standardModel;
-
     const safetySettings = this.buildSafetySettings();
 
     let actualTokensUsed: number | null = null;
