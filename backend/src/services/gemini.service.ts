@@ -264,6 +264,7 @@ export class GeminiService implements AIService {
   }
 
   private async log(filepath: string, payload: string): Promise<void> {
+    if (process.env.NODE_ENV === 'production') return;
     try {
       await writeFile(`${cwd}/${filepath}`, payload, 'utf8');
     } catch (error) {
