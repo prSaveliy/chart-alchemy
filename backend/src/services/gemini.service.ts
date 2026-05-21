@@ -141,9 +141,9 @@ export class GeminiService implements AIService {
   ): string {
     let promptText = '';
     if (memory !== null && Object.keys(memory).length !== 0) {
-      promptText += `CURRENT_CHART_CONFIG: ${JSON.stringify(memory)}\n\n`;
+      promptText += `<CURRENT_CHART_CONFIG>\n${JSON.stringify(memory)}\n</CURRENT_CHART_CONFIG>\n\n`;
     }
-    promptText += `USER_REQUEST: ${userPrompt}`;
+    promptText += `<USER_REQUEST>\n${userPrompt}\n</USER_REQUEST>`;
 
     return promptText;
   }
