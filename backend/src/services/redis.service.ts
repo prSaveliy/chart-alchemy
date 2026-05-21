@@ -20,4 +20,23 @@ export class RedisService implements CacheService {
       await this.redis.set(key, value);
     }
   }
+
+  async incrby(key: string, value: number): Promise<number> {
+    return await this.redis.incrby(key, value);
+  }
+
+  async decrby(key: string, value: number): Promise<number> {
+    return await this.redis.decrby(key, value);
+  }
+
+  async expire(
+    key: string,
+    seconds: number,
+    flag?: 'NX' | 'XX' | 'GT' | 'LT',
+  ): Promise<number> {
+    if (flag) {
+      return await (this.redis as any).expire(key, seconds, flag);
+    }
+    return await this.redis.expire(key, seconds);
+  }
 }

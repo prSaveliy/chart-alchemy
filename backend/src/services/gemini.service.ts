@@ -11,6 +11,7 @@ import {
 } from '@google/genai';
 
 import type { AIService } from '../commons/interfaces/services/AIService.interface.js';
+import type { CacheService } from '../commons/interfaces/services/cacheService.interface.js';
 import { chartConfigSchema } from '../commons/schemas/chartConfig.schema.js';
 import type { ChartConfig } from '../commons/schemas/chartConfig.schema.js';
 
@@ -31,7 +32,10 @@ interface SafetySetting {
 }
 
 export class GeminiService implements AIService {
-  constructor(private readonly app: FastifyInstance) {}
+  constructor(
+    private readonly app: FastifyInstance,
+    private readonly cacheService: CacheService,
+  ) {}
 
   async generate(
     prompt: string,
@@ -40,42 +44,11 @@ export class GeminiService implements AIService {
   ): Promise<ChartConfig> {
     const promptText = this.buildPromptText(prompt, memory);
 
-    const currentPoolUsage = await this.app.redis.get(budgetKey);
-    if (
-      currentPoolUsage &&
-      Number(currentPoolUsage) >= this.app.config.GEMINI_DAILY_TOKEN_LIMIT
-    ) {
-      throw this.app.httpErrors.tooManyRequests(
-        'Service temporarily unavailable due to high volume. Please try again later.',
-      );
-    }
+    await this.checkDailyLimit();
 
     const [thinkingModel, standardModel] = this.getModels();
-
-    /*
-      Input tokens are calculated for the most expensive model
-      to account for worst-case scenario
-    */
-    const tokenInfo = await this.app.gemini.models.countTokens({
-      model: thinkingModel,
-      contents: promptText,
-    });
-
-    const worstCaseCost =
-      tokenInfo.totalTokens! + this.app.config.GEMINI_MAX_OUTPUT_TOKENS;
-    const totalProjected = await this.app.redis.incrby(
-      budgetKey,
-      worstCaseCost,
-    );
-
-    await this.app.redis.expire(budgetKey, 86400, 'NX');
-
-    if (totalProjected > this.app.config.GEMINI_DAILY_TOKEN_LIMIT) {
-      await this.app.redis.decrby(budgetKey, worstCaseCost);
-      throw this.app.httpErrors.tooManyRequests(
-        'Service temporarily unavailable due to high volume. Please try again later.',
-      );
-    }
+    
+    const worstCaseCost = await this.reserveProjectedTokens(promptText, thinkingModel);
 
     const model = thinkingMode ? thinkingModel : standardModel;
     const safetySettings = this.buildSafetySettings();
@@ -100,10 +73,61 @@ export class GeminiService implements AIService {
 
       return chartData;
     } finally {
-      const overestimationRefund = worstCaseCost - (actualTokensUsed ?? 0);
-      if (overestimationRefund > 0) {
-        await this.app.redis.decrby(budgetKey, overestimationRefund);
-      }
+      await this.refundOverestimation(worstCaseCost, actualTokensUsed);
+    }
+  }
+
+  private async checkDailyLimit(): Promise<void> {
+    const currentPoolUsage = await this.cacheService.get(budgetKey);
+    if (
+      currentPoolUsage &&
+      Number(currentPoolUsage) >= this.app.config.GEMINI_DAILY_TOKEN_LIMIT
+    ) {
+      throw this.app.httpErrors.tooManyRequests(
+        'Service temporarily unavailable due to high volume. Please try again later.',
+      );
+    }
+  }
+
+  private async reserveProjectedTokens(
+    promptText: string,
+    thinkingModel: string,
+  ): Promise<number> {
+    /*
+      Input tokens are calculated for the most expensive model
+      to account for worst-case scenario
+    */
+    const tokenInfo = await this.app.gemini.models.countTokens({
+      model: thinkingModel,
+      contents: promptText,
+    });
+
+    const worstCaseCost =
+      tokenInfo.totalTokens! + this.app.config.GEMINI_MAX_OUTPUT_TOKENS;
+    const totalProjected = await this.cacheService.incrby(
+      budgetKey,
+      worstCaseCost,
+    );
+
+    await this.cacheService.expire(budgetKey, 86400, 'NX');
+
+    if (totalProjected > this.app.config.GEMINI_DAILY_TOKEN_LIMIT) {
+      await this.cacheService.decrby(budgetKey, worstCaseCost);
+      throw this.app.httpErrors.tooManyRequests(
+        'Service temporarily unavailable due to high volume. Please try again later.',
+      );
+    }
+
+    return worstCaseCost;
+  }
+
+  private async refundOverestimation(
+    worstCaseCost: number,
+    actualTokensUsed: number | null,
+  ): Promise<void> {
+    const overestimationRefund = worstCaseCost - (actualTokensUsed ?? 0);
+    if (overestimationRefund > 0) {
+      await this.cacheService.decrby(budgetKey, overestimationRefund);
     }
   }
 
