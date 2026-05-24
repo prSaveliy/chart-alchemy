@@ -78,7 +78,6 @@ export const AIChart = ({
   const retriedRef = useRef(false);
   const retriedSwitchRef = useRef(false);
 
-
   const mergedOption = useMemo(
     () =>
       chartData?.option
@@ -135,7 +134,7 @@ export const AIChart = ({
     if (result.errorMessage) {
       if (!retriedSwitchRef.current && result.statusCode === 401) {
         await handleUnauthorized(retriedSwitchRef, navigate, () =>
-          switchVersion(versionId)
+          switchVersion(versionId),
         );
         return;
       } else {
@@ -162,11 +161,11 @@ export const AIChart = ({
   const canSubmit = !!prompt.trim() && !awaiting && !switching;
 
   return (
-    <div className="flex flex-col min-h-screen bg-gradient-to-b from-white to-gray-50/40">
+    <div className="flex flex-col min-h-screen md:h-screen bg-gradient-to-b from-white to-gray-50/40 md:overflow-hidden">
       <Header2 userPicture={userPicture || defaultUserPicture} />
 
-      <div className="flex flex-1">
-        <div className="w-72 bg-white/60 border-r hidden md:flex flex-col shrink-0 z-10 backdrop-blur-sm">
+      <div className="flex flex-1 md:overflow-hidden">
+        <div className="w-72 bg-white/60 border-r hidden md:flex flex-col shrink-0 z-10 backdrop-blur-sm md:h-full">
           <div className="flex items-center gap-2 px-4 py-3.5 text-gray-700 font-semibold border-b bg-white/80 shrink-0">
             <Clock className="w-4 h-4" />
             <h2 className="text-sm">History</h2>
@@ -210,7 +209,10 @@ export const AIChart = ({
           </div>
         </div>
 
-        <div className="flex flex-col flex-1 overflow-x-hidden">
+        <div
+          id="main-scroll-container"
+          className="flex flex-col flex-1 overflow-x-hidden md:overflow-y-auto mb-1"
+        >
           <div className="flex flex-col flex-1 items-center px-4 sm:px-6 lg:px-8 pb-4 pt-2 sm:pt-3 lg:pt-4 min-h-0">
             <div className="flex w-full max-w-7xl flex-col mb-2 items-start shrink-0">
               <div className="flex items-center gap-2 w-full sm:w-auto">
@@ -331,9 +333,18 @@ export const AIChart = ({
                   value={prompt}
                   onChange={(e) => {
                     setPrompt(e.target.value);
+                    const scrollContainer = e.target.closest(
+                      "#main-scroll-container",
+                    );
+                    const containerScrollTop = scrollContainer
+                      ? scrollContainer.scrollTop
+                      : 0;
                     const scrollY = window.scrollY;
                     e.target.style.height = "auto";
                     e.target.style.height = `${Math.min(e.target.scrollHeight, 200)}px`;
+                    if (scrollContainer) {
+                      scrollContainer.scrollTop = containerScrollTop;
+                    }
                     window.scrollTo({ top: scrollY, behavior: "instant" });
                   }}
                   onKeyDown={(e) => {
