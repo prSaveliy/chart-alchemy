@@ -48,7 +48,6 @@ export class ChartController {
       'Invalid request body',
     );
     const userId = request.user.id;
-    const useThinkingMode = thinkingMode === 'true';
 
     await this.chartService.verifyToken(token, userId);
 
@@ -69,7 +68,7 @@ export class ChartController {
     });
 
     this.chartService
-      .generate(prompt, token, memory, useThinkingMode)
+      .generate(prompt, token, memory, thinkingMode)
       .then(result => {
         if (aborted) return;
         clearInterval(keepAlive);

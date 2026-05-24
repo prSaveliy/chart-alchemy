@@ -94,7 +94,7 @@ export const AIChart = ({
     const fetchResult = await chartService.generate(
       prompt,
       token!,
-      useMemory ? chartData : null,
+      useMemory,
       thinkingMode,
     );
 

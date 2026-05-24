@@ -201,8 +201,8 @@ describe('chart integration tests', () => {
         .send({
           prompt: 'A bar chart showing monthly sales for January through March: 100, 150, 120',
           token: chartToken,
-          memory: null,
-          thinkingMode: 'false',
+          memory: false,
+          thinkingMode: false,
         })
         .set('Content-Type', 'application/json')
         .timeout(30000);
@@ -241,8 +241,8 @@ describe('chart integration tests', () => {
         .send({
           prompt: 'A bar chart showing monthly sales for January through March',
           token: chartToken,
-          memory: null,
-          thinkingMode: 'false',
+          memory: false,
+          thinkingMode: false,
         })
         .set('Content-Type', 'application/json');
 
@@ -278,8 +278,8 @@ describe('chart integration tests', () => {
         .send({
           prompt: 'A bar chart of monthly sales',
           token: initRes.body.token,
-          memory: null,
-          thinkingMode: 'false',
+          memory: false,
+          thinkingMode: false,
         })
         .set('Content-Type', 'application/json');
 
@@ -295,8 +295,8 @@ describe('chart integration tests', () => {
         .send({
           prompt: 'A bar chart',
           token: 'ai-00000000-0000-0000-0000-000000000000',
-          memory: null,
-          thinkingMode: 'false',
+          memory: false,
+          thinkingMode: false,
         })
         .set('Content-Type', 'application/json');
 
@@ -317,8 +317,8 @@ describe('chart integration tests', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           token: initRes.body.token,
-          memory: null,
-          thinkingMode: 'false',
+          memory: false,
+          thinkingMode: false,
         })
         .set('Content-Type', 'application/json');
 
@@ -340,7 +340,7 @@ describe('chart integration tests', () => {
         .send({
           prompt: 'A pie chart',
           token: initRes.body.token,
-          memory: null,
+          memory: false,
           thinkingMode: 'yes',
         })
         .set('Content-Type', 'application/json');
@@ -354,8 +354,8 @@ describe('chart integration tests', () => {
         .send({
           prompt: 'A bar chart',
           token: 'ai-some-token',
-          memory: null,
-          thinkingMode: 'false',
+          memory: false,
+          thinkingMode: false,
         })
         .set('Content-Type', 'application/json');
 
@@ -973,7 +973,7 @@ describe('chart integration tests', () => {
         .set('Content-Type', 'application/json');
 
       const chartToken = initRes.body.token;
-      const genPayload = { token: chartToken, memory: null, thinkingMode: 'false' };
+      const genPayload = { token: chartToken, memory: false, thinkingMode: false };
 
       const gen1 = await request(app.server)
         .post('/chart/generate')
@@ -1011,13 +1011,13 @@ describe('chart integration tests', () => {
       await request(app.server)
         .post('/chart/generate')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ prompt: 'Version A', token: chartToken, memory: null, thinkingMode: 'false' })
+        .send({ prompt: 'Version A', token: chartToken, memory: false, thinkingMode: false })
         .set('Content-Type', 'application/json');
 
       await request(app.server)
         .post('/chart/generate')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ prompt: 'Version B', token: chartToken, memory: null, thinkingMode: 'false' })
+        .send({ prompt: 'Version B', token: chartToken, memory: false, thinkingMode: false })
         .set('Content-Type', 'application/json');
 
       const response = await request(app.server)
@@ -1054,7 +1054,7 @@ describe('chart integration tests', () => {
       const gen1 = await request(app.server)
         .post('/chart/generate')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ prompt: 'V1', token: chartToken, memory: null, thinkingMode: 'false' })
+        .send({ prompt: 'V1', token: chartToken, memory: false, thinkingMode: false })
         .set('Content-Type', 'application/json');
 
       const afterFirst = await request(app.server)
@@ -1066,7 +1066,7 @@ describe('chart integration tests', () => {
       const gen2 = await request(app.server)
         .post('/chart/generate')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ prompt: 'V2', token: chartToken, memory: null, thinkingMode: 'false' })
+        .send({ prompt: 'V2', token: chartToken, memory: false, thinkingMode: false })
         .set('Content-Type', 'application/json');
 
       const afterSecond = await request(app.server)
@@ -1090,7 +1090,7 @@ describe('chart integration tests', () => {
       const genRes = await request(app.server)
         .post('/chart/generate')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ prompt: 'Config check', token: chartToken, memory: null, thinkingMode: 'false' })
+        .send({ prompt: 'Config check', token: chartToken, memory: false, thinkingMode: false })
         .set('Content-Type', 'application/json');
 
       const response = await request(app.server)
@@ -1118,7 +1118,7 @@ describe('chart integration tests', () => {
         const gen = await request(app.server)
           .post('/chart/generate')
           .set('Authorization', `Bearer ${accessToken}`)
-          .send({ prompt: `Version ${i}`, token: chartToken, memory: null, thinkingMode: 'false' })
+          .send({ prompt: `Version ${i}`, token: chartToken, memory: false, thinkingMode: false })
           .set('Content-Type', 'application/json');
         versionIds.push(gen.body.versionId as number);
       }
@@ -1217,13 +1217,13 @@ describe('chart integration tests', () => {
       const gen1 = await request(app.server)
         .post('/chart/generate')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ prompt: 'Version 1', token: chartToken, memory: null, thinkingMode: 'false' })
+        .send({ prompt: 'Version 1', token: chartToken, memory: false, thinkingMode: false })
         .set('Content-Type', 'application/json');
 
       const gen2 = await request(app.server)
         .post('/chart/generate')
         .set('Authorization', `Bearer ${accessToken}`)
-        .send({ prompt: 'Version 2', token: chartToken, memory: null, thinkingMode: 'false' })
+        .send({ prompt: 'Version 2', token: chartToken, memory: false, thinkingMode: false })
         .set('Content-Type', 'application/json');
 
       return {

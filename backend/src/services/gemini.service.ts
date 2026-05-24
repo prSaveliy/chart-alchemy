@@ -140,7 +140,7 @@ export class GeminiService implements AIService {
     memory: ChartConfig | null,
   ): string {
     let promptText = '';
-    if (memory !== null && Object.keys(memory).length !== 0) {
+    if (memory && Object.keys(memory).length !== 0) {
       promptText += `<CURRENT_CHART_CONFIG>\n${JSON.stringify(memory)}\n</CURRENT_CHART_CONFIG>\n\n`;
     }
     promptText += `<USER_REQUEST>\n${userPrompt}\n</USER_REQUEST>`;

@@ -38,7 +38,7 @@ export class ChartService {
   async generate(
     prompt: string,
     token: string,
-    memory: ChartConfig | null,
+    memory: boolean,
     thinkingMode: boolean,
   ) {
     const isLocked = await this.chartRepository.acquireGenerationLock(token);
@@ -48,10 +48,16 @@ export class ChartService {
       );
     }
 
+    const chart = await this.chartRepository.findByToken(token);
+    if (!chart) {
+      throw this.app.httpErrors.notFound('Chart not found');
+    }
+    const memoryConfig = chart?.config as ChartConfig;
+    
     try {
       const chartData = await this.aiService.generate(
         prompt,
-        memory,
+        memory ? memoryConfig : null,
         thinkingMode,
       );
 
