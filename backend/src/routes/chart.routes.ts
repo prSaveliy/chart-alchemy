@@ -1,6 +1,6 @@
 import { FastifyInstance } from 'fastify';
 
-import rateLimitByIp from '../hooks/rateLimitByIp.js';
+import rateLimit from '../hooks/rateLimit.js';
 import type { ChartController } from '../controllers/chart.controller.js';
 
 const chartRoutes = (chartController: ChartController) => {
@@ -8,7 +8,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.post(
       '/init',
       {
-        onRequest: [fastify.auth, rateLimitByIp(10, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 10, 60 * 1000)],
       },
       chartController.init.bind(chartController),
     );
@@ -16,7 +16,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.post(
       '/verify-token',
       {
-        onRequest: [fastify.auth, rateLimitByIp(60, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 60, 60 * 1000)],
       },
       chartController.verifyToken.bind(chartController),
     );
@@ -24,7 +24,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.post(
       '/generate',
       {
-        onRequest: [fastify.auth, rateLimitByIp(10, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 10, 60 * 1000)],
       },
       chartController.generate.bind(chartController),
     );
@@ -32,7 +32,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.post(
       '/upload-and-generate-from-dataset/:token',
       {
-        onRequest: [fastify.auth, rateLimitByIp(5, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 5, 60 * 1000)],
       },
       chartController.uploadAndGenerateFromDataset.bind(chartController),
     );
@@ -40,7 +40,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.post(
       '/regenerate-from-dataset/:token',
       {
-        onRequest: [fastify.auth, rateLimitByIp(25, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 25, 60 * 1000)],
       },
       chartController.regenerateFromDataset.bind(chartController),
     );
@@ -48,7 +48,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.patch(
       '/rename',
       {
-        onRequest: [fastify.auth, rateLimitByIp(30, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 30, 60 * 1000)],
       },
       chartController.rename.bind(chartController),
     );
@@ -56,7 +56,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.get(
       '/',
       {
-        onRequest: [fastify.auth, rateLimitByIp(60, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 60, 60 * 1000)],
       },
       chartController.list.bind(chartController),
     );
@@ -64,7 +64,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.get(
       '/:token',
       {
-        onRequest: [fastify.auth, rateLimitByIp(60, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 60, 60 * 1000)],
       },
       chartController.getByToken.bind(chartController),
     );
@@ -72,7 +72,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.patch(
       '/save-config',
       {
-        onRequest: [fastify.auth, rateLimitByIp(30, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 30, 60 * 1000)],
       },
       chartController.saveConfig.bind(chartController),
     );
@@ -80,7 +80,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.delete(
       '/:token',
       {
-        onRequest: [fastify.auth, rateLimitByIp(30, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 30, 60 * 1000)],
       },
       chartController.delete.bind(chartController),
     );
@@ -88,7 +88,7 @@ const chartRoutes = (chartController: ChartController) => {
     fastify.patch(
       '/switch-active-version',
       {
-        onRequest: [fastify.auth, rateLimitByIp(30, 60 * 1000)],
+        onRequest: [fastify.auth, rateLimit('ip', 30, 60 * 1000)],
       },
       chartController.switchActiveVersion.bind(chartController),
     );
