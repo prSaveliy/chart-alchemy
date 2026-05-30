@@ -12,7 +12,7 @@ services:
       - ./backend/postgres/postgresdata:/var/lib/postgresql
       - ./backend/postgres/init:/docker-entrypoint-initdb.d
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U userexample -d exampledb']
+      test: ["CMD-SHELL", "pg_isready -U userexample -d exampledb"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -25,6 +25,17 @@ services:
     depends_on:
       - db
 
+  redis:
+    image: redis:7-alpine
+    restart: unless-stopped
+    ports:
+      - 6379:6379
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
   backend:
     build:
       context: .
@@ -34,6 +45,7 @@ services:
       - ./backend/.env
     environment:
       - DATABASE_URL=postgresql://userexample:example@db:5432/exampledb?schema=public
+      - REDIS_URL=redis://redis:6379
       - GOOGLE_APPLICATION_CREDENTIALS=/app/backend/gcp-key.json
     ports:
       - "3000:3000"
@@ -41,6 +53,8 @@ services:
       - ./backend/gcp-key.json:/app/backend/gcp-key.json:ro
     depends_on:
       db:
+        condition: service_healthy
+      redis:
         condition: service_healthy
 
   frontend:

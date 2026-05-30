@@ -131,7 +131,13 @@ export class GeminiService implements AIService {
   ): Promise<void> {
     const overestimationRefund = worstCaseCost - (actualTokensUsed ?? 0);
     if (overestimationRefund > 0) {
-      await this.cacheService.decrby(BUDGET_KEY, overestimationRefund);
+      const exists = await this.cacheService.get(BUDGET_KEY);
+      if (exists !== null) {
+        const newValue = await this.cacheService.decrby(BUDGET_KEY, overestimationRefund);
+        if (newValue < 0) {
+          await this.cacheService.set(BUDGET_KEY, 0);
+        }
+      }
     }
   }
 
