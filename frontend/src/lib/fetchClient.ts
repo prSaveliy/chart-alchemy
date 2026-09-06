@@ -1,17 +1,33 @@
 import type { FetchResult } from '@/commons/interfaces/fetchInterfaces';
 
+interface ServerErrorResponse {
+  errorMessage?: string;
+  message?: string;
+  statusCode?: number;
+  isStreamingError?: boolean;
+}
+
 class FetchClient {
-  private getError(response: Response, data: any): FetchResult | null {
-    if (!response.ok || data?.isStreamingError) {
+  private getError(response: Response, data: unknown): FetchResult<never> | null {
+    const errorPayload =
+      typeof data === 'object' && data !== null
+        ? (data as ServerErrorResponse)
+        : null;
+
+    if (!response.ok || errorPayload?.isStreamingError) {
       return {
-        errorMessage: data?.errorMessage || data?.message || "Error",
-        statusCode: data?.statusCode || response.status,
+        errorMessage: errorPayload?.errorMessage || errorPayload?.message || "Error",
+        statusCode: errorPayload?.statusCode || response.status,
       };
     }
     return null;
   }
 
-  async get(uri: string): Promise<FetchResult> {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async get<T = any>(
+    uri: string,
+    options?: { signal?: AbortSignal },
+  ): Promise<FetchResult<T>> {
     try {
       const accessToken = localStorage.getItem('accessToken');
       const response = await fetch(`${import.meta.env.VITE_SERVER_URL}/${uri}`, {
@@ -20,6 +36,7 @@ class FetchClient {
           "Authorization": `Bearer ${accessToken}`,
         },
         credentials: "include",
+        signal: options?.signal,
       });
       
       const data = await response.json().catch(() => null);
@@ -28,7 +45,10 @@ class FetchClient {
       if (error) return error;
       
       return { data };
-    } catch {
+    } catch (err: unknown) {
+      if ((err as { name?: string })?.name === 'AbortError') {
+        return { isAborted: true };
+      }
       return { errorMessage: 'Something went wrong' };
     }
   }

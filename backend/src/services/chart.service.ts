@@ -84,10 +84,13 @@ export class ChartService {
     await this.chartRepository.updateConfig(token, chartData);
   }
 
-  async listByUser(userId: number) {
-    const charts = await this.chartRepository.listByUser(userId);
-
-    return { charts };
+  async listByUser(
+    userId: number,
+    page: number,
+    limit: number,
+    query?: string,
+  ) {
+    return await this.chartRepository.listByUser(userId, page, limit, query);
   }
 
   async getByToken(token: string, userId: number) {

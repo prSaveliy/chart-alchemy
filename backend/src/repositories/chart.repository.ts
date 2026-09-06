@@ -1,5 +1,6 @@
 import { Prisma, type PrismaClient } from '../generated/prisma/client.js';
 import type { DatasetField } from '../commons/interfaces/dataset/dataset.interface.js';
+import { DEFAULT_CHARTS_PER_PAGE } from '../commons/constants/pagination.constants.js';
 
 export class ChartRepository {
   constructor(private readonly prisma: PrismaClient) {}
@@ -71,18 +72,50 @@ export class ChartRepository {
     });
   }
 
-  listByUser(userId: number) {
-    return this.prisma.chart.findMany({
-      where: { userId },
-      orderBy: { updatedAt: 'desc' },
-      select: {
-        token: true,
-        name: true,
-        manualType: true,
-        createdAt: true,
-        updatedAt: true,
+  async listByUser(
+    userId: number,
+    page: number = 1,
+    limit: number = DEFAULT_CHARTS_PER_PAGE,
+    query?: string,
+  ) {
+    const trimmedQuery = query?.trim();
+    const where: Prisma.ChartWhereInput = {
+      userId,
+      ...(trimmedQuery
+        ? { name: { contains: trimmedQuery, mode: 'insensitive' } }
+        : {}),
+    };
+
+    const [totalCount, charts] = await this.prisma.$transaction([
+      this.prisma.chart.count({ where }),
+      this.prisma.chart.findMany({
+        where,
+        orderBy: [{ updatedAt: 'desc' }, { id: 'desc' }],
+        skip: (page - 1) * limit,
+        take: limit,
+        select: {
+          token: true,
+          name: true,
+          manualType: true,
+          createdAt: true,
+          updatedAt: true,
+        },
+      }),
+    ]);
+
+    const totalPages = Math.max(1, Math.ceil(totalCount / limit));
+
+    return {
+      charts,
+      pagination: {
+        page,
+        limit,
+        totalCount,
+        totalPages,
+        hasNextPage: page < totalPages,
+        hasPreviousPage: page > 1,
       },
-    });
+    };
   }
 
   async deleteByToken(token: string) {
@@ -217,7 +250,7 @@ export class ChartRepository {
     });
 
     if (versions.length > 10) {
-      const versionsToDelete = versions.slice(10).map((v) => v.id);
+      const versionsToDelete = versions.slice(10).map(v => v.id);
       await this.prisma.aiChartVersion.deleteMany({
         where: { id: { in: versionsToDelete } },
       });

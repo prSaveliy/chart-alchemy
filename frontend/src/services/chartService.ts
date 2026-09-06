@@ -1,6 +1,14 @@
 import fetchClient from "@/lib/fetchClient";
+import {
+  DEFAULT_CHARTS_PER_PAGE,
+  MAX_SEARCH_QUERY_LENGTH,
+} from "@/commons/constants/pagination.constants";
+import type { FetchResult } from "@/commons/interfaces/fetchInterfaces";
 import type { ChartConfig } from "@/commons/schemas/chartConfig.schema";
-import type { DatasetChartType } from "@/commons/interfaces/chartInterfaces";
+import type {
+  ChartListResponse,
+  DatasetChartType,
+} from "@/commons/interfaces/chartInterfaces";
 
 export type ManualChartType =
   | "bar"
@@ -15,8 +23,20 @@ class ChartService {
     return await fetchClient.post("chart/init", { chartType });
   }
 
-  async list() {
-    return await fetchClient.get("chart");
+  async list(
+    page = 1,
+    limit = DEFAULT_CHARTS_PER_PAGE,
+    q?: string,
+    signal?: AbortSignal,
+  ): Promise<FetchResult<ChartListResponse>> {
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(limit),
+    });
+    if (q && q.trim()) {
+      params.set("q", q.trim().slice(0, MAX_SEARCH_QUERY_LENGTH));
+    }
+    return await fetchClient.get<ChartListResponse>(`chart?${params.toString()}`, { signal });
   }
 
   async verifyToken(token: string) {

@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useRef, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 import { Plus, Search } from "lucide-react";
 
@@ -10,60 +10,70 @@ import { ConfirmDialog } from "@/components/ui/confirm-dialog";
 import { DashboardEmptyState } from "@/components/ui/dashboard-empty-state";
 import { DashboardNoMatchState } from "@/components/ui/dashboard-no-match-state";
 import { Header2 } from "@/components/layout/header2";
+import { Pagination } from "@/components/ui/pagination";
 import { Error } from "./error";
 
 import { handleUnauthorized } from "@/lib/handleUnauthorized";
+import { cn } from "@/lib/utils";
+import { useSearchParam } from "@/hooks/useSearchParam";
+import { usePaginatedCharts } from "@/hooks/usePaginatedCharts";
 import chartService from "@/services/chartService";
 
 import defaultUserPicture from "@/assets/user.png";
 
-import type { ChartSummary } from "@/commons/interfaces/chartInterfaces";
+import { MAX_SEARCH_QUERY_LENGTH } from "@/commons/constants/pagination.constants";
 
 export const Dashboard = () => {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
+
   const retriedRef = useRef(false);
   const userPicture = localStorage.getItem("picture");
 
-  const [charts, setCharts] = useState<ChartSummary[] | null>(null);
-  const [query, setQuery] = useState("");
-
-  const [networkError, setNetworkError] = useState(false);
-  const [serverError, setServerError] = useState(false);
-  const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
+  const pageParam = parseInt(searchParams.get("page") || "1", 10);
+  const page = isNaN(pageParam) || pageParam < 1 ? 1 : pageParam;
+  const { searchQuery, setSearchQuery, queryParam } = useSearchParam();
+  const {
+    charts,
+    pagination,
+    isLoading,
+    networkError,
+    serverError,
+    tooManyRequestsError,
+    refresh,
+  } = usePaginatedCharts({ page, query: queryParam });
 
   const [pendingDeleteToken, setPendingDeleteToken] = useState<string | null>(null);
   const [deletingToken, setDeletingToken] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState("");
 
-  const fetchCharts = async () => {
-    const fetchResult = await chartService.list();
-
-    if (fetchResult.errorMessage) {
-      if (!retriedRef.current && fetchResult.statusCode === 401) {
-        await handleUnauthorized(retriedRef, navigate, fetchCharts);
-        return;
-      }
-
-      const errors: Record<number, () => void> = {
-        500: () => setServerError(true),
-        429: () => setTooManyRequestsError(true),
-      };
-
-      if (fetchResult.statusCode && fetchResult.statusCode in errors) {
-        errors[fetchResult.statusCode]();
-      } else {
-        setNetworkError(true);
-      }
-
-      return;
-    }
-
-    setCharts(fetchResult.data?.charts ?? []);
-  };
-
+  // Scroll to top when page changes
   useEffect(() => {
-    fetchCharts();
-  }, []);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [page]);
+
+  // Auto-correct out-of-bounds page requests (e.g. from bookmarked URLs)
+  useEffect(() => {
+    if (pagination && pagination.totalPages > 0 && page > pagination.totalPages) {
+      setSearchParams(
+        prev => {
+          const next = new URLSearchParams(prev);
+          next.set("page", String(pagination.totalPages));
+          return next;
+        },
+        { replace: true },
+      );
+    }
+  }, [pagination, page, setSearchParams]);
+
+  const handlePageChange = (newPage: number) => {
+    if (newPage === page || isLoading) return;
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev);
+      next.set("page", String(newPage));
+      return next;
+    }); // replace: false preserves page navigation in browser history
+  };
 
   const confirmDelete = async (token: string) => {
     if (deletingToken) return;
@@ -79,33 +89,36 @@ export const Dashboard = () => {
       }
 
       if (result.statusCode === 404) {
-        setCharts(prev => prev?.filter(c => c.token !== token) ?? null);
         setDeleteError("");
       } else {
         setDeleteError(result.errorMessage);
       }
       setDeletingToken(null);
       setPendingDeleteToken(null);
+      refresh();
       return;
     }
 
     setDeleteError("");
-    setCharts(prev => prev?.filter(c => c.token !== token) ?? null);
     setDeletingToken(null);
     setPendingDeleteToken(null);
+
+    // If the deleted chart was the only chart on page > 1, decrement page
+    if (charts && charts.length === 1 && page > 1) {
+      setSearchParams(prev => {
+        const next = new URLSearchParams(prev);
+        next.set("page", String(page - 1));
+        return next;
+      });
+    } else {
+      refresh();
+    }
   };
 
   const pendingDeleteName = pendingDeleteToken
     ? (charts?.find(c => c.token === pendingDeleteToken)?.name ||
         "Untitled chart")
     : "";
-
-  const filtered = useMemo(() => {
-    if (!charts) return [];
-    const q = query.trim().toLowerCase();
-    if (!q) return charts;
-    return charts.filter(chart => chart.name.toLowerCase().includes(q));
-  }, [charts, query]);
 
   if (networkError) {
     return (
@@ -169,8 +182,9 @@ export const Dashboard = () => {
             <Input
               type="search"
               placeholder="Search by chart name"
-              value={query}
-              onChange={event => setQuery(event.target.value)}
+              value={searchQuery}
+              maxLength={MAX_SEARCH_QUERY_LENGTH}
+              onChange={event => setSearchQuery(event.target.value)}
               className="pl-9"
             />
           </div>
@@ -189,21 +203,39 @@ export const Dashboard = () => {
           )}
 
           {charts.length === 0 ? (
-            <DashboardEmptyState onCreate={() => navigate("/new-chart")} />
-          ) : filtered.length === 0 ? (
-            <DashboardNoMatchState query={query} />
+            queryParam ? (
+              <DashboardNoMatchState query={queryParam} />
+            ) : (
+              <DashboardEmptyState onCreate={() => navigate("/new-chart")} />
+            )
           ) : (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filtered.map(chart => (
-                <ChartCard
-                  key={chart.token}
-                  chart={chart}
-                  onClick={() => navigate(`/chart/${chart.token}`)}
-                  onDelete={() => setPendingDeleteToken(chart.token)}
-                  deleting={deletingToken === chart.token}
+            <>
+              <div
+                className={cn(
+                  "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 transition-opacity duration-150",
+                  isLoading && "opacity-60 pointer-events-none",
+                )}
+              >
+                {charts.map(chart => (
+                  <ChartCard
+                    key={chart.token}
+                    chart={chart}
+                    onClick={() => navigate(`/chart/${chart.token}`)}
+                    onDelete={() => setPendingDeleteToken(chart.token)}
+                    deleting={deletingToken === chart.token}
+                  />
+                ))}
+              </div>
+
+              {pagination && pagination.totalPages > 1 && (
+                <Pagination
+                  page={pagination.page}
+                  totalPages={pagination.totalPages}
+                  disabled={isLoading}
+                  onPageChange={handlePageChange}
                 />
-              ))}
-            </div>
+              )}
+            </>
           )}
         </div>
       </div>

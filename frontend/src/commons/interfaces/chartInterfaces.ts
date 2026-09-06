@@ -78,3 +78,17 @@ export interface DatasetChartProps {
   initialTruncated?: boolean;
   initialDatasetInfo?: DatasetInfo | null;
 }
+
+export interface PaginationMeta {
+  page: number;
+  limit: number;
+  totalCount: number;
+  totalPages: number;
+  hasNextPage: boolean;
+  hasPreviousPage: boolean;
+}
+
+export interface ChartListResponse {
+  charts: ChartSummary[];
+  pagination: PaginationMeta;
+}

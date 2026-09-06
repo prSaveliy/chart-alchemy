@@ -1,0 +1,2 @@
+export const DEFAULT_CHARTS_PER_PAGE = 12;
+export const MAX_SEARCH_QUERY_LENGTH = 100;

@@ -859,6 +859,137 @@ describe('chart integration tests', () => {
       assert.ok(!('id' in chart));
     });
 
+    test('returns pagination metadata with default values', async () => {
+      const accessToken = await makeUser(app, 'list-pagination-default@qwertyuiop1234.com');
+
+      const response = await request(app.server)
+        .get('/chart')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(response.status, 200);
+      assert.deepEqual(response.body.charts, []);
+      assert.deepEqual(response.body.pagination, {
+        page: 1,
+        limit: 12,
+        totalCount: 0,
+        totalPages: 1,
+        hasNextPage: false,
+        hasPreviousPage: false,
+      });
+    });
+
+    test('supports pagination with custom page and limit', async () => {
+      const accessToken = await makeUser(app, 'list-pagination-custom@qwertyuiop1234.com');
+
+      for (let i = 1; i <= 5; i++) {
+        const initRes = await request(app.server)
+          .post('/chart/init')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ chartType: 'manual' })
+          .set('Content-Type', 'application/json');
+
+        await request(app.server)
+          .patch('/chart/rename')
+          .set('Authorization', `Bearer ${accessToken}`)
+          .send({ name: `Chart ${i}`, token: initRes.body.token })
+          .set('Content-Type', 'application/json');
+      }
+
+      const page1 = await request(app.server)
+        .get('/chart?page=1&limit=2')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(page1.status, 200);
+      assert.equal(page1.body.charts.length, 2);
+      assert.equal(page1.body.pagination.totalCount, 5);
+      assert.equal(page1.body.pagination.totalPages, 3);
+      assert.equal(page1.body.pagination.page, 1);
+      assert.equal(page1.body.pagination.limit, 2);
+      assert.equal(page1.body.pagination.hasNextPage, true);
+      assert.equal(page1.body.pagination.hasPreviousPage, false);
+
+      const page2 = await request(app.server)
+        .get('/chart?page=2&limit=2')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(page2.status, 200);
+      assert.equal(page2.body.charts.length, 2);
+      assert.equal(page2.body.pagination.page, 2);
+      assert.equal(page2.body.pagination.hasNextPage, true);
+      assert.equal(page2.body.pagination.hasPreviousPage, true);
+
+      const page3 = await request(app.server)
+        .get('/chart?page=3&limit=2')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(page3.status, 200);
+      assert.equal(page3.body.charts.length, 1);
+      assert.equal(page3.body.pagination.page, 3);
+      assert.equal(page3.body.pagination.hasNextPage, false);
+      assert.equal(page3.body.pagination.hasPreviousPage, true);
+
+      const allTokens = [
+        ...page1.body.charts.map((c: any) => c.token),
+        ...page2.body.charts.map((c: any) => c.token),
+        ...page3.body.charts.map((c: any) => c.token),
+      ];
+      assert.equal(new Set(allTokens).size, 5);
+    });
+
+    test('filters charts by search query case-insensitively', async () => {
+      const accessToken = await makeUser(app, 'list-search@qwertyuiop1234.com');
+
+      const chartA = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+      await request(app.server)
+        .patch('/chart/rename')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ name: 'Monthly Revenue', token: chartA.body.token })
+        .set('Content-Type', 'application/json');
+
+      const chartB = await request(app.server)
+        .post('/chart/init')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ chartType: 'manual' })
+        .set('Content-Type', 'application/json');
+      await request(app.server)
+        .patch('/chart/rename')
+        .set('Authorization', `Bearer ${accessToken}`)
+        .send({ name: 'User Growth', token: chartB.body.token })
+        .set('Content-Type', 'application/json');
+
+      const res = await request(app.server)
+        .get('/chart?q=revenue')
+        .set('Authorization', `Bearer ${accessToken}`);
+
+      assert.equal(res.status, 200);
+      assert.equal(res.body.charts.length, 1);
+      assert.equal(res.body.charts[0].name, 'Monthly Revenue');
+      assert.equal(res.body.pagination.totalCount, 1);
+    });
+
+    test('returns 400 on invalid query params', async () => {
+      const accessToken = await makeUser(app, 'list-invalid-query@qwertyuiop1234.com');
+
+      const res1 = await request(app.server)
+        .get('/chart?page=0')
+        .set('Authorization', `Bearer ${accessToken}`);
+      assert.equal(res1.status, 400);
+
+      const res2 = await request(app.server)
+        .get('/chart?limit=51')
+        .set('Authorization', `Bearer ${accessToken}`);
+      assert.equal(res2.status, 400);
+
+      const res3 = await request(app.server)
+        .get('/chart?page=abc')
+        .set('Authorization', `Bearer ${accessToken}`);
+      assert.equal(res3.status, 400);
+    });
+
     test('returns 401 without auth', async () => {
       const response = await request(app.server).get('/chart');
 

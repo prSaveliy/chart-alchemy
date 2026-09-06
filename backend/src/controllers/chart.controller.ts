@@ -11,6 +11,7 @@ import { chartRenameRequestSchema } from '../commons/schemas/chartRenameRequest.
 import { saveConfigRequestSchema } from '../commons/schemas/saveConfigRequestSchema.js';
 import { switchActiveVersionRequestSchema } from '../commons/schemas/switchActiveVersionRequest.schema.js';
 import { tokenSchema } from '../commons/schemas/token.schema.js';
+import { chartListQuerySchema } from '../commons/schemas/chartQuery.schema.js';
 
 import { ChartService } from '../services/chart.service.js';
 import { DatasetService } from '../services/dataset/index.js';
@@ -99,8 +100,14 @@ export class ChartController {
   }
 
   async list(request: FastifyRequest) {
+    const { page, limit, q } = validateRequest(
+      request,
+      chartListQuerySchema,
+      'Invalid query parameters',
+      'query',
+    );
     const userId = request.user.id;
-    return await this.chartService.listByUser(userId);
+    return await this.chartService.listByUser(userId, page, limit, q);
   }
 
   async getByToken(request: FastifyRequest) {
