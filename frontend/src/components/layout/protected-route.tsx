@@ -1,32 +1,43 @@
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { Error } from "@/pages/error";
 import { validateJWT } from "@/lib/validateJWTToken";
 import { unauthorizedInterceptor } from "@/lib/interceptors";
 
-export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
-  const [authorized, setAuthorized] = useState(false);
+export const ProtectedRoute = ({ children }: { children?: React.ReactNode } = {}) => {
+  const [authorized, setAuthorized] = useState(() => {
+    const accessToken = localStorage.getItem("accessToken");
+    return validateJWT(accessToken);
+  });
   const [networkError, setNetworkError] = useState(false);
   const [serverError, setServerError] = useState(false);
   const [tooManyRequestsError, setTooManyRequestsError] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const authorize = async () => {
+  useEffect(() => {
     const accessToken = localStorage.getItem("accessToken");
     const validated = validateJWT(accessToken);
 
-    const errors: Record<number, () => void> = {
-      500: () => setServerError(true),
-      429: () => setTooManyRequestsError(true),
-    };
+    if (validated) {
+      return;
+    }
 
-    if (!validated) {
+    let isMounted = true;
+
+    const tryRefresh = async () => {
+      const errors: Record<number, () => void> = {
+        500: () => setServerError(true),
+        429: () => setTooManyRequestsError(true),
+      };
+
       const response = await unauthorizedInterceptor();
+      if (!isMounted) return;
 
       if (response) {
         if (response.statusCode) {
           if (response.statusCode === 401) {
-            navigate('/login');
+            navigate("/login");
             return;
           }
           if (response.statusCode in errors) {
@@ -38,14 +49,14 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
           setAuthorized(true);
         }
       }
-    } else {
-      setAuthorized(true);
-    }
-  };
+    };
 
-  useEffect(() => {
-    authorize();
-  }, []);
+    tryRefresh();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [location.pathname, navigate]);
 
   if (networkError) {
     return (
@@ -74,5 +85,7 @@ export const ProtectedRoute = ({ children }: { children: React.ReactNode }) => {
     );
   }
 
-  return authorized ? <>{children}</> : null;
+  return authorized ? <>{children ?? <Outlet />}</> : null;
 };
+
+export default ProtectedRoute;

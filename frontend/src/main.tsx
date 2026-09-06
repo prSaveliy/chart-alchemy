@@ -18,24 +18,34 @@ import { ProtectedRoute } from "./components/layout/protected-route";
 import { createBrowserRouter, RouterProvider } from "react-router-dom";
 
 const router = createBrowserRouter([
-  { path: "/", element: <HeroSection /> },
-  { path: "/login", element: <LoginForm /> },
-  { path: "/signup", element: <SignUpForm /> },
-  { path: "/auth/google/*", element: <GoogleLogin /> },
-  { path: "/activate/:token", element: <ActivateAccount /> },
-  { path: "/forgot-password", element: <ForgotPassword /> },
-  { path: "/password-reset/:token", element: <PasswordReset /> },
-  { path: "/dashboard", element: <ProtectedRoute><Dashboard /></ProtectedRoute> },
-  { path: "/new-chart", element: <ProtectedRoute><NewChart /></ProtectedRoute> },
-  { path: "/chart/:token", element: <ProtectedRoute><Chart /></ProtectedRoute> },
   {
-    path: "*",
-    element: (
-      <Error
-        error="Page Not Found"
-        secondaryMessage="Oops! The page you're trying to access doesn't exist."
-      />
-    ),
+    path: "/",
+    children: [
+      { index: true, element: <HeroSection /> },
+      { path: "login", element: <LoginForm /> },
+      { path: "signup", element: <SignUpForm /> },
+      { path: "auth/google/*", element: <GoogleLogin /> },
+      { path: "activate/:token", element: <ActivateAccount /> },
+      { path: "forgot-password", element: <ForgotPassword /> },
+      { path: "password-reset/:token", element: <PasswordReset /> },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          { path: "dashboard", element: <Dashboard /> },
+          { path: "new-chart", element: <NewChart /> },
+          { path: "chart/:token", element: <Chart /> },
+        ],
+      },
+      {
+        path: "*",
+        element: (
+          <Error
+            error="Page Not Found"
+            secondaryMessage="Oops! The page you're trying to access doesn't exist."
+          />
+        ),
+      },
+    ],
   },
 ]);
 
