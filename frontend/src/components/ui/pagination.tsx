@@ -97,7 +97,7 @@ export const Pagination = ({
                 aria-current={isActive ? "page" : undefined}
                 aria-label={`Go to page ${item}`}
                 className={cn(
-                  "min-w-9 h-9 px-2 text-sm rounded-lg flex items-center justify-center transition-all cursor-pointer",
+                  "min-w-9 h-9 px-2 text-sm rounded-lg flex items-center justify-center cursor-pointer",
                   isActive
                     ? "bg-black text-white font-medium shadow-xs pointer-events-none"
                     : "text-gray-700 hover:bg-gray-100 hover:text-black font-normal",
